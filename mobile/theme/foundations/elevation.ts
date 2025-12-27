@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
 /**
  * Elevation tokens for the app.
@@ -22,7 +22,6 @@ import { Platform } from 'react-native';
  * <View style={{ ...elevation.level3, borderRadius: 24, backgroundColor: '#7A3EFF', width: 48, height: 48 }} />
  */
 
-
 /**
  * Elevation levels for iOS/Android
  *
@@ -32,23 +31,22 @@ import { Platform } from 'react-native';
  * level3 - Prominent shadow / floating elements, modals, buttons
  */
 
-
 const ios = {
   level0: {},
   level1: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 2,
   },
   level2: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 3,
   },
   level3: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
@@ -62,5 +60,4 @@ const android = {
   level3: { elevation: 6 },
 };
 
-export const elevation =
-  Platform.OS === 'ios' ? ios : android;
+export const elevation = Platform.OS === "ios" ? ios : android;

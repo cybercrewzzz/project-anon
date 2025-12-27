@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
 /**
  * Radius tokens for the app.
@@ -39,12 +39,12 @@ const android = {
  * Use these everywhere instead of raw numbers
  */
 export const radius = {
-  xs: Platform.OS === 'ios' ? ios.xs : android.xs,
-  sm: Platform.OS === 'ios' ? ios.sm : android.sm,
-  md: Platform.OS === 'ios' ? ios.md : android.md,
-  lg: Platform.OS === 'ios' ? ios.lg : android.lg,
-  xl: Platform.OS === 'ios' ? ios.xl : android.xl,
-  xxl: Platform.OS === 'ios' ? ios.xxl : android.xxl,
+  xs: Platform.OS === "ios" ? ios.xs : android.xs,
+  sm: Platform.OS === "ios" ? ios.sm : android.sm,
+  md: Platform.OS === "ios" ? ios.md : android.md,
+  lg: Platform.OS === "ios" ? ios.lg : android.lg,
+  xl: Platform.OS === "ios" ? ios.xl : android.xl,
+  xxl: Platform.OS === "ios" ? ios.xxl : android.xxl,
 
   /**
    * Pill / fully rounded elements

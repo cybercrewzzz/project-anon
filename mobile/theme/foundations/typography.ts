@@ -6,7 +6,6 @@ import { Platform, TextStyle } from "react-native";
  * - Android: Poppins
  */
 
-
 const fontFamily = Platform.select({
   ios: undefined, // (system font)
   android: "Poppins",
