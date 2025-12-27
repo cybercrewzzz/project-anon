@@ -1,5 +1,38 @@
 import { Platform } from 'react-native';
 
+/**
+ * Elevation tokens for the app.
+ *
+ * Provides platform-aware elevation / shadow levels for components.
+ *
+ * Android uses `elevation` values.
+ * iOS uses `shadowColor`, `shadowOffset`, `shadowOpacity`, and `shadowRadius`.
+ *
+ * The purpose of these tokens is to represent **surface hierarchy** and **depth** consistently across platforms.
+ *
+ * @example
+ * import { elevation } from '@/theme/foundations/elevation';
+ *
+ * // Card with level 2 elevation
+ * <View style={{ ...elevation.level2, backgroundColor: '#fff', padding: 16 }}>
+ *   <Text>Card content</Text>
+ * </View>
+ *
+ * // Floating button with level 3 elevation
+ * <View style={{ ...elevation.level3, borderRadius: 24, backgroundColor: '#7A3EFF', width: 48, height: 48 }} />
+ */
+
+
+/**
+ * Elevation levels for iOS/Android
+ *
+ * level0 - Flat surface, no shadow
+ * level1 - Subtle shadow / low elevation
+ * level2 - Medium shadow / card or surface ("enhanced")
+ * level3 - Prominent shadow / floating elements, modals, buttons
+ */
+
+
 const ios = {
   level0: {},
   level1: {
