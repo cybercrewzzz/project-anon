@@ -5,6 +5,8 @@ import { Platform, TextStyle } from "react-native";
  * - iOS: System font (SF Pro)
  * - Android: Poppins
  */
+
+
 const fontFamily = Platform.select({
   ios: undefined, // (system font)
   android: "Poppins",
@@ -28,8 +30,20 @@ const baseText: TextStyle = {
 };
 
 /**
- * Typography scale
+ * Typography tokens for the app.
+ *
+ * Provides standard font sizes, weights, and line heights for both iOS and Android.
+ * iOS uses SF Pro (system), Android uses Poppins.
+ *
+ * These tokens are the **foundation layer** for all text styles in the app.
+ *
+ * @example
+ * import { typography, textStyles } from '@/theme/foundations/typography';
+ *
+ * <Text style={typography.headingXL}>Page Title</Text>
+ * <Text style={textStyles.body}>Body text goes here</Text>
  */
+
 export const typography = {
   /* ------------------- Headings ------------------- */
 
@@ -93,8 +107,21 @@ export const typography = {
 };
 
 /**
- * Optional semantic aliases (recommended for screens)
+ * textStyles provides semantic aliases for screens and components.
+ *
+ * @property screenTitle - Large page titles.
+ * @property sectionTitle - Section headings.
+ * @property cardTitle - Card-level headings.
+ * @property listHeader - List item headings.
+ * @property body - Primary body text.
+ * @property bodySecondary - Secondary body text (smaller or less emphasis).
+ * @property caption - Small captions, hints, or labels.
+ *
+ * @example
+ * <Text style={textStyles.screenTitle}>Home</Text>
+ * <Text style={textStyles.caption}>Last updated 3 mins ago</Text>
  */
+
 export const textStyles = {
   screenTitle: typography.headingXL,
   sectionTitle: typography.headingLG,
