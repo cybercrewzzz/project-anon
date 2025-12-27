@@ -1,5 +1,21 @@
 import { Platform } from 'react-native';
 
+/**
+ * Radius tokens for the app.
+ *
+ * Defines standard border-radius values for components.
+ * iOS uses softer, larger radii.
+ * Android uses tighter Material-style radii.
+ *
+ * Includes a `pill` token for fully rounded buttons.
+ *
+ * @example
+ * import { radius } from '@/theme/foundations/radius';
+ *
+ * <View style={{ borderRadius: radius.md }} />
+ * <Button style={{ borderRadius: radius.pill }} />
+ */
+
 const ios = {
   xs: 16,
   sm: 20,
