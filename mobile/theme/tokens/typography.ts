@@ -37,7 +37,7 @@ const baseText: TextStyle = {
  * These tokens are the **foundation layer** for all text styles in the app.
  *
  * @example
- * import { typography, textStyles } from '@/theme/foundations/typography';
+ * import { typography, textStyles } from '@/theme/tokens/typography';
  *
  * <Text style={typography.headingXL}>Page Title</Text>
  * <Text style={textStyles.body}>Body text goes here</Text>

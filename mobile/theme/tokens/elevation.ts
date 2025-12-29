@@ -11,7 +11,7 @@ import { Platform } from "react-native";
  * The purpose of these tokens is to represent **surface hierarchy** and **depth** consistently across platforms.
  *
  * @example
- * import { elevation } from '@/theme/foundations/elevation';
+ * import { elevation } from '@/theme/tokens/elevation';
  *
  * // Card with level 2 elevation
  * <View style={{ ...elevation.level2, backgroundColor: '#fff', padding: 16 }}>
@@ -56,7 +56,7 @@ const ios = {
 const android = {
   level0: { elevation: 0 },
   level1: { elevation: 1 },
-  level2: { elevation: 3 }, // "enhanced Shadow used in figma"
+  level2: { elevation: 3 }, // matches the "enhanced" shadow style used in Figma
   level3: { elevation: 6 },
 };
 
