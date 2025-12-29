@@ -1,16 +1,46 @@
-import { purple } from '@/theme/palettes/purple';
-import { common } from '@/theme/palettes/common';
+import { purple } from "@/theme/palettes/purple";
+import { common } from "@/theme/palettes/common";
 
 /**
- * User role – Light theme
- * Semantic color roles
+ * User role – Light theme colors.
+ *
+ * Defines semantic color roles for the **Normal User** interface in light mode.
+ * This file maps raw palette colors to meaningful UI roles such as:
+ * - backgrounds
+ * - surfaces
+ * - text
+ * - borders
+ * - actions
+ * - system states
+ *
+ * Components and screens MUST consume colors from this file
+ * via the active ThemeProvider.
+ *
+ * Naming conventions:
+ * - `background.*` → page-level backgrounds
+ * - `surface.*` → cards, sheets, sections
+ * - `text.*` → all typography colors
+ * - `border.*` → outlines and focus states
+ * - `action.*` → buttons and interactive elements
+ * - `state.*` → error, warning, success, info
+ *
+ * @example
+ * import { useTheme } from '@/theme/ThemeProvider';
+ *
+ * const theme = useTheme();
+ *
+ * <View style={{ backgroundColor: theme.background.default }}>
+ *   <Text style={{ color: theme.text.primary }}>Hello</Text>
+ * </View>
+ *
  */
+
 export const userLightTheme = {
   background: {
     default: common.white,
     secondary: purple[50],
     accent: purple[500],
-    overlay: 'rgba(149, 0, 255, 0.8)',
+    overlay: "rgba(149, 0, 255, 0.8)",
   },
 
   surface: {
@@ -49,8 +79,8 @@ export const userLightTheme = {
   },
 
   gradient: {
-    backgroundPrimary: ['#D2ECFE', '#F9FBFF', purple[100]],
-    backgroundSecondary: ['#EEF2FF', '#FAF5FF'],
-    callAction: ['#D8FDD2', '#9FFF8F'],
+    backgroundPrimary: ["#D2ECFE", "#F9FBFF", purple[100]],
+    backgroundSecondary: ["#EEF2FF", "#FAF5FF"],
+    callAction: ["#D8FDD2", "#9FFF8F"],
   },
 };
