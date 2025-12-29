@@ -18,7 +18,7 @@
  * // ✅ Use via semantic role
  * borderColor: theme.border.default
  *
- *@remarks
+ * @remarks
  * Centralizing system colors here ensures consistency
  * across roles, modes, and platforms.
  */
