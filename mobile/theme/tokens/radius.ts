@@ -12,7 +12,7 @@ import { Platform } from "react-native";
  * Includes a `pill` token for fully rounded elements.
  *
  * @example
- * import { radius } from '@/theme/foundations/radius';
+ * import { radius } from '@/theme/tokens/radius';
  *
  * <View style={{ borderRadius: radius.md }} />
  * <Button style={{ borderRadius: radius.pill }} />
