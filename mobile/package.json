@@ -7,8 +7,10 @@
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web",
     "lint": "expo lint",
+    "format": "prettier -c .",
+    "format:ci": "prettier --end-of-line lf -c .",
+    "format:fix": "prettier -w .",
     "eas-build-pre-install": "corepack enable && yarn set version 4"
   },
   "dependencies": {
@@ -43,6 +45,8 @@
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.7.4",
     "typescript": "~5.9.2"
   },
   "private": true
