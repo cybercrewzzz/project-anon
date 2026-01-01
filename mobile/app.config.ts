@@ -17,8 +17,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package:
-      process.env.BUILD_TYPE === 'internal' ?
-        'com.cybercrewz.projectanon.internal'
+      process.env.BUILD_TYPE === 'development' ?
+        'com.cybercrewz.projectanon.development'
       : process.env.BUILD_TYPE === 'preview' ?
         'com.cybercrewz.projectanon.preview'
       : 'com.cybercrewz.projectanon',

@@ -12,8 +12,7 @@ export default function Index() {
       <Text
         style={{
           fontFamily: 'Poppins',
-          fontWeight: '600',
-          fontStyle: 'italic',
+          fontWeight: 400,
         }}
       >
         Edit app/index.tsx to edit this screen.
