@@ -2,6 +2,6 @@ while read local_ref local_sha remote_ref remote_sha
 do
     if [ "$remote_ref" = "refs/heads/main" ]; then
         echo "Error: Pushing to \"main\" branch is not allowed!"
-        exit 0
+        exit 1
     fi
 done
