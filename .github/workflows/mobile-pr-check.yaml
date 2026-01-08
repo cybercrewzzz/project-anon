@@ -34,7 +34,7 @@ jobs:
           restore-keys: ${{runner.os}}-yarn-
 
       - name: Install mobile dependencies
-        run: yarn workspaces focus mobile --immutable
+        run: yarn workspaces focus mobile
 
       - name: Format & Lint
         run: yarn workspace mobile format_lint:ci
