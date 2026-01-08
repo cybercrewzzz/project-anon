@@ -36,8 +36,11 @@ jobs:
       - name: Install mobile dependencies
         run: yarn workspaces focus mobile
 
-      - name: Format & Lint
-        run: yarn workspace mobile format_lint:ci
+      - name: Format
+        run: yarn workspace mobile format:ci
+
+      - name: Lint
+        run: yarn worspace mobile lint:ci
 
   scan:
     name: Security Scan
