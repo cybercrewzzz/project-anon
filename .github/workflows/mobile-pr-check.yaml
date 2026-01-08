@@ -40,7 +40,7 @@ jobs:
         run: yarn workspace mobile format:ci
 
       - name: Lint
-        run: yarn worspace mobile lint:ci
+        run: yarn workspace mobile lint:ci
 
   scan:
     name: Security Scan
