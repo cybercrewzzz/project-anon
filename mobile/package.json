@@ -8,6 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "lint": "expo lint",
+    "lint:ci": "expo lint",
     "format": "prettier -c .",
     "format:ci": "prettier --end-of-line lf -c .",
     "format:fix": "prettier -w .",

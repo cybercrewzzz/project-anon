@@ -1,0 +1,53 @@
+name: Mobile PR Check
+
+on:
+    pull_request:
+        branches: ["main"]
+        paths:
+            - "mobile/**"
+            - "!mobile/**/*.md"
+
+defaults:
+    run:
+        working-directory: ./mobile
+
+jobs:
+    lint_format:
+        name: Lint & Format (${{ github.head_ref }})
+        timeout-minutes: 5
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup.Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: "lts/*"
+                cache: "yarn"
+                cache-dependency-path:
+                    mobile/yarn.lock
+
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile --non-interactive
+
+            - name: Format Check
+              run: yarn format:ci
+
+            - name: Lint
+              run: yarn lint:ci
+
+    scan:
+        name: Security Scan
+        timeout-minutes: 5
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
+
+            - name: Secret Scanning
+              uses: trufflesecurity/trufflehog@main
+              with:
+                extra_args: --results=verified,unknown
