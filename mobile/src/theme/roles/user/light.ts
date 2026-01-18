@@ -1,5 +1,5 @@
-import { purple } from "@/theme/palettes/purple";
-import { common } from "@/theme/palettes/common";
+import { purple } from '@/src/theme/palettes/purple';
+import { common } from '@/src/theme/palettes/common';
 
 /**
  * User role – Light theme colors.
@@ -40,7 +40,7 @@ export const userLightTheme = {
     default: common.white,
     secondary: purple[50],
     accent: purple[500],
-    overlay: "rgba(149, 0, 255, 0.8)",
+    overlay: 'rgba(149, 0, 255, 0.8)',
   },
 
   surface: {
@@ -79,8 +79,8 @@ export const userLightTheme = {
   },
 
   gradient: {
-    backgroundPrimary: ["#D2ECFE", "#F9FBFF", purple[100]],
-    backgroundSecondary: ["#EEF2FF", "#FAF5FF"],
-    callAction: ["#D8FDD2", "#9FFF8F"],
+    backgroundPrimary: ['#D2ECFE', '#F9FBFF', purple[100]],
+    backgroundSecondary: ['#EEF2FF', '#FAF5FF'],
+    callAction: ['#D8FDD2', '#9FFF8F'],
   },
 };

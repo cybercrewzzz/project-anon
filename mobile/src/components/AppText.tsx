@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, TextProps } from 'react-native';
 import { StyleSheet, UnistylesThemes } from 'react-native-unistyles';
-import { textStyles, TextStyleKey } from '@/theme/tokens/typography';
+import { textStyles, TextStyleKey } from '@/src/theme/tokens/typography';
 
 interface AppTextProps extends TextProps {
   variant?: TextStyleKey;
