@@ -1,4 +1,5 @@
 import { Text, View } from 'react-native';
+import { AppText } from '../components/AppText';
 
 export default function Index() {
   return (
@@ -9,14 +10,8 @@ export default function Index() {
         alignItems: 'center',
       }}
     >
-      <Text
-        style={{
-          fontFamily: 'Poppins',
-          fontWeight: 400,
-        }}
-      >
-        Edit app/index.tsx to edit this screen.
-      </Text>
+      <Text>Edit app/index.tsx to edit this screen.</Text>
+      <AppText variant="body">Created with AppText component.</AppText>
     </View>
   );
 }
