@@ -1,11 +1,12 @@
+import { AppTheme } from '@/theme/roles/user/light';
+import { TextStyleKey, textStyles } from '@/theme/tokens/typography';
 import React from 'react';
 import { Text, TextProps } from 'react-native';
-import { StyleSheet, UnistylesThemes } from 'react-native-unistyles';
-import { textStyles, TextStyleKey } from '@/src/theme/tokens/typography';
+import { StyleSheet } from 'react-native-unistyles';
 
 interface AppTextProps extends TextProps {
   variant?: TextStyleKey;
-  color?: keyof UnistylesThemes['textTest']['colors']['text'];
+  color?: keyof AppTheme['text'];
 }
 
 export const AppText = ({
@@ -23,7 +24,7 @@ export const AppText = ({
 };
 
 const styles = StyleSheet.create(theme => ({
-  textColor: (color: keyof typeof theme.colors.text) => ({
-    color: theme.colors.text[color],
+  textColor: (color: keyof typeof theme.text) => ({
+    color: theme.text[color],
   }),
 }));

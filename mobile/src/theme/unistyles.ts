@@ -1,21 +1,14 @@
 import { StyleSheet } from 'react-native-unistyles';
-
-export const appTheme = {
-  colors: {
-    text: {
-      primary: '#050607',
-    },
-  },
-};
+import { AppTheme, userLightTheme } from './roles/user/light';
 
 declare module 'react-native-unistyles' {
   export interface UnistylesThemes {
-    textTest: typeof appTheme;
+    userLight: AppTheme;
   }
 }
 
 StyleSheet.configure({
   themes: {
-    textTest: appTheme,
+    userLight: userLightTheme,
   },
 });
