@@ -44,8 +44,9 @@ export const common = {
   },
 
   green: {
+    100: '#D8FDD2',
+    200: '#9FFF8F',
     500: '#36D367',
-    600: '#26D367',
   },
 
   yellow: {

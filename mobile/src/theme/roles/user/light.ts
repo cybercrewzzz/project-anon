@@ -1,3 +1,4 @@
+import { colors } from '@/theme/palettes/colors';
 import { common } from '@/theme/palettes/common';
 import { purple } from '@/theme/palettes/purple';
 
@@ -22,7 +23,9 @@ export const userLightTheme = {
     secondary: common.white,
     muted: common.gray[400],
     accent: purple[500],
-    subtle: purple[600],
+    subtle1: purple[600],
+    subtle2: purple[400],
+    gradient: [purple[800], purple[500]],
   },
 
   border: {
@@ -45,9 +48,9 @@ export const userLightTheme = {
   },
 
   gradient: {
-    backgroundPrimary: ['#D2ECFE', '#F9FBFF', purple[100]],
-    backgroundSecondary: ['#EEF2FF', '#FAF5FF'],
-    callAction: ['#D8FDD2', '#9FFF8F'],
+    backgroundPrimary: [colors.blue[200], colors.blue[50], purple[100]],
+    backgroundSecondary: [colors.blue[100], purple[50]],
+    callAction: [common.green[100], common.green[200]],
   },
 } as const;
 
