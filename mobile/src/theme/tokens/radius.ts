@@ -1,4 +1,4 @@
-import { Platform } from "react-native";
+import { Platform } from 'react-native';
 
 /**
  * Radius tokens for the app.
@@ -52,4 +52,4 @@ const android = {
  * Unified radius tokens
  * Use these everywhere instead of raw numbers
  */
-export const radius = Platform.OS === "ios" ? ios : android;
+export const radius = Platform.OS === 'ios' ? ios : android;
