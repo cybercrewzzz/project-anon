@@ -1,0 +1,4 @@
+arrowParens: avoid
+singleQuote: true
+endOfLine: auto
+experimentalTernaries: true
