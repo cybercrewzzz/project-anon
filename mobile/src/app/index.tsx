@@ -1,7 +1,8 @@
 import { AppText } from '@/components/AppText';
-import { View } from 'react-native';
+import { Button, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
+import { router } from 'expo-router';
 
 export default function Index() {
   return (
@@ -29,6 +30,10 @@ export default function Index() {
         <AppText variant="body">body</AppText>
         <AppText variant="bodySecondary">bodySecondary</AppText>
         <AppText variant="caption">caption</AppText>
+        <Button
+          title="Get Started"
+          onPress={() => router.navigate('/StartedScreens/selectLanguage')}
+        />
       </View>
       <StatusBar />
     </View>
