@@ -27,6 +27,7 @@
  */
 
 export const purple = {
+  25: '#FAF5FF',
   50: '#FAF4FF',
   100: '#F6ECFF',
   200: '#F3E0FF',
