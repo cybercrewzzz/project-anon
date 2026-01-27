@@ -102,7 +102,6 @@ export const userLightTheme = {
     accent: purple[500],
     subtle1: purple[600],
     subtle2: purple[400],
-    gradient: [purple[800], purple[500]],
   },
 
   border: {
@@ -127,6 +126,7 @@ export const userLightTheme = {
   gradient: {
     backgroundPrimary: [colors.blue[200], colors.blue[50], purple[100]],
     backgroundSecondary: [colors.blue[100], purple[50]],
+    textGradient: [purple[800], purple[500]],
     callAction: [common.green[100], common.green[200]],
   },
 } as const;
