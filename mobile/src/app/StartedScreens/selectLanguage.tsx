@@ -1,8 +1,9 @@
 import { AppText } from '@/components/AppText';
-import React from 'react';
-import { View, Image, Button, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { View, Image, Pressable } from 'react-native';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
 const GradientColors = withUnistyles(LinearGradient, theme => ({
   colors: theme.gradient.backgroundPrimary,
@@ -10,120 +11,165 @@ const GradientColors = withUnistyles(LinearGradient, theme => ({
 
 const SelectLanguage = () => {
   const bannerImage = require('mobile/assets/images/banners/startBanner.png');
-  const [appLanguage, setAppLanguage] = React.useState('english');
+  const router = useRouter();
+
+  const [language, setLanguage] = useState('english');
+  const [talkLanguages, setTalkLanguages] = useState(['english']);
 
   return (
     <View style={styles.screen}>
       <GradientColors style={styles.gradient} />
-      <View>
-        <Image
-          source={bannerImage}
-          style={{ width: '100%', marginBottom: 20, marginTop: 20 }}
-          resizeMode="contain"
-        />
-      </View>
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'space-between',
-          backgroundColor: '#451246',
-          padding: 10,
-        }}
-      >
+      <Image
+        source={bannerImage}
+        style={styles.imageCard}
+        resizeMode="contain"
+      />
+      <View style={styles.container}>
         <View>
-          <View>
-            <AppText variant="sectionTitle" color="accent">
-              Choose Your App Language:
-            </AppText>
-          </View>
-          <View>
-            <AppText variant="body" color="primary">
-              Select the language you prefer for using the app. You can change
-              this later in settings.
-            </AppText>
-          </View>
-          <View style={styles.card}>
-            <AppText variant="cardTitle" color="primary">
-              App Interface Language
-            </AppText>
-            <View
-              style={{ flexDirection: 'row', marginTop: 10, marginBottom: 10 }}
+          <AppText variant="cardTitle">Choose your app language:</AppText>
+          <AppText variant="body">You can change this anytime...</AppText>
+        </View>
+        <View style={styles.interfaceCard}>
+          <AppText variant="listHeader">App Interface Language</AppText>
+          <View style={styles.selectionButtons}>
+            <Pressable
+              style={
+                language === 'english' ? styles.selected : styles.selection
+              }
+              onPress={() => setLanguage('english')}
             >
-              <Pressable style={styles.smallButton}>
-                <AppText color="secondary"> English</AppText>
-              </Pressable>
-              <Pressable style={styles.smallButton}>
-                <AppText color="secondary"> Sinhala</AppText>
-              </Pressable>
-            </View>
-          </View>
-          <View style={styles.card}>
-            <AppText variant="cardTitle" color="primary">
-              How would you like to talk with others?
-            </AppText>
-            <View
-              style={{ flexDirection: 'row', marginTop: 10, marginBottom: 10 }}
+              <AppText color={language === 'english' ? 'secondary' : 'subtle1'}>
+                English
+              </AppText>
+            </Pressable>
+            <Pressable
+              style={
+                language === 'sinhala' ? styles.selected : styles.selection
+              }
+              onPress={() => setLanguage('sinhala')}
             >
-              <Pressable style={styles.smallButton}>
-                <AppText color="secondary"> English</AppText>
-              </Pressable>
-              <Pressable style={styles.smallButton}>
-                <AppText color="secondary"> Sinhala</AppText>
-              </Pressable>
-              <Pressable style={styles.smallButton}>
-                <AppText color="secondary"> Sinhala</AppText>
-              </Pressable>
-            </View>
+              <AppText color={language === 'sinhala' ? 'secondary' : 'subtle1'}>
+                Sinhala
+              </AppText>
+            </Pressable>
           </View>
         </View>
-        <View style={{ marginTop: 20, marginBottom: 40 }}>
-          <Button title="Select Language" onPress={() => {}} />
+        <View style={styles.talkCard}>
+          <AppText variant="listHeader">
+            How would you like to talk with others?
+          </AppText>
+          <View style={styles.selectionButtons}>
+            {['Tamil', 'English', 'Sinhala'].map(lang => {
+              const isSelected = talkLanguages.includes(lang.toLowerCase());
+              return (
+                <Pressable
+                  key={lang}
+                  style={isSelected ? styles.selected : styles.selection}
+                  onPress={() => {
+                    setTalkLanguages(prev =>
+                      prev.includes(lang.toLowerCase()) ?
+                        prev.filter(l => l !== lang.toLowerCase())
+                      : [...prev, lang.toLowerCase()],
+                    );
+                  }}
+                >
+                  <AppText color={isSelected ? 'secondary' : 'subtle1'}>
+                    {lang}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
       </View>
+      <Pressable
+        style={styles.button}
+        onPress={() => router.navigate('/StartedScreens/Temp')}
+      >
+        <AppText style={styles.buttonText}>Continue</AppText>
+
+        {/* <Image
+          source={require('@/assets/icons/chevronsRight.svg')}
+          style={styles.buttonIcon}
+          resizeMode="contain"
+        /> */}
+      </Pressable>
     </View>
   );
 };
 
+export default SelectLanguage;
+
 const styles = StyleSheet.create((theme, rt) => ({
-  container: {
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-  },
   screen: {
     flex: 1,
-    paddingTop: rt.insets.top,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: rt.insets.top + 32,
     paddingBottom: rt.insets.bottom,
-    paddingLeft: rt.insets.left + 16,
-    paddingRight: rt.insets.right + 16,
-    backgroundColor: theme.background.default,
+    paddingHorizontal: 16,
   },
   gradient: {
     position: 'absolute',
     inset: 0,
   },
-  card: {
-    backgroundColor: theme.surface.primary,
-    padding: 10,
-    borderRadius: 17,
-    marginTop: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
+  imageCard: {
+    width: '100%',
   },
-  smallButton: {
-    backgroundColor: theme.action.primary,
-    width: 110,
-    height: 30,
-    borderRadius: 999,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    marginHorizontal: 10,
+  container: { gap: 32 },
+  interfaceCard: {
+    padding: 20,
+    backgroundColor: theme.surface.primary,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
-
-    buttonText: {
-      color: theme.text.secondary,
-      fontWeight: '600',
-    },
+    gap: 10,
+  },
+  talkCard: {
+    padding: 20,
+    backgroundColor: theme.surface.primary,
+    borderRadius: 17,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+  },
+  selectionButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  selected: {
+    paddingVertical: 6,
+    paddingHorizontal: 20,
+    backgroundColor: theme.action.primary,
+    borderRadius: 9999,
+  },
+  selection: {
+    paddingVertical: 4,
+    paddingHorizontal: 18,
+    borderRadius: 9999,
+    borderColor: theme.action.primary,
+    borderWidth: 2,
+  },
+  button: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginBottom: 64,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+    alignSelf: 'stretch',
+    backgroundColor: theme.action.secondary,
+    borderRadius: 999,
+  },
+  buttonText: {
+    fontSize: 20,
+    lineHeight: 25,
+    fontWeight: 600,
+    color: theme.action.onPrimary,
+  },
+  buttonIcon: {
+    width: 24,
+    height: 24,
   },
 }));
-export default SelectLanguage;
