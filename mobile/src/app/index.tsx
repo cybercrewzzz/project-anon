@@ -2,7 +2,7 @@ import { AppText } from '@/components/AppText';
 import { Button, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 
 export default function Index() {
 
