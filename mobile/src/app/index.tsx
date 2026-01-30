@@ -31,7 +31,7 @@ export default function Index() {
         <AppText variant="bodySecondary">bodySecondary</AppText>
         <AppText variant="caption">caption</AppText>
         <Pressable style={{backgroundColor: "#9500FF", padding: 15, borderRadius: 25, width: 300, alignItems: "center"}} onPress={() => router.push("/TnS")}>
-          <AppText style={{color: "#FFFFFF", fontSize: 16, fontWeight: "bold"}} >Login</AppText>
+          <AppText>Terms & Conditions</AppText>
         </Pressable>
       </View>
       <StatusBar />
