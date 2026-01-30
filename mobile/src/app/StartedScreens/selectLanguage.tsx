@@ -84,7 +84,7 @@ const SelectLanguage = () => {
       </View>
       <Pressable
         style={styles.button}
-        onPress={() => router.navigate('/StartedScreens/Temp')}
+        //onPress={() => router.navigate()}
       >
         <AppText style={styles.buttonText}>Continue</AppText>
       </Pressable>
