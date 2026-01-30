@@ -12,18 +12,13 @@ export default function EnterEmailScreen() {
           <AppText
             variant="sectionTitle"
             color="primary"
-            style={{ textAlign: 'left',paddingLeft:5 }}
+            style={styles.title}
           >
             Reset Your Password 🔑
           </AppText>
           <AppText
             variant="body"
-            style={{
-              textAlign: 'left',
-              marginTop: 20,
-              marginLeft: 5,
-              paddingLeft: 5,
-            }}
+            style={styles.description}
           >
             Please enter your email address below and we will send an OTP code
             to reset your password.
@@ -33,12 +28,7 @@ export default function EnterEmailScreen() {
         <View>
           <AppText
             variant="listHeader"
-            style={{
-              paddingTop: 50,
-              paddingBottom: 10,
-              marginLeft: 10,
-              textAlign: 'left',
-            }}
+            style={styles.inputName}
           >
             {' '}
             Email
@@ -81,6 +71,22 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
     justifyContent: 'flex-end',
     paddingBottom: 64,
+  },
+  title: {
+    textAlign: 'left',
+    paddingLeft: 5,
+  },
+  description: {
+    textAlign: 'left',
+    marginTop: 20,
+    marginLeft: 5,
+    paddingLeft: 5,
+  },
+  inputName: {
+    paddingTop: 50,
+    paddingBottom: 10,
+    marginLeft: 10,
+    textAlign: 'left',
   },
   input: {
     backgroundColor: theme.surface.secondary,
