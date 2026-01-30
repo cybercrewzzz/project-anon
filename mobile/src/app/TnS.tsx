@@ -3,24 +3,25 @@ import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
+import { colors } from '@/theme/palettes/colors';
+import { purple } from '@/theme/palettes/purple';
 
 export default function TnS() {
   return (
     <View style={styles.container}>
-      <View style={{alignItems: 'flex-start'}}>
+      <View style={{justifyContent: 'flex-start'}}>
         <AppText
           variant="screenTitle"
           color="primary"
-          style={{ textAlign: 'top' }}
+          style={{ textAlign: 'center', paddingTop: 80, color: purple[600], fontSize: 26 }}
         >
-          Welcome to Anora
-        </AppText>
-      </View>
-        <View>
-        <AppText variant="cardTitle" style={{ textAlign: 'center' }}>
-          The Project Anon
+          Terms & Conditions
         </AppText>
         </View>
+
+        <Pressable style={{backgroundColor: purple[700], padding: 15, borderRadius: 25, width: 300, alignItems: "center", marginTop: 510}} onPress={() => router.push("/")}>
+            <AppText style={{color: "#FFFFFF", fontSize: 16, fontWeight: "bold"}} >Agree & Continue</AppText>
+        </Pressable>
     </View>
     );
 }
@@ -28,7 +29,7 @@ export default function TnS() {
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: theme.background.default,
     marginTop: rt.insets.top,
