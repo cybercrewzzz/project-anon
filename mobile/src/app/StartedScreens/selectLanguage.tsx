@@ -13,7 +13,6 @@ const SelectLanguage = () => {
   const [appLanguage, setAppLanguage] = React.useState('english');
 
   return (
-
     <View style={styles.screen}>
       <GradientColors style={styles.gradient} />
       <View>
@@ -47,17 +46,33 @@ const SelectLanguage = () => {
             <AppText variant="cardTitle" color="primary">
               App Interface Language
             </AppText>
-            <View>
-              <Pressable> <AppText> ABC</AppText></Pressable>
+            <View
+              style={{ flexDirection: 'row', marginTop: 10, marginBottom: 10 }}
+            >
+              <Pressable style={styles.smallButton}>
+                <AppText color="secondary"> English</AppText>
+              </Pressable>
+              <Pressable style={styles.smallButton}>
+                <AppText color="secondary"> Sinhala</AppText>
+              </Pressable>
             </View>
           </View>
           <View style={styles.card}>
             <AppText variant="cardTitle" color="primary">
               How would you like to talk with others?
             </AppText>
-            <View>
-              <Button title="🌐 English (US)" onPress={() => {}} />
-              <Button title="🌐 English (US)" onPress={() => {}} />
+            <View
+              style={{ flexDirection: 'row', marginTop: 10, marginBottom: 10 }}
+            >
+              <Pressable style={styles.smallButton}>
+                <AppText color="secondary"> English</AppText>
+              </Pressable>
+              <Pressable style={styles.smallButton}>
+                <AppText color="secondary"> Sinhala</AppText>
+              </Pressable>
+              <Pressable style={styles.smallButton}>
+                <AppText color="secondary"> Sinhala</AppText>
+              </Pressable>
             </View>
           </View>
         </View>
@@ -93,6 +108,22 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginTop: 15,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  smallButton: {
+    backgroundColor: theme.action.primary,
+    width: 110,
+    height: 30,
+    borderRadius: 999,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginHorizontal: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    buttonText: {
+      color: theme.text.secondary,
+      fontWeight: '600',
+    },
   },
 }));
 export default SelectLanguage;
