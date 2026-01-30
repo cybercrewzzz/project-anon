@@ -87,12 +87,6 @@ const SelectLanguage = () => {
         onPress={() => router.navigate('/StartedScreens/Temp')}
       >
         <AppText style={styles.buttonText}>Continue</AppText>
-
-        {/* <Image
-          source={require('@/assets/icons/chevronsRight.svg')}
-          style={styles.buttonIcon}
-          resizeMode="contain"
-        /> */}
       </Pressable>
     </View>
   );
@@ -167,9 +161,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     lineHeight: 25,
     fontWeight: 600,
     color: theme.action.onPrimary,
-  },
-  buttonIcon: {
-    width: 24,
-    height: 24,
   },
 }));
