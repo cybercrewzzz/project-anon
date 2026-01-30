@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { View, Image, Pressable } from 'react-native';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+//import { useRouter } from 'expo-router';
 
 const GradientColors = withUnistyles(LinearGradient, theme => ({
   colors: theme.gradient.backgroundPrimary,
@@ -11,7 +11,7 @@ const GradientColors = withUnistyles(LinearGradient, theme => ({
 
 const SelectLanguage = () => {
   const bannerImage = require('mobile/assets/images/banners/startBanner.png');
-  const router = useRouter();
+  //const router = useRouter();
 
   const [language, setLanguage] = useState('english');
   const [talkLanguages, setTalkLanguages] = useState(['english']);
