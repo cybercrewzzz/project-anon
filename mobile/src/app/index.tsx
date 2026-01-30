@@ -2,9 +2,12 @@ import { AppText } from '@/components/AppText';
 import { Button, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 
 export default function Index() {
+  return <Redirect href="/StartedScreens/selectLanguage" />;
+}
+/*
   return (
     <View style={styles.container}>
       <View>
@@ -55,3 +58,4 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
   },
 }));
+*/
