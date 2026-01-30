@@ -2,12 +2,10 @@ import { AppText } from '@/components/AppText';
 import { Button, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 
 export default function Index() {
-  return (<Redirect href="/authScreens/enterEmail" />);
-}
- /* return (
+  return (
     <View style={styles.container}>
       <View>
         <AppText
@@ -57,4 +55,4 @@ const styles = StyleSheet.create((theme, rt) => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
-}));*/
+}));

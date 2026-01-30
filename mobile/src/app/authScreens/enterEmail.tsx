@@ -2,9 +2,12 @@ import React from 'react';
 import { AppText } from '@/components/AppText';
 import { Pressable, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+//import { useRouter } from 'expo-router';
 
 
-export default function EnterEmailScreen() {
+const EnterEmail = () => {
+  //const router = useRouter();
+
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
@@ -43,7 +46,9 @@ export default function EnterEmailScreen() {
       </View>
 
       <View style={styles.buttonContainer}>
-        <Pressable style={styles.button}>
+        <Pressable style={styles.button}
+        //onPress={() => router.navigate('')}
+        >
           <AppText variant="listHeader" color = "secondary" >
             {' '}
             Continue{' '}
@@ -53,6 +58,8 @@ export default function EnterEmailScreen() {
     </View>
   );
 }
+
+export default EnterEmail;
 
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
@@ -109,3 +116,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: theme.action.secondary,
   },
 }));
+
+
+
