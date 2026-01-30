@@ -4,7 +4,6 @@ import { Pressable, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 //import { useRouter } from 'expo-router';
 
-
 const EnterEmail = () => {
   //const router = useRouter();
 
@@ -12,32 +11,22 @@ const EnterEmail = () => {
     <View style={styles.container}>
       <View style={styles.contentContainer}>
         <View>
-          <AppText
-            variant="sectionTitle"
-            color="primary"
-            style={styles.title}
-          >
+          <AppText variant="sectionTitle" color="primary" style={styles.title}>
             Reset Your Password 🔑
           </AppText>
-          <AppText
-            variant="body"
-            style={styles.description}
-          >
+          <AppText variant="body" style={styles.description}>
             Please enter your email address below and we will send an OTP code
             to reset your password.
           </AppText>
         </View>
 
         <View>
-          <AppText
-            variant="listHeader"
-            style={styles.inputName}
-          >
+          <AppText variant="listHeader" style={styles.inputName}>
             {' '}
             Email
           </AppText>
           <View>
-            <TextInput style={styles.input} placeholder='example@gmail.com'/>
+            <TextInput style={styles.input} placeholder="example@gmail.com" />
             {/* <AppText variant='bodySecondary' style={{ marginLeft: 25,marginBottom: 10 }}>
               example@gmail.com
             </AppText> */}
@@ -46,10 +35,11 @@ const EnterEmail = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <Pressable style={styles.button}
-        //onPress={() => router.navigate('')}
+        <Pressable
+          style={styles.button}
+          //onPress={() => router.navigate('')}
         >
-          <AppText variant="listHeader" color = "secondary" >
+          <AppText variant="listHeader" color="secondary">
             {' '}
             Continue{' '}
           </AppText>
@@ -57,7 +47,7 @@ const EnterEmail = () => {
       </View>
     </View>
   );
-}
+};
 
 export default EnterEmail;
 
@@ -116,6 +106,3 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: theme.action.secondary,
   },
 }));
-
-
-
