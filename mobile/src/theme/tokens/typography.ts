@@ -5,10 +5,11 @@ const fontFamily = Platform.select({
   android: 'Poppins',
 });
 
-export const weight = {
+const weight = {
   regular: '400',
   medium: '500',
   semiBold: '600',
+  bold: '700',
 } as const;
 
 const baseText: TextStyle = {
@@ -16,66 +17,188 @@ const baseText: TextStyle = {
   includeFontPadding: false,
 };
 
-export const typography = {
-  headingXL: {
-    ...baseText,
-    fontSize: 32,
-    lineHeight: 40,
-    fontWeight: weight.semiBold,
+export type TextEmphasis = 'regular' | 'emphasized';
+
+const sizes = {
+  largeTitle: {
+    fontSize: 34,
+    lineHeight: 41,
   },
-  headingLG: {
-    ...baseText,
+  title1: {
     fontSize: 28,
-    lineHeight: 36,
-    fontWeight: weight.semiBold,
+    lineHeight: 34,
   },
-  headingMD: {
-    ...baseText,
-    fontSize: 20,
+  title2: {
+    fontSize: 22,
     lineHeight: 28,
-    fontWeight: weight.semiBold,
   },
-  headingSM: {
-    ...baseText,
-    fontSize: 16,
+  title3: {
+    fontSize: 20,
+    lineHeight: 25,
+  },
+  headline: {
+    fontSize: 17,
     lineHeight: 22,
-    fontWeight: weight.semiBold,
   },
-  bodyLG: {
-    ...baseText,
+  body: {
+    fontSize: 17,
+    lineHeight: 22,
+  },
+  callout: {
     fontSize: 16,
-    lineHeight: 24,
-    fontWeight: weight.medium,
+    lineHeight: 21,
   },
-  bodyMD: {
-    ...baseText,
-    fontSize: 14,
+  subhead: {
+    fontSize: 15,
     lineHeight: 20,
-    fontWeight: weight.medium,
   },
-  bodySM: {
-    ...baseText,
+  footnote: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  caption1: {
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: weight.regular,
   },
-  bodyXS: {
-    ...baseText,
-    fontSize: 10,
-    lineHeight: 14,
-    fontWeight: weight.regular,
+  caption2: {
+    fontSize: 11,
+    lineHeight: 13,
   },
-} satisfies Record<string, TextStyle>;
-
-export const textStyles = {
-  screenTitle: typography.headingXL,
-  sectionTitle: typography.headingLG,
-  cardTitle: typography.headingMD,
-  listHeader: typography.headingSM,
-  body: typography.bodyMD,
-  bodySecondary: typography.bodySM,
-  caption: typography.bodyXS,
 } as const;
 
-export type TypographyKey = keyof typeof typography;
-export type TextStyleKey = keyof typeof textStyles;
+export const typography = {
+  largeTitle: {
+    regular: {
+      ...baseText,
+      ...sizes.largeTitle,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.largeTitle,
+      fontWeight: weight.bold,
+    },
+  },
+  title1: {
+    regular: {
+      ...baseText,
+      ...sizes.title1,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.title1,
+      fontWeight: weight.bold,
+    },
+  },
+  title2: {
+    regular: {
+      ...baseText,
+      ...sizes.title2,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.title2,
+      fontWeight: weight.bold,
+    },
+  },
+  title3: {
+    regular: {
+      ...baseText,
+      ...sizes.title3,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.title3,
+      fontWeight: weight.semiBold,
+    },
+  },
+  headline: {
+    regular: {
+      ...baseText,
+      ...sizes.headline,
+      fontWeight: weight.semiBold,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.headline,
+      fontWeight: weight.semiBold,
+    },
+  },
+  body: {
+    regular: {
+      ...baseText,
+      ...sizes.body,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.body,
+      fontWeight: weight.semiBold,
+    },
+  },
+  callout: {
+    regular: {
+      ...baseText,
+      ...sizes.callout,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.callout,
+      fontWeight: weight.semiBold,
+    },
+  },
+  subhead: {
+    regular: {
+      ...baseText,
+      ...sizes.subhead,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.subhead,
+      fontWeight: weight.semiBold,
+    },
+  },
+  footnote: {
+    regular: {
+      ...baseText,
+      ...sizes.footnote,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.footnote,
+      fontWeight: weight.semiBold,
+    },
+  },
+  caption1: {
+    regular: {
+      ...baseText,
+      ...sizes.caption1,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.caption1,
+      fontWeight: weight.semiBold,
+    },
+  },
+  caption2: {
+    regular: {
+      ...baseText,
+      ...sizes.caption2,
+      fontWeight: weight.regular,
+    },
+    emphasized: {
+      ...baseText,
+      ...sizes.caption2,
+      fontWeight: weight.semiBold,
+    },
+  },
+} satisfies Record<keyof typeof sizes, Record<TextEmphasis, TextStyle>>;
+
+export type TextVariant = keyof typeof typography;
