@@ -1,9 +1,20 @@
 import { Platform, TextStyle } from 'react-native';
 
-const fontFamily = Platform.select({
-  ios: undefined,
-  android: 'Poppins',
-});
+type FontGroup = 'text' | 'display' | 'displayLarge';
+
+const getFontFamily = (group: FontGroup) => {
+  if (Platform.OS === 'ios') return undefined;
+
+  switch (group) {
+    case 'displayLarge':
+      return 'Inter 28pt';
+    case 'display':
+      return 'Inter 24pt';
+    case 'text':
+    default:
+      return 'Inter 18pt';
+  }
+};
 
 const weight = {
   regular: '400',
@@ -11,11 +22,6 @@ const weight = {
   semiBold: '600',
   bold: '700',
 } as const;
-
-const baseText: TextStyle = {
-  fontFamily,
-  includeFontPadding: false,
-};
 
 export type TextEmphasis = 'regular' | 'emphasized';
 
@@ -66,138 +72,80 @@ const sizes = {
   },
 } as const;
 
+const fontGroupMap: Record<TextVariant, FontGroup> = {
+  largeTitle: 'displayLarge',
+  title1: 'displayLarge',
+  title2: 'display',
+  title3: 'display',
+  headline: 'text',
+  body: 'text',
+  callout: 'text',
+  subhead: 'text',
+  footnote: 'text',
+  caption1: 'text',
+  caption2: 'text',
+};
+
+const createStyle = (
+  key: keyof typeof sizes,
+  fontWeight: TextStyle['fontWeight'],
+): TextStyle => {
+  const size = sizes[key];
+  const FontGroup = fontGroupMap[key];
+
+  return {
+    includeFontPadding: false,
+    fontFamily: getFontFamily(FontGroup),
+    fontWeight,
+    fontSize: size.fontSize,
+    lineHeight: size.lineHeight,
+  };
+};
+
 export const typography = {
   largeTitle: {
-    regular: {
-      ...baseText,
-      ...sizes.largeTitle,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.largeTitle,
-      fontWeight: weight.bold,
-    },
+    regular: createStyle('largeTitle', weight.regular),
+    emphasized: createStyle('largeTitle', weight.bold),
   },
   title1: {
-    regular: {
-      ...baseText,
-      ...sizes.title1,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.title1,
-      fontWeight: weight.bold,
-    },
+    regular: createStyle('title1', weight.regular),
+    emphasized: createStyle('title1', weight.bold),
   },
   title2: {
-    regular: {
-      ...baseText,
-      ...sizes.title2,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.title2,
-      fontWeight: weight.bold,
-    },
+    regular: createStyle('title2', weight.regular),
+    emphasized: createStyle('title2', weight.bold),
   },
   title3: {
-    regular: {
-      ...baseText,
-      ...sizes.title3,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.title3,
-      fontWeight: weight.semiBold,
-    },
+    regular: createStyle('title3', weight.regular),
+    emphasized: createStyle('title3', weight.semiBold),
   },
   headline: {
-    regular: {
-      ...baseText,
-      ...sizes.headline,
-      fontWeight: weight.semiBold,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.headline,
-      fontWeight: weight.semiBold,
-    },
+    regular: createStyle('headline', weight.semiBold),
+    emphasized: createStyle('headline', weight.semiBold),
   },
   body: {
-    regular: {
-      ...baseText,
-      ...sizes.body,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.body,
-      fontWeight: weight.semiBold,
-    },
+    regular: createStyle('body', weight.regular),
+    emphasized: createStyle('body', weight.semiBold),
   },
   callout: {
-    regular: {
-      ...baseText,
-      ...sizes.callout,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.callout,
-      fontWeight: weight.semiBold,
-    },
+    regular: createStyle('callout', weight.regular),
+    emphasized: createStyle('callout', weight.semiBold),
   },
   subhead: {
-    regular: {
-      ...baseText,
-      ...sizes.subhead,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.subhead,
-      fontWeight: weight.semiBold,
-    },
+    regular: createStyle('subhead', weight.regular),
+    emphasized: createStyle('subhead', weight.semiBold),
   },
   footnote: {
-    regular: {
-      ...baseText,
-      ...sizes.footnote,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.footnote,
-      fontWeight: weight.semiBold,
-    },
+    regular: createStyle('footnote', weight.regular),
+    emphasized: createStyle('footnote', weight.semiBold),
   },
   caption1: {
-    regular: {
-      ...baseText,
-      ...sizes.caption1,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.caption1,
-      fontWeight: weight.semiBold,
-    },
+    regular: createStyle('caption1', weight.regular),
+    emphasized: createStyle('caption1', weight.semiBold),
   },
   caption2: {
-    regular: {
-      ...baseText,
-      ...sizes.caption2,
-      fontWeight: weight.regular,
-    },
-    emphasized: {
-      ...baseText,
-      ...sizes.caption2,
-      fontWeight: weight.semiBold,
-    },
+    regular: createStyle('caption2', weight.regular),
+    emphasized: createStyle('caption2', weight.semiBold),
   },
 } satisfies Record<keyof typeof sizes, Record<TextEmphasis, TextStyle>>;
 

@@ -47,34 +47,45 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         android: {
           fonts: [
             {
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter 18pt',
               fontDefinitions: [
                 {
-                  path: './assets/fonts/Poppins-Regular.ttf',
+                  path: './assets/fonts/Inter_18pt-Regular.ttf',
                   weight: 400,
                 },
                 {
-                  path: './assets/fonts/Poppins-Medium.ttf',
-                  weight: 500,
-                },
-                {
-                  path: './assets/fonts/Poppins-SemiBold.ttf',
+                  path: './assets/fonts/Inter_18pt-SemiBold.ttf',
                   weight: 600,
                 },
+              ],
+            },
+            {
+              fontFamily: 'Inter 24pt',
+              fontDefinitions: [
                 {
-                  path: './assets/fonts/Poppins-Italic.ttf',
+                  path: './assets/fonts/Inter_24pt-Regular.ttf',
                   weight: 400,
-                  style: 'italic',
                 },
                 {
-                  path: './assets/fonts/Poppins-MediumItalic.ttf',
-                  weight: 500,
-                  style: 'italic',
-                },
-                {
-                  path: './assets/fonts/Poppins-SemiBoldItalic.ttf',
+                  path: './assets/fonts/Inter_24pt-SemiBold.ttf',
                   weight: 600,
-                  style: 'italic',
+                },
+                {
+                  path: './assets/fonts/Inter_24pt-Bold.ttf',
+                  weight: 700,
+                },
+              ],
+            },
+            {
+              fontFamily: 'Inter 28pt',
+              fontDefinitions: [
+                {
+                  path: './assets/fonts/Inter_28pt-Regular.ttf',
+                  weight: 400,
+                },
+                {
+                  path: './assets/fonts/Inter_28pt-Bold.ttf',
+                  weight: 700,
                 },
               ],
             },

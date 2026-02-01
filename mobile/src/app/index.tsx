@@ -29,9 +29,8 @@ export default function Index() {
         <AppText variant="title3">title3</AppText>
         <AppText variant="headline">headline</AppText>
         <AppText variant="body">body</AppText>
-        <AppText>screenTitle</AppText>
-        <AppText variant="subhead">subhead</AppText>
         <AppText variant="callout">callout</AppText>
+        <AppText variant="subhead">subhead</AppText>
         <AppText variant="footnote">footnote</AppText>
         <AppText variant="caption1">caption1</AppText>
         <AppText variant="caption2">caption2</AppText>
