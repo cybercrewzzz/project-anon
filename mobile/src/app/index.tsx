@@ -8,13 +8,14 @@ export default function Index() {
     <View style={styles.container}>
       <View>
         <AppText
-          variant="screenTitle"
+          variant="largeTitle"
           color="primary"
+          emphasis="emphasized"
           style={{ textAlign: 'center' }}
         >
           Welcome to Anora
         </AppText>
-        <AppText variant="cardTitle" style={{ textAlign: 'center' }}>
+        <AppText variant="title1" style={{ textAlign: 'center' }}>
           The Project Anon
         </AppText>
         <AppText style={{ textAlign: 'center' }}>
@@ -22,13 +23,17 @@ export default function Index() {
         </AppText>
       </View>
       <View>
-        <AppText variant="screenTitle">screenTitle</AppText>
-        <AppText variant="sectionTitle">sectionTitle</AppText>
-        <AppText variant="cardTitle">cardTitle</AppText>
-        <AppText variant="listHeader">listHeader</AppText>
+        <AppText variant="largeTitle">largeTitle</AppText>
+        <AppText variant="title1">title1</AppText>
+        <AppText variant="title2">title2</AppText>
+        <AppText variant="title3">title3</AppText>
+        <AppText variant="headline">headline</AppText>
         <AppText variant="body">body</AppText>
-        <AppText variant="bodySecondary">bodySecondary</AppText>
-        <AppText variant="caption">caption</AppText>
+        <AppText variant="callout">callout</AppText>
+        <AppText variant="subhead">subhead</AppText>
+        <AppText variant="footnote">footnote</AppText>
+        <AppText variant="caption1">caption1</AppText>
+        <AppText variant="caption2">caption2</AppText>
       </View>
       <StatusBar />
     </View>
