@@ -91,11 +91,11 @@ const createStyle = (
   fontWeight: TextStyle['fontWeight'],
 ): TextStyle => {
   const size = sizes[key];
-  const FontGroup = fontGroupMap[key];
+  const fontGroup = fontGroupMap[key];
 
   return {
     includeFontPadding: false,
-    fontFamily: getFontFamily(FontGroup),
+    fontFamily: getFontFamily(fontGroup),
     fontWeight,
     fontSize: size.fontSize,
     lineHeight: size.lineHeight,
