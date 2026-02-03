@@ -2,6 +2,7 @@ import { AppText } from '@/components/AppText';
 import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
+import { router } from '.expo/types/router';
 
 export default function Index() {
   return (
@@ -29,8 +30,8 @@ export default function Index() {
         <AppText variant="body">body</AppText>
         <AppText variant="bodySecondary">bodySecondary</AppText>
         <AppText variant="caption">caption</AppText>
-        <Pressable onPress={() => {}}>
-          <AppText variant="button">button</AppText>
+        <Pressable style={{backgroundColor: "#9500FF", padding: 15, borderRadius: 25, width: 300, alignItems: "center"}} onPress={() => router.push("/p2p-And/p2p-and")}>
+          <AppText>p2p</AppText>
         </Pressable>
       </View>
       <StatusBar />
@@ -44,7 +45,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.background.default,
-    marginTop: rt.insets.top,cd
+    marginTop: rt.insets.top,
     gap: 50,
   },
   textContainer: {
