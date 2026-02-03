@@ -1,77 +1,131 @@
 import { AppText } from '@/components/AppText';
-import { Pressable, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function Index() {
-  const [selectedOption, setSelectedOption] = useState<'volunteer' | 'organization'>('volunteer');
+  const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>('Offline');
+  const offlineAnim = useRef(new Animated.Value(1)).current;
+  const activeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (selectedOption === 'Offline') {
+      Animated.parallel([
+        Animated.timing(offlineAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: false,
+        }),
+        Animated.timing(activeAnim, {
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(offlineAnim, {
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: false,
+        }),
+        Animated.timing(activeAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    }
+  }, [selectedOption]);
+
+  const offlineBackgroundColor = offlineAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['transparent', '#9500FF'],
+  });
+
+  const activeBackgroundColor = activeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['transparent', '#00C853'],
+  });
+
+  const offlineTextColor = offlineAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#666', '#FFFFFF'],
+  });
+
+  const activeTextColor = activeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#666', '#FFFFFF'],
+  });
 
   return (
     <View style={styles.container}>
       {/* Bubble Toggle Button */}
       <View style={styles.toggleWrapper}>
         <View style={styles.toggleContainer}>
-        <Pressable
-          style={[
-            styles.toggleButton,
-            selectedOption === 'volunteer' && styles.toggleButtonActive,
-          ]}
-          onPress={() => setSelectedOption('volunteer')}
-        >
-          <AppText
+        <Pressable onPress={() => setSelectedOption('Offline')}>
+          <Animated.View
             style={[
-              styles.toggleText,
-              selectedOption === 'volunteer' && styles.toggleTextActive,
+              styles.toggleButton,
+              { backgroundColor: offlineBackgroundColor },
             ]}
           >
-            Volunteer
-          </AppText>
+            <Animated.Text
+              style={[
+                styles.toggleText,
+                { color: offlineTextColor },
+              ]}
+            >
+              Offline
+            </Animated.Text>
+          </Animated.View>
         </Pressable>
-        <Pressable
-          style={[
-            styles.toggleButton,
-            selectedOption === 'organization' && styles.toggleButtonActive,
-          ]}
-          onPress={() => setSelectedOption('organization')}
-        >
-          <AppText
+        <Pressable onPress={() => setSelectedOption('Active')}>
+          <Animated.View
             style={[
-              styles.toggleText,
-              selectedOption === 'organization' && styles.toggleTextActive,
+              styles.toggleButton,
+              { backgroundColor: activeBackgroundColor },
             ]}
           >
-            Organization
-          </AppText>
+            <Animated.Text
+              style={[
+                styles.toggleText,
+                { color: activeTextColor },
+              ]}
+            >
+              Active
+            </Animated.Text>
+          </Animated.View>
         </Pressable>
       </View>
       </View>
-
-      {/* Right Top Bubble Button */}
+ 
+      {/* Right Top Bubble Button */} 
       <View style={styles.toggleWrapperRight}>
         <Pressable
-          style={styles.singleButton}
+          style={styles.singleButton} 
           onPress={() => console.log('Button pressed')}
-        >
+        > 
           <AppText style={styles.singleButtonText}>
-            185
-          </AppText>
-        </Pressable>
-      </View>
-
-      <View>
+           🌟 185
+          </AppText> 
+        </Pressable> 
+      </View> 
+ 
+      <View style={{ alignItems: 'flex-start', gap: 5 }}> 
         <AppText
           variant="screenTitle"
           color="primary"
-          style={{ textAlign: 'center' }}
+          style={{ textAlign: 'left' }}
         >
-          Welcome to Anora
+          Your Specialisations
         </AppText>
-        <AppText variant="cardTitle" style={{ textAlign: 'center' }}>
+        <AppText variant="cardTitle" style={{ textAlign: 'left' }}>
           The Project Anon
         </AppText>
-        <AppText style={{ textAlign: 'center' }}>
+        <AppText style={{ textAlign: 'left' }}>
           - Proudly presented by SDGP-140 -
         </AppText>
       </View>
@@ -95,10 +149,12 @@ export default function Index() {
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
     backgroundColor: theme.background.default,
     gap: 50,
+    paddingTop: 180,
+    paddingLeft: 50,
   },
   toggleWrapper: {
     position: 'absolute',
@@ -110,9 +166,13 @@ const styles = StyleSheet.create((theme, rt) => ({
   toggleWrapperRight: {
     position: 'absolute',
     top: rt.insets.top + 10,
+    fontSize: 18,
     right: 16,
     zIndex: 10,
     marginTop: 60,
+    borderColor: '#9500FF',
+    borderWidth: 2,
+    borderRadius: 25,
   },
   toggleContainer: {
     flexDirection: 'row',
@@ -128,8 +188,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     minWidth: 120,
     alignItems: 'center',
   },
-  toggleButtonActive: {
+  toggleButtonActivePurple: {
     backgroundColor: '#9500FF',
+  },
+  toggleButtonActiveGreen: {
+    backgroundColor: '#00C853',
   },
   toggleText: {
     color: '#666',
@@ -139,14 +202,14 @@ const styles = StyleSheet.create((theme, rt) => ({
     color: '#FFFFFF',
   },
   singleButton: {
-    backgroundColor: '#9500FF',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 20,
     alignItems: 'center',
   },
   singleButtonText: {
-    color: '#FFFFFF',
+    color: '#9500FF',
     fontWeight: '600',
   },
   textContainer: {
