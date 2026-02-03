@@ -1,5 +1,5 @@
 import { AppText } from '@/components/AppText';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 
@@ -29,6 +29,9 @@ export default function Index() {
         <AppText variant="body">body</AppText>
         <AppText variant="bodySecondary">bodySecondary</AppText>
         <AppText variant="caption">caption</AppText>
+        <Pressable onPress={() => {}}>
+          <AppText variant="button">button</AppText>
+        </Pressable>
       </View>
       <StatusBar />
     </View>
@@ -41,7 +44,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.background.default,
-    marginTop: rt.insets.top,
+    marginTop: rt.insets.top,cd
     gap: 50,
   },
   textContainer: {
