@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { useState, useRef, useEffect } from 'react';
+import { Background } from '@react-navigation/elements';
 
 export default function Index() {
   const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>('Offline');
@@ -116,12 +117,15 @@ export default function Index() {
  
       <View style={{ alignItems: 'flex-start', gap: 5 }}> 
         <AppText
-          variant="screenTitle"
+          variant="cardTitle"
           color="primary"
           style={{ textAlign: 'left' }}
         >
           Your Specialisations
         </AppText>
+              <View>
+                
+              </View>
         <AppText variant="cardTitle" style={{ textAlign: 'left' }}>
           The Project Anon
         </AppText>
@@ -162,6 +166,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     left: 16,
     zIndex: 10,
     marginTop: 60,
+    marginLeft: 30,
   },
   toggleWrapperRight: {
     position: 'absolute',
