@@ -1,35 +1,29 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const buildType = process.env.BUILD_TYPE;
+  const appEnv = process.env.APP_ENV;
 
   return {
     ...config,
     name:
-      buildType === 'development' ? 'Anora (Dev)'
-      : buildType === 'preview' ? 'Anora (Preview)'
+      appEnv === 'development' ? 'Anora (Dev)'
+      : appEnv === 'preview' ? 'Anora (Preview)'
       : 'Anora',
     slug: 'project-anon',
+    scheme:
+      appEnv === 'development' ? 'anora-app-dev'
+      : appEnv === 'preview' ? 'anora-app-preview'
+      : 'anora-app',
     ios: {
       supportsTablet: true,
     },
     android: {
-      adaptiveIcon: {
-        backgroundColor: '#E6F4FE',
-        foregroundImage: './assets/images/android-icon-foreground.png',
-        backgroundImage: './assets/images/android-icon-background.png',
-        monochromeImage: './assets/images/android-icon-monochrome.png',
-      },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package:
-        buildType === 'development' ? 'com.cybercrewz.projectanon.development'
-        : buildType === 'preview' ? 'com.cybercrewz.projectanon.preview'
+        appEnv === 'development' ? 'com.cybercrewz.projectanon.development'
+        : appEnv === 'preview' ? 'com.cybercrewz.projectanon.preview'
         : 'com.cybercrewz.projectanon',
-    },
-    web: {
-      output: 'static',
-      favicon: './assets/images/favicon.png',
     },
     plugins: [
       'expo-router',
@@ -40,9 +34,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',
-          dark: {
-            backgroundColor: '#000000',
-          },
         },
       ],
       [
