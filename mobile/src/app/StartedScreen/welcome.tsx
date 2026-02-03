@@ -3,6 +3,12 @@ import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
+import { Image } from 'react-native';
+import { purple } from '@/theme/palettes/purple';
+import { common } from '@/theme/palettes/common';
+import { Platform, TextStyle } from 'react-native';
+import { typography, weight } from '@/theme/tokens/typography';
+
 
 export default function Welcome() {
   return (
@@ -16,11 +22,17 @@ export default function Welcome() {
         Welcome!
       </AppText>
 
+       {/* Image in between */}
+      <Image
+        source={{ uri: 'https://reactnative.dev/img/tiny_logo.png' }}
+        style={{ width: 100, height: 100 }}
+      />
+
       {/* Bottom */}
       <View style={styles.bottom}>
         <Pressable
           style={styles.button}
-          onPress={() => router.push('/signup')}
+          
         >
           <AppText style={styles.buttonText}>
             Get Started
@@ -37,10 +49,10 @@ export default function Welcome() {
   );
 }
 
-const styles = StyleSheet.create((theme, rt) => ({
+const styles = StyleSheet.create((_theme, rt) => ({
   container: {
     flex: 1,
-    backgroundColor: '#D2ECFE',
+    backgroundColor:'#D2ECFE',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: rt.insets.top + 40,
@@ -48,10 +60,11 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
 
   welcomeText: {
-    fontWeight: 'bold',
-    color: '#9500FF',
+    fontWeight: weight.semiBold,
+    fontSize: 32,
+    color: purple[500],
     textAlign: 'center',
-    padding: 80
+    lineHeight: 40,
   },
 
   bottom: {
@@ -60,7 +73,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
 
   button: {
-    backgroundColor: '#9500FF',
+    backgroundColor: _theme.background.accent,
     padding: 12,
     borderRadius: 25,
     width: 300,
@@ -68,13 +81,13 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
 
   buttonText: {
-    color: '#FFFFFF',
+    color: _theme.text.secondary,
     fontWeight: 'bold',
   },
 
   volunteerText: {
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#349EDB',
+    color: common.blue[500],
   },
 }));
