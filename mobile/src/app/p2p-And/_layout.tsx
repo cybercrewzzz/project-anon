@@ -1,0 +1,5 @@
+import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return <Stack screenOptions={{ headerShown: true, headerTitleAlign: 'center', headerTitle: 'Volunteer Connect', headerTransparent: true }} />;
+}
