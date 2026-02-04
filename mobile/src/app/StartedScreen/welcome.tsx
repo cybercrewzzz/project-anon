@@ -1,5 +1,5 @@
 import { AppText } from '@/components/AppText';
-import { Pressable, View } from 'react-native';
+import { Button, Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
@@ -35,6 +35,7 @@ export default function Welcome() {
           
         >
           <AppText style={styles.buttonText}>
+            
             Get Started
           </AppText>
         </Pressable>
@@ -42,6 +43,10 @@ export default function Welcome() {
         <AppText style={styles.volunteerText}>
           Continue as a Volunteer
         </AppText>
+        <Button
+                  title="Sign Up" 
+                  onPress={() => router.navigate('/StartedScreen/signup')}
+                />
       </View>
 
       <StatusBar />
