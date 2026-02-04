@@ -259,8 +259,15 @@ export default function Index() {
                   <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 8 minutes</Text>
                 </View>
               </View>
-              <Pressable style={styles.connectButton}>
-                <AppText style={styles.connectButtonText}>Connect</AppText>
+              <Pressable>
+                <LinearGradient
+                  colors={['#1D47DC', '#0E7FBC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.connectButton}
+                >
+                  <AppText style={styles.connectButtonText}>Connect</AppText>
+                </LinearGradient>
               </Pressable>
             </View>
 
@@ -276,8 +283,15 @@ export default function Index() {
                   <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 5 minutes</Text>
                 </View>
               </View>
-              <Pressable style={styles.connectButton}>
-                <AppText style={styles.connectButtonText}>Connect</AppText>
+              <Pressable>
+                <LinearGradient
+                  colors={['#1D47DC', '#0E7FBC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.connectButton}
+                >
+                  <AppText style={styles.connectButtonText}>Connect</AppText>
+                </LinearGradient>
               </Pressable>
             </View>
 
@@ -293,8 +307,15 @@ export default function Index() {
                   <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 2 minutes</Text>                
                 </View>
               </View>
-              <Pressable style={styles.connectButton}>
-                <AppText style={styles.connectButtonText}>Connect</AppText>
+              <Pressable>
+                <LinearGradient
+                  colors={['#1D47DC', '#0E7FBC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.connectButton}
+                >
+                  <AppText style={styles.connectButtonText}>Connect</AppText>
+                </LinearGradient>
               </Pressable>
             </View>
           </View>
@@ -479,7 +500,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     color: '#000000',
   },
   connectButton: {
-    backgroundColor: '#9500FF',
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
