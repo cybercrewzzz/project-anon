@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useState, useRef, useEffect } from 'react';
 import { Background } from '@react-navigation/elements';
 import { LinearGradient } from 'expo-linear-gradient';
+import { purple } from '@/theme/palettes/purple';
 
 export default function Index() {
   const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>('Offline');
@@ -174,7 +175,7 @@ export default function Index() {
       </View> 
  
       {/* Specialisations section */}        
-      <View style={{ alignItems: 'flex-start', gap: 5 }}> 
+      <View style={{ alignItems: 'flex-start', gap: 5, width: '90%' }}> 
         <AppText
           variant="cardTitle"
           color="primary"
@@ -206,13 +207,16 @@ export default function Index() {
               <Animated.View
                 style={[
                   styles.connectToggleButton,
-                  { backgroundColor: recommendedBackgroundColor },
+                  { 
+                    borderColor: recommendedBackgroundColor,
+                    borderWidth: 2,
+                  },
                 ]}
               >
                 <Animated.Text
                   style={[
-                    styles.toggleText,
-                    { color: recommendedTextColor },
+                    styles.connectToggleText,
+                    { color: recommendedBackgroundColor },
                   ]}
                 >
                   Recommended
@@ -223,13 +227,16 @@ export default function Index() {
               <Animated.View
                 style={[
                   styles.connectToggleButton,
-                  { backgroundColor: allBackgroundColor },
+                  { 
+                    borderColor: allBackgroundColor,
+                    borderWidth: 2,
+                  },
                 ]}
               >
                 <Animated.Text
                   style={[
-                    styles.toggleText,
-                    { color: allTextColor },
+                    styles.connectToggleText,
+                    { color: allBackgroundColor },
                   ]}
                 >
                   All
@@ -246,7 +253,11 @@ export default function Index() {
                 <View style={styles.profileImage}>
                   <AppText style={styles.profileImageText}>JD</AppText>
                 </View>
-                <Text style={styles.profileName}>John Doe</Text>
+                <View style={styles.profileTextContainer}>
+                  <Text variant="cardTitle" style={{ fontSize: 16, fontWeight: '600' }}>RecAnonUser89</Text>
+                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Issue - Stress</Text>
+                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 8 minutes</Text>
+                </View>
               </View>
               <Pressable style={styles.connectButton}>
                 <AppText style={styles.connectButtonText}>Connect</AppText>
@@ -259,7 +270,11 @@ export default function Index() {
                 <View style={styles.profileImage}>
                   <AppText style={styles.profileImageText}>SA</AppText>
                 </View>
-                <Text style={styles.profileName}>Sarah Anderson</Text>
+                <View style={styles.profileTextContainer}>
+                  <Text variant="cardTitle" style={{ fontSize: 16, fontWeight: '600' }}>RecAnonUser159</Text>
+                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Issue - Anxiety</Text>
+                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 5 minutes</Text>
+                </View>
               </View>
               <Pressable style={styles.connectButton}>
                 <AppText style={styles.connectButtonText}>Connect</AppText>
@@ -272,7 +287,11 @@ export default function Index() {
                 <View style={styles.profileImage}>
                   <AppText style={styles.profileImageText}>MJ</AppText>
                 </View>
-                <Text style={styles.profileName}>Mike Johnson</Text>
+                <View style={styles.profileTextContainer}>
+                  <Text variant="cardTitle" style={{ fontSize: 16, fontWeight: '600' }}>RecAnonUser289</Text>
+                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Issue - Depression</Text>
+                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 2 minutes</Text>                
+                </View>
               </View>
               <Pressable style={styles.connectButton}>
                 <AppText style={styles.connectButtonText}>Connect</AppText>
@@ -281,17 +300,14 @@ export default function Index() {
           </View>
         </View>
       </View>
+
+
+      {/* Connection Hsitory and Text Variants */}            
       <View>
-        <AppText variant="screenTitle">screenTitle</AppText>
-        <AppText variant="sectionTitle">sectionTitle</AppText>
-        <AppText variant="cardTitle">cardTitle</AppText>
-        <AppText variant="listHeader">listHeader</AppText>
-        <AppText variant="body">body</AppText>
-        <AppText variant="bodySecondary">bodySecondary</AppText>
-        <AppText variant="caption">caption</AppText>
-        <Pressable style={{backgroundColor: "#9500FF", padding: 15, borderRadius: 25, width: 300, alignItems: "center"}} onPress={() => router.push("/p2p-And/p2p-and")}>
-          <AppText>p2p</AppText>
-        </Pressable>
+        <View style={styles.connectionhistory}>
+            <AppText variant="cardTitle" style={{ fontSize: 16, fontWeight: '600', color: '#349EDB' }}>Connection History</AppText>
+            <AppText variant="caption" style={{ fontSize: 12, color: '#666666' }}>No previous connections.</AppText>
+        </View>
       </View>
       <StatusBar />
     </View>
@@ -402,7 +418,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   connectToggleContainer: {
     flexDirection: 'row',
     backgroundColor: '#E5E5E5',
-    borderRadius: 25,
+    borderRadius: 30,
     padding: 4,
     gap: 4,
     alignSelf: 'flex-start',
@@ -410,9 +426,13 @@ const styles = StyleSheet.create((theme, rt) => ({
   connectToggleButton: {
     paddingVertical: 8,
     paddingHorizontal: 20,
-    borderRadius: 20,
+    borderRadius: 30,
     minWidth: 100,
     alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  connectToggleText: {
+    fontWeight: '600',
   },
   connectProfilesContainer: {
     width: '100%',
@@ -435,6 +455,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: 12,
     flex: 1,
   },
+  profileTextContainer: {
+    flexDirection: 'column',
+    gap: 2,
+    flex: 1,
+  },
   profileImage: {
     width: 45,
     height: 45,
@@ -451,18 +476,25 @@ const styles = StyleSheet.create((theme, rt) => ({
   profileName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#333333',
+    color: '#000000',
   },
   connectButton: {
     backgroundColor: '#9500FF',
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
-    marginLeft: 350,
   },
   connectButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 14,
+  },
+  connectionhistory: {
+    backgroundColor: '#349EDB33',
+    padding: 15,
+    borderRadius: 15,
+    width: '90%',
+    alignItems: 'flex-start',
+    
   },
 }));
