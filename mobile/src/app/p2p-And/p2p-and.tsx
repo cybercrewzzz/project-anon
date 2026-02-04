@@ -181,7 +181,7 @@ export default function Index() {
         <AppText
           variant="cardTitle"
           color="primary"
-          style={{ textAlign: 'left' }}
+          style={{ textAlign: 'left', marginLeft: screenWidth < 560 ? 10 : 5 }}
         >
           Your Specialisations:
         </AppText>
@@ -198,7 +198,7 @@ export default function Index() {
         </View>
 
         {/* Connect With Section */}
-        <AppText variant="cardTitle" style={{ textAlign: 'left', marginTop: 20 }}>
+        <AppText variant="cardTitle" style={{ textAlign: 'left', marginTop: 20 , marginLeft: screenWidth < 560 ? 10 : 5}}>
           You Can Connect With:
         </AppText>
         
