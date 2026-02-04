@@ -1,5 +1,5 @@
 import { AppText } from '@/components/AppText';
-import { Animated, Pressable, View } from 'react-native';
+import { Animated, Pressable, View, Text } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
@@ -246,7 +246,7 @@ export default function Index() {
                 <View style={styles.profileImage}>
                   <AppText style={styles.profileImageText}>JD</AppText>
                 </View>
-                <AppText style={styles.profileName}>John Doe</AppText>
+                <Text style={styles.profileName}>John Doe</Text>
               </View>
               <Pressable style={styles.connectButton}>
                 <AppText style={styles.connectButtonText}>Connect</AppText>
@@ -259,7 +259,7 @@ export default function Index() {
                 <View style={styles.profileImage}>
                   <AppText style={styles.profileImageText}>SA</AppText>
                 </View>
-                <AppText style={styles.profileName}>Sarah Anderson</AppText>
+                <Text style={styles.profileName}>Sarah Anderson</Text>
               </View>
               <Pressable style={styles.connectButton}>
                 <AppText style={styles.connectButtonText}>Connect</AppText>
@@ -272,7 +272,7 @@ export default function Index() {
                 <View style={styles.profileImage}>
                   <AppText style={styles.profileImageText}>MJ</AppText>
                 </View>
-                <AppText style={styles.profileName}>Mike Johnson</AppText>
+                <Text style={styles.profileName}>Mike Johnson</Text>
               </View>
               <Pressable style={styles.connectButton}>
                 <AppText style={styles.connectButtonText}>Connect</AppText>
@@ -449,17 +449,16 @@ const styles = StyleSheet.create((theme, rt) => ({
     fontSize: 16,
   },
   profileName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    flex: 1,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333333',
   },
   connectButton: {
     backgroundColor: '#9500FF',
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
-    marginLeft: 360,
+    marginLeft: 350,
   },
   connectButtonText: {
     color: '#FFFFFF',
