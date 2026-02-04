@@ -1,5 +1,5 @@
 import { AppText } from '@/components/AppText';
-import { Animated, Pressable, View, Text } from 'react-native';
+import { Animated, Pressable, View, Text, useWindowDimensions } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
@@ -9,6 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { purple } from '@/theme/palettes/purple';
 
 export default function Index() {
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const isSmallScreen = screenWidth < 768;
   const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>('Offline');
   const [connectFilter, setConnectFilter] = useState<'Recommended' | 'All'>('Recommended');
   const offlineAnim = useRef(new Animated.Value(1)).current;
@@ -175,7 +177,7 @@ export default function Index() {
       </View> 
  
       {/* Specialisations section */}        
-      <View style={{ alignItems: 'flex-start', gap: 5, width: '90%' }}> 
+      <View style={{ alignItems: 'flex-start', gap: 5, width: '100%', maxWidth: isSmallScreen ? 500 : 800 }}> 
         <AppText
           variant="cardTitle"
           color="primary"
@@ -250,13 +252,18 @@ export default function Index() {
             {/* Profile Card 1 */}
             <View style={styles.profileCard}>
               <View style={styles.profileInfo}>
-                <View style={styles.profileImage}>
+                <LinearGradient
+                  colors={['#1D47DC', '#0E7FBC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.profileImage}
+                >
                   <AppText style={styles.profileImageText}>JD</AppText>
-                </View>
+                </LinearGradient>
                 <View style={styles.profileTextContainer}>
-                  <Text variant="cardTitle" style={{ fontSize: 16, fontWeight: '600' }}>RecAnonUser89</Text>
-                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Issue - Stress</Text>
-                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 8 minutes</Text>
+                  <Text variant="cardTitle" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>RecAnonUser89</Text>
+                  <Text variant="caption" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Stress</Text>
+                  <Text variant="caption" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Waiting - 8 minutes</Text>
                 </View>
               </View>
               <Pressable>
@@ -274,13 +281,18 @@ export default function Index() {
             {/* Profile Card 2 */}
             <View style={styles.profileCard}>
               <View style={styles.profileInfo}>
-                <View style={styles.profileImage}>
+                <LinearGradient
+                  colors={['#1D47DC', '#0E7FBC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.profileImage}
+                >
                   <AppText style={styles.profileImageText}>SA</AppText>
-                </View>
+                </LinearGradient>
                 <View style={styles.profileTextContainer}>
-                  <Text variant="cardTitle" style={{ fontSize: 16, fontWeight: '600' }}>RecAnonUser159</Text>
-                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Issue - Anxiety</Text>
-                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 5 minutes</Text>
+                  <Text variant="cardTitle" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>RecAnonUser159</Text>
+                  <Text variant="caption" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Anxiety</Text>
+                  <Text variant="caption" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Waiting - 5 minutes</Text>
                 </View>
               </View>
               <Pressable>
@@ -298,13 +310,18 @@ export default function Index() {
             {/* Profile Card 3 */}
             <View style={styles.profileCard}>
               <View style={styles.profileInfo}>
-                <View style={styles.profileImage}>
+                <LinearGradient
+                  colors={['#1D47DC', '#0E7FBC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.profileImage}
+                >
                   <AppText style={styles.profileImageText}>MJ</AppText>
-                </View>
+                </LinearGradient>
                 <View style={styles.profileTextContainer}>
-                  <Text variant="cardTitle" style={{ fontSize: 16, fontWeight: '600' }}>RecAnonUser289</Text>
-                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Issue - Depression</Text>
-                  <Text variant="caption" style={{ fontSize: 12, color: '#666666' }}>Waiting - 2 minutes</Text>                
+                  <Text variant="cardTitle" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>RecAnonUser289</Text>
+                  <Text variant="caption" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Depression</Text>
+                  <Text variant="caption" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Waiting - 2 minutes</Text>                
                 </View>
               </View>
               <Pressable>
@@ -323,7 +340,7 @@ export default function Index() {
       </View>
 
 
-      {/* Connection Hsitory and Text Variants */}            
+      {/* Connection History and Text Variants */}            
       <View>
         <View style={styles.connectionhistory}>
             <AppText variant="cardTitle" style={{ fontSize: 16, fontWeight: '600', color: '#349EDB' }}>Connection History</AppText>
@@ -339,27 +356,27 @@ const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
     justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     backgroundColor: theme.background.default,
-    gap: 50,
-    paddingTop: 180,
-    paddingLeft: 50,
+    gap: rt.screen.width < 768 ? 30 : 50,
+    paddingTop: rt.screen.width < 768 ? 120 : 180,
+    paddingHorizontal: rt.screen.width < 768 ? 15 : 50,
   },
   toggleWrapper: {
     position: 'absolute',
     top: rt.insets.top + 10,
-    left: 16,
+    left: rt.screen.width < 768 ? 10 : 16,
     zIndex: 10,
-    marginTop: 60,
-    marginLeft: 30,
+    marginTop: rt.screen.width < 768 ? 40 : 60,
+    marginLeft: rt.screen.width < 768 ? 10 : 30,
   },
   toggleWrapperRight: {
     position: 'absolute',
     top: rt.insets.top + 10,
-    fontSize: 18,
-    right: 16,
+    fontSize: rt.screen.width < 768 ? 14 : 18,
+    right: rt.screen.width < 768 ? 10 : 16,
     zIndex: 10,
-    marginTop: 60,
+    marginTop: rt.screen.width < 768 ? 40 : 60,
     borderColor: '#9500FF',
     borderWidth: 2,
     borderRadius: 25,
@@ -372,10 +389,10 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: 4,
   },
   toggleButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 24,
+    paddingVertical: rt.screen.width < 768 ? 8 : 10,
+    paddingHorizontal: rt.screen.width < 768 ? 16 : 24,
     borderRadius: 20,
-    minWidth: 120,
+    minWidth: rt.screen.width < 768 ? 80 : 120,
     alignItems: 'center',
   },
   toggleButtonActivePurple: {
@@ -410,15 +427,15 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: 'row',
     flexWrap: 'wrap',
     backgroundColor: '#349EDB33' ,
-    padding: 15,
+    padding: rt.screen.width < 768 ? 10 : 15,
     borderRadius: 30,
-    gap: 10,
+    gap: rt.screen.width < 768 ? 8 : 10,
     width: '100%',
   },
   specialisationButton: {
     backgroundColor: '#349EDB',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: rt.screen.width < 768 ? 4 : 5,
+    paddingHorizontal: rt.screen.width < 768 ? 8 : 10,
     borderRadius: 30,
     borderWidth: 1,
     borderColor: '#4a6fa5',
@@ -426,14 +443,14 @@ const styles = StyleSheet.create((theme, rt) => ({
   specialisationButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: rt.screen.width < 768 ? 12 : 14,
   },
   connectwith: {
     flexDirection: 'column',
     backgroundColor: '#349EDB33',
-    padding: 15,
+    padding: rt.screen.width < 768 ? 10 : 15,
     borderRadius: 30,
-    gap: 10,
+    gap: rt.screen.width < 768 ? 8 : 10,
     width: '100%',
   },
   connectToggleContainer: {
@@ -464,16 +481,16 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    borderRadius: 30,
-    padding: 12,
-    paddingLeft: 8,
+    borderRadius: rt.screen.width < 768 ? 20 : 30,
+    padding: rt.screen.width < 768 ? 8 : 12,
+    paddingLeft: rt.screen.width < 768 ? 6 : 8,
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
   profileInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: rt.screen.width < 768 ? 8 : 12,
     flex: 1,
   },
   profileTextContainer: {
@@ -482,10 +499,9 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
   },
   profileImage: {
-    width: 45,
-    height: 45,
+    width: rt.screen.width < 768 ? 40 : 45,
+    height: rt.screen.width < 768 ? 40 : 45,
     borderRadius: 25,
-    backgroundColor: '#9500FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -500,14 +516,14 @@ const styles = StyleSheet.create((theme, rt) => ({
     color: '#000000',
   },
   connectButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
+    paddingVertical: rt.screen.width < 768 ? 6 : 8,
+    paddingHorizontal: rt.screen.width < 768 ? 12 : 20,
     borderRadius: 20,
   },
   connectButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: rt.screen.width < 768 ? 12 : 14,
   },
   connectionhistory: {
     backgroundColor: '#349EDB33',
