@@ -35,19 +35,18 @@ const OTPVerification = () => {
         <OTPInput />
         <OTPInput />
         <OTPInput />
-          </View>
+      </View>
 
-          <View>
-              <AppText variant='body' style={{ marginTop: 20, textAlign: 'center' }}>
-                  Did not receive the code?
-              </AppText>
-              <AppText variant='body' style={{ marginTop: 20, textAlign: 'center' }}>
-                  Resend OTP
-              </AppText>
-          </View>
+      <View>
+        <AppText variant="body" style={styles.verifyText}>
+          Did not receive the email?
+        </AppText>
+        <AppText variant="body" style={styles.verifyText}>
+          Resend OTP
+        </AppText>
+      </View>
 
-
-          <View style={styles.buttonContainer}>
+      <View style={styles.buttonContainer}>
         <Pressable
           style={styles.button}
           //onPress={() => router.navigate('')}
@@ -58,9 +57,7 @@ const OTPVerification = () => {
           </AppText>
         </Pressable>
       </View>
-      </View>
-
-
+    </View>
   );
 };
 
@@ -78,7 +75,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   contentContainer: {
     justifyContent: 'flex-start',
     paddingTop: rt.insets.top + 30,
-    },
+  },
   buttonContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -99,6 +96,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 30,
+    paddingTop: rt.insets.top,
   },
   otpInput: {
     width: 80,
@@ -109,7 +107,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderRadius: 8,
     textAlign: 'center',
     fontSize: 24,
-    },
+  },
+  verifyText: {
+    marginTop: 25,
+    textAlign: 'center',
+  },
   button: {
     alignItems: 'center',
     paddingTop: 15,
