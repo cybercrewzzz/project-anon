@@ -176,7 +176,7 @@ label: {
 },
 
 fakeInput: {
-  height: 48, // SAME as TextInput
+  paddingVertical: spacing.sm,
   backgroundColor: common.gray[100],
   borderRadius: radius.md,
   paddingHorizontal: spacing.sm,
@@ -264,7 +264,7 @@ ageChipTextActive: {
     borderRadius: radius.xxlSoft,
     alignItems: 'center',
     lineHeight: typography.bodySM.lineHeight,
-    paddingHorizontal: spacing.huge,
+    marginTop: spacing.huge,
   },
 
   buttonText: {
