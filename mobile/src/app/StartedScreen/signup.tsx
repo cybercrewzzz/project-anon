@@ -47,62 +47,33 @@ export default function SignUp() {
       />
 
       {/* Age */}
-    
-      <View style={styles.ageContainer}>
-        <Text style={styles.ageText1}>Age
-            </Text>
-        <Pressable
-          style={[
-            styles.ageButton,
-            selectedAge === '16-20' && styles.ageButtonActive,
-          ]}
-          onPress={() => setSelectedAge('16-20')}
-        >
-          <Text
-            style={[
-              styles.ageText,
-              selectedAge === '16-20' && styles.ageTextActive,
-            ]}
-          >
-            16 - 20
-          </Text>
-        </Pressable>
+<View style={styles.fieldWrapper}>
+  <View style={styles.fakeInput}>
+    {/* Age label INSIDE the box */}
+    <Text style={styles.ageInsideLabel}>Age</Text>
 
-        <Pressable
+    {['16-20', '21-26', '27+'].map((age) => (
+      <Pressable
+        key={age}
+        onPress={() => setSelectedAge(age)}
+        style={[
+          styles.ageChip,
+          selectedAge === age && styles.ageChipActive,
+        ]}
+      >
+        <Text
           style={[
-            styles.ageButton,
-            selectedAge === '21-26' && styles.ageButtonActive,
+            styles.ageChipText,
+            selectedAge === age && styles.ageChipTextActive,
           ]}
-          onPress={() => setSelectedAge('21-26')}
         >
-          <Text
-            style={[
-              styles.ageText,
-              selectedAge === '21-26' && styles.ageTextActive,
-            ]}
-          >
-            21 - 26
-          </Text>
-        </Pressable>
+          {age.replace('-', ' - ')}
+        </Text>
+      </Pressable>
+    ))}
+  </View>
+</View>
 
-        <Pressable
-          style={[
-            styles.ageButton,
-            selectedAge === '27+' && styles.ageButtonActive,
-          ]}
-          onPress={() => setSelectedAge('27+')}
-        >
-          <Text
-            style={[
-              styles.ageText,
-              selectedAge === '27+' && styles.ageTextActive,
-            ]}
-          >
-            27+
-          </Text>
-          
-        </Pressable>
-      </View>
       
 
       {/* Email */}
@@ -187,10 +158,34 @@ const styles = StyleSheet.create({
     color: common.black,
   },
 
-  ageContainer: {
-    flexDirection: 'row',
-    marginBottom: 14,
-  },
+  ageInsideLabel: {
+  fontSize: typography.bodyMD.fontSize,
+  color: purple[400],
+  marginRight: spacing.sm,
+},
+
+
+  fieldWrapper: {
+  marginBottom: 16,
+},
+
+label: {
+  color: purple[400],
+  marginBottom: 6,
+  fontSize: typography.bodyMD.fontSize,
+},
+
+fakeInput: {
+  height: 48, // SAME as TextInput
+  backgroundColor: common.gray[100],
+  borderRadius: radius.md,
+  paddingHorizontal: spacing.sm,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: spacing.sm,
+},
+
+
 
   ageButton: {
     backgroundColor: common.gray[100],
@@ -210,13 +205,27 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
     marginRight: spacing.md,
   },
-    ageText1: {
-    color: purple[400],
-    backgroundColor:common.gray[100],
-    paddingVertical:spacing.sm,
-    paddingHorizontal: spacing.md,
+    ageChip: {
+  paddingVertical: spacing.xs,
+  paddingHorizontal: spacing.md,
+  borderRadius: radius.mdSoft,
+  backgroundColor: common.gray[200],
+},
 
-  },
+ageChipActive: {
+  backgroundColor: purple[700],
+},
+
+ageChipText: {
+  fontSize: typography.bodyMD.fontSize,
+  color: purple[400],
+},
+
+ageChipTextActive: {
+  color: common.white,
+  fontWeight: weight.medium,
+},
+
 
   ageTextActive: {
     color: common.white,
@@ -255,7 +264,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.xxlSoft,
     alignItems: 'center',
     lineHeight: typography.bodySM.lineHeight,
-    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.huge,
   },
 
   buttonText: {
