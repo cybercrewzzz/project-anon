@@ -245,7 +245,8 @@ const styles = StyleSheet.create({
     fontSize: typography.bodyMD.fontSize,
     lineHeight: typography.bodyLG.lineHeight,
     marginBottom: spacing.lg,
-    color: purple[700],
+    color: purple[800],
+    fontWeight: weight.medium,
   },
 
   button: {
