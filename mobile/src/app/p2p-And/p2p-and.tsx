@@ -178,13 +178,21 @@ export default function Index() {
  
       {/* Specialisations section */}        
       <View style={{ alignItems: 'flex-start', gap: 5, width: '100%', maxWidth: isSmallScreen ? 500 : 800 }}> 
-        <AppText
-          variant="cardTitle"
-          color="primary"
-          style={{ textAlign: 'left', marginLeft: screenWidth < 560 ? 10 : 5 }}
-        >
-          Your Specialisations:
-        </AppText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: screenWidth < 560 ? 10 : 5 }}>
+          <AppText
+            variant="cardTitle"
+            color="primary"
+            style={{ textAlign: 'left' }}
+          >
+            Your Specialisations:
+          </AppText>
+          <Pressable 
+            style={styles.plusButton}
+            onPress={() => console.log('Add specialisation')}
+          >
+            <AppText style={styles.plusButtonText}>+</AppText>
+          </Pressable>
+        </View>
         <View style={styles.specialisations}>
           <Pressable style={styles.specialisationButton}>
             <AppText style={styles.specialisationButtonText}>Anxiety</AppText>
@@ -446,6 +454,22 @@ const styles = StyleSheet.create((theme, rt) => ({
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: rt.screen.width < 768 ? 12 : 14,
+  },
+  plusButton: {
+    backgroundColor: '#349EDB',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#4a6fa5',
+  },
+  plusButtonText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 22,
   },
   connectwith: {
     flexDirection: 'column',
