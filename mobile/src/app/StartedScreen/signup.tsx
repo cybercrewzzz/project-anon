@@ -113,7 +113,7 @@ export default function SignUp() {
 
       {/* Button */}
       <Pressable style={styles.button}>
-        <Text style={styles.buttonText}>Create Account</Text>
+        <Text style={styles.buttonText } onPress={() => router.push("/StartedScreen/p2pp2v")}>Create Account</Text>
       </Pressable>
 
     </View>
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     fontSize: typography.headingMD.fontSize,
     lineHeight: typography.headingMD.lineHeight,
     color:purple[600],
-    fontWeight: weight.medium,
+    fontWeight: weight.semiBold,
     textAlign: 'center',
     marginBottom: 24,
   },

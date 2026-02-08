@@ -40,13 +40,10 @@ export default function Welcome() {
           </AppText>
         </Pressable>
 
-        <AppText style={styles.volunteerText}>
+        <AppText style={styles.volunteerText}onPress={() => router.navigate('/StartedScreen/signup')}>
           Continue as a Volunteer
         </AppText>
-        <Button
-                  title="Sign Up" 
-                  onPress={() => router.navigate('/StartedScreen/signup')}
-                />
+       
       </View>
 
       <StatusBar />
