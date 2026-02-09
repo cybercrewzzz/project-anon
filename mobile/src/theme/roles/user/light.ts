@@ -84,7 +84,7 @@ import { spacing } from '@/theme/tokens/spacing';
  */
 export const userLightTheme = {
   background: {
-    default: 'common.white',
+    default: common.white,
     secondary: purple[50],
     accent: purple[500],
     overlay: 'rgba(149, 0, 255, 0.8)',
@@ -121,14 +121,15 @@ export const userLightTheme = {
     info: common.blue[500],
   },
   gradient: {
-    backgroundPrimary: [colors.blue[200], colors.blue[50], purple[100]],
+    background: [purple[100], colors.blue[50], colors.blue[300]],
+    backgroundPrimary: [purple[100], colors.blue[50], colors.blue[200]],
     backgroundSecondary: [colors.blue[100], purple[50]],
     textGradient: [purple[800], purple[500]],
     callAction: [common.green[100], common.green[200]],
   },
   radius,
-  elevation,
   spacing,
+  elevation,
 } as const;
 
 /**
