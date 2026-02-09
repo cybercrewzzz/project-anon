@@ -25,7 +25,7 @@ export default function Welcome() {
 
        {/* Image in between */}
       <Image
-        source={{ uri: 'https://reactnative.dev/img/tiny_logo.png' }}
+        source={require('@/assets/logo.png')}
         style={{ width: 100, height: 100 }}
       />
 
