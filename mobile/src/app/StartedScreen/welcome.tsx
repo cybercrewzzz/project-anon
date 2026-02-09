@@ -8,6 +8,7 @@ import { purple } from '@/theme/palettes/purple';
 import { common } from '@/theme/palettes/common';
 import { Platform, TextStyle } from 'react-native';
 import { typography, weight } from '@/theme/tokens/typography';
+import React from 'react';
 
 
 export default function Welcome() {
@@ -16,7 +17,7 @@ export default function Welcome() {
 
       {/* Top*/}
       <AppText
-        variant="screenTitle"
+        variant="largeTitle"
         style={styles.welcomeText}
       >
         Welcome!

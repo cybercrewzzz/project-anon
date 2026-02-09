@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import { purple } from '@/theme/palettes/purple';
 import { common } from '@/theme/palettes/common';
 import { Platform, TextStyle } from 'react-native';
-import { textStyles, typography, weight } from '@/theme/tokens/typography';
+import { typography, weight } from '@/theme/tokens/typography';
 import { colors } from '@/theme/palettes/colors';
 import { spacing } from '@/theme/tokens/spacing';
 import { radius } from '@/theme/tokens/radius';
@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
 
   title: {
     color: common.black,
-    fontSize: typography.headingXL.fontSize,
-    lineHeight: typography.headingXL.lineHeight,
+    fontSize: typography.largeTitle.regular.fontSize,
+    lineHeight: typography.largeTitle.regular.lineHeight,
     fontWeight: weight.semiBold,
     textAlign: 'center',
     marginBottom: 30,
@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    fontSize: typography.headingMD.fontSize,
-    lineHeight: typography.headingMD.lineHeight,
+    fontSize: typography.title1.regular.fontSize,
+    lineHeight: typography.title1.regular.lineHeight,
     color:purple[600],
     fontWeight: weight.semiBold,
     textAlign: 'center',
@@ -154,12 +154,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
     marginBottom: 16,
-    fontSize: typography.bodyMD.fontSize,
+    fontSize: typography.body.fontSize,
     color: common.black,
   },
 
   ageInsideLabel: {
-  fontSize: typography.bodyMD.fontSize,
+  fontSize: typography.body.regular.fontSize,
   color: purple[400],
   marginRight: spacing.sm,
 },
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
 label: {
   color: purple[400],
   marginBottom: 6,
-  fontSize: typography.bodyMD.fontSize,
+  fontSize: typography.body.regular.fontSize,
 },
 
 fakeInput: {
@@ -201,7 +201,7 @@ fakeInput: {
 
   ageText: {
     color:purple[400],
-    fontSize: typography.bodyMD.fontSize,
+    fontSize: typography.body.regular.fontSize,
     gap: spacing.xl,
     marginRight: spacing.md,
   },
@@ -217,7 +217,7 @@ ageChipActive: {
 },
 
 ageChipText: {
-  fontSize: typography.bodyMD.fontSize,
+  fontSize: typography.body.regular.fontSize,
   color: purple[400],
 },
 
@@ -234,8 +234,8 @@ ageChipTextActive: {
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    fontSize: typography.bodyXS.fontSize,
-    lineHeight: typography.bodyXS.lineHeight,
+    fontSize: typography.body.regular.fontSize,
+    lineHeight: typography.body.regular.lineHeight,
   },
 
   checkbox: {
