@@ -6,14 +6,14 @@ import {
   Pressable,
   StyleSheet,
 } from 'react-native';
-import { AppText } from '@/components/AppText';
+import { AppTheme } from '@/theme/roles/user/light';
 import { Button } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { purple } from '@/theme/palettes/purple';
 import { common } from '@/theme/palettes/common';
 import { Platform, TextStyle } from 'react-native';
-import { textStyles, typography, weight } from '@/theme/tokens/typography';
+import { typography, weight } from '@/theme/tokens/typography';
 import { colors } from '@/theme/palettes/colors';
 import { spacing } from '@/theme/tokens/spacing';
 import { radius } from '@/theme/tokens/radius';
@@ -64,12 +64,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   arrow: {
-    fontSize: typography.headingLG.fontSize,
+    fontSize: typography.largeTitle.regular.fontSize,
     color: common.black,
   },
   title: {
     fontWeight: weight.semiBold,
-    fontSize: typography.headingSM.fontSize,
+    fontSize: typography.title1.regular.fontSize,
     color: common.black,
     textAlign: 'center',
     width: '100%', // to center the title
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   star185: {
     flexDirection: 'row',
-    fontSize: typography.bodyMD.fontSize,
+    fontSize: typography.body.regular.fontSize,
     color: common.white,
     backgroundColor:purple[500],
     alignSelf: 'flex-start',
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
 
   ticket: {
     flexDirection: 'row',
-    fontSize: typography.bodyMD.fontSize,
+    fontSize: typography.body.regular.fontSize,
     color: common.white,
     backgroundColor:purple[500],
     alignSelf: 'flex-start',
