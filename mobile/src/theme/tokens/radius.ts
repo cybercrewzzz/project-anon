@@ -30,8 +30,8 @@ const ios = {
   xlSoft: 34,
   xxl: 38,
   xxlSoft: 38,
-  pill: 999,
-};
+  full: 999,
+} as const;
 
 const android = {
   xs: 8,
@@ -45,8 +45,8 @@ const android = {
   xlSoft: 26,
   xxl: 26,
   xxlSoft: 30,
-  pill: 999,
-};
+  full: 999,
+} as const;
 
 /**
  * Unified radius tokens
