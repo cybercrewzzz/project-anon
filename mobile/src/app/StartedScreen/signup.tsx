@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
     marginBottom: 16,
-    fontSize: typography.body.fontSize,
+    fontSize: typography.body.regular.fontSize,
     color: common.black,
   },
 
