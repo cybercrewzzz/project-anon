@@ -251,8 +251,8 @@ ageChipTextActive: {
   },
 
   checkboxText: {
-    fontSize: typography.bodyMD.fontSize,
-    lineHeight: typography.bodyLG.lineHeight,
+    fontSize: typography.body.regular.fontSize,
+    lineHeight: typography.body.regular.lineHeight,
     marginBottom: spacing.lg,
     color: purple[800],
     fontWeight: weight.medium,
@@ -263,14 +263,13 @@ ageChipTextActive: {
     paddingVertical: spacing.lg,
     borderRadius: radius.xxlSoft,
     alignItems: 'center',
-    lineHeight: typography.bodySM.lineHeight,
     marginTop: spacing.huge,
   },
 
   buttonText: {
     color: common.white,
-    fontSize: typography.bodyLG.fontSize,
-    lineHeight: typography.bodySM.lineHeight,
+    fontSize: typography.body.regular.fontSize,
+    lineHeight: typography.body.regular.lineHeight,
     fontWeight: weight.semiBold,
     
   },
