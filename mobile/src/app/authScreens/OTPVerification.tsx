@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
+import { typography } from '@/theme/tokens/typography';
 //import { useRouter } from 'expo-router';
 
 const OTPInput = () => {
@@ -20,7 +21,7 @@ const OTPVerification = () => {
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
-        <AppText variant="sectionTitle" color="primary" style={styles.title}>
+        <AppText variant="title1" color="primary" style={styles.title}>
           OTP Code Verification 🔒
         </AppText>
 
@@ -51,7 +52,7 @@ const OTPVerification = () => {
           style={styles.button}
           //onPress={() => router.navigate('')}
         >
-          <AppText variant="listHeader" color="secondary">
+          <AppText variant="headline" color="secondary">
             {' '}
             Create new Password{' '}
           </AppText>
@@ -84,7 +85,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   title: {
     textAlign: 'left',
     paddingLeft: 5,
-    fontSize: 26,
+    fontSize: typography.title1.emphasized.fontSize,
+    fontWeight: typography.title1.emphasized.fontWeight,
   },
   description: {
     textAlign: 'left',
