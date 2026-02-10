@@ -10,7 +10,7 @@ interface SideImageCardProps {
   title: string;
   description: string;
   image: ImageSource;
-  ctaText: string;
+  ctaText?: string;
   ctaIcon?: ImageSource;
   onPress?: () => void;
   ImagePosition?: ImagePosition;
