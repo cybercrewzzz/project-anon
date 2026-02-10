@@ -1,5 +1,5 @@
 import { AppText } from '@/components/AppText';
-import { Animated, Pressable, View, Text, useWindowDimensions } from 'react-native';
+import { Animated, Pressable, View, Text, useWindowDimensions, ScrollView } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
@@ -13,6 +13,7 @@ export default function Index() {
   const isSmallScreen = screenWidth < 768;
   const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>('Offline');
   const [connectFilter, setConnectFilter] = useState<'Recommended' | 'All'>('Recommended');
+  const [historyExpanded, setHistoryExpanded] = useState(false);
   const offlineAnim = useRef(new Animated.Value(1)).current;
   const activeAnim = useRef(new Animated.Value(0)).current;
   const recommendedAnim = useRef(new Animated.Value(1)).current;
@@ -174,8 +175,13 @@ export default function Index() {
             </AppText>
           </LinearGradient>
         </Pressable> 
-      </View> 
- 
+      </View>
+      
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
       {/* Specialisations section */}        
       <View style={{ alignItems: 'flex-start', gap: 5, width: '100%', maxWidth: isSmallScreen ? 500 : 800 }}> 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: screenWidth < 560 ? 10 : 5 }}>
@@ -348,14 +354,99 @@ export default function Index() {
       </View>
 
 
-      {/* Connection History and Text Variants */}            
-      <View>
-        <View style={styles.connectionhistory}>
-            <AppText variant="callout" style={{ fontSize: 16, fontWeight: '600', color: '#349EDB' }}>Connection History</AppText>
-            <AppText variant="caption1" style={{ fontSize: 12, color: '#666666' }}>No previous connections.</AppText>
-        </View>
+      {/* Connection History Section */}            
+      <View style={{ alignItems: 'flex-start', gap: 5, width: '100%', maxWidth: isSmallScreen ? 500 : 800 }}>
+        <Pressable 
+          onPress={() => setHistoryExpanded(!historyExpanded)}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: screenWidth < 560 ? 10 : 5 }}
+        >
+          <AppText
+            variant="callout"
+            color="primary"
+            style={{ textAlign: 'left' }}
+          >
+            Connection History
+          </AppText>
+          <AppText style={{ fontSize: 20, color: '#349EDB' }}>
+            {historyExpanded ? '▼' : '▶'}
+          </AppText>
+        </Pressable>
+        
+        {historyExpanded && (
+          <View style={styles.connectionhistory}>
+            {/* Profile Cards from History */}
+            <View style={styles.connectProfilesContainer}>
+              {/* History Profile Card 1 */}
+              <View style={styles.profileCard}>
+                <View style={styles.profileInfo}>
+                  <LinearGradient
+                    colors={['#9500FF', '#7B00D6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.profileImage}
+                  >
+                    <AppText style={styles.profileImageText}>AL</AppText>
+                  </LinearGradient>
+                  <View style={styles.profileTextContainer}>
+                    <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>AnonUser42</Text>
+                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Anxiety</Text>
+                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Session - 45 minutes</Text>
+                  </View>
+                </View>
+                <View style={{ paddingVertical: isSmallScreen ? 6 : 8, paddingHorizontal: isSmallScreen ? 12 : 20 }}>
+                  <AppText style={{ fontSize: isSmallScreen ? 12 : 14, color: '#666666', fontWeight: '600' }}>2 days ago</AppText>
+                </View>
+              </View>
+
+              {/* History Profile Card 2 */}
+              <View style={styles.profileCard}>
+                <View style={styles.profileInfo}>
+                  <LinearGradient
+                    colors={['#9500FF', '#7B00D6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.profileImage}
+                  >
+                    <AppText style={styles.profileImageText}>TC</AppText>
+                  </LinearGradient>
+                  <View style={styles.profileTextContainer}>
+                    <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>AnonUser231</Text>
+                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Stress</Text>
+                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Session - 30 minutes</Text>
+                  </View>
+                </View>
+                <View style={{ paddingVertical: isSmallScreen ? 6 : 8, paddingHorizontal: isSmallScreen ? 12 : 20 }}>
+                  <AppText style={{ fontSize: isSmallScreen ? 12 : 14, color: '#666666', fontWeight: '600' }}>5 days ago</AppText>
+                </View>
+              </View>
+
+              {/* History Profile Card 3 */}
+              <View style={styles.profileCard}>
+                <View style={styles.profileInfo}>
+                  <LinearGradient
+                    colors={['#9500FF', '#7B00D6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.profileImage}
+                  >
+                    <AppText style={styles.profileImageText}>RK</AppText>
+                  </LinearGradient>
+                  <View style={styles.profileTextContainer}>
+                    <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>AnonUser567</Text>
+                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Depression</Text>
+                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Session - 60 minutes</Text>
+                  </View>
+                </View>
+                <View style={{ paddingVertical: isSmallScreen ? 6 : 8, paddingHorizontal: isSmallScreen ? 12 : 20 }}>
+                  <AppText style={{ fontSize: isSmallScreen ? 12 : 14, color: '#666666', fontWeight: '600' }}>1 week ago</AppText>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
       <StatusBar />
+    </ScrollView>
     </View>
   );
 }
@@ -363,19 +454,14 @@ export default function Index() {
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
     backgroundColor: theme.background.default,
-    gap: rt.screen.width < 768 ? 30 : 50,
-    paddingTop: rt.screen.width < 768 ? 110 : 140,
-    paddingHorizontal: rt.screen.width < 768 ? 15 : 50,
   },
   toggleWrapper: {
     position: 'absolute',
     top: rt.insets.top + 10,
     left: rt.screen.width < 560 ? 8 : 13,
     zIndex: 10,
-    marginTop: rt.screen.width < 560 ? 5 : 15,
+    marginTop: rt.screen.width < 560 ? 0 : 3,
     marginLeft: rt.screen.width < 560 ? 25 : 40,
   },
   toggleWrapperRight: {
@@ -384,7 +470,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     fontSize: rt.screen.width < 560 ? 14 : 18,
     right: rt.screen.width < 560 ? 14 : 18,
     zIndex: 10,
-    marginTop: rt.screen.width < 560 ? 5 : 15,
+    marginTop: rt.screen.width < 560 ? 0 : 3,
     borderColor: '#9500FF',
     borderWidth: 2,
     borderRadius: 25,
@@ -554,12 +640,26 @@ const styles = StyleSheet.create((theme, rt) => ({
     fontSize: rt.screen.width < 560 ? 12 : 14,
   },
   connectionhistory: {
+    flexDirection: 'column',
     backgroundColor: '#349EDB33',
-    padding: rt.screen.width < 560 ? 10 : 15,
-    borderRadius: 15,
+    padding: rt.screen.width < 560 ? 10 : 20,
+    borderRadius: 30,
+    gap: rt.screen.width < 560 ? 8 : 10,
     width: '85%',
-    maxWidth: rt.screen.width < 560 ? 600 : 1000,
-    alignItems: 'flex-start',
+    maxWidth: rt.screen.width < 560 ? 500 : 800,
     alignSelf: 'center',
+  },
+  scrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: rt.screen.width < 768 ? 110 : 140,
+    paddingHorizontal: rt.screen.width < 768 ? 15 : 50,
+    paddingBottom: 30,
+    gap: rt.screen.width < 768 ? 30 : 50,
   },
 }));
