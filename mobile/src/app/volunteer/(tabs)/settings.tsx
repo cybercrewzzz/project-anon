@@ -24,12 +24,81 @@ const Home = () => {
         style={{ backgroundColor: '#ff0000' }}
       >
         <View style={styles.profileCard}>
-          <View style={styles.profileImage}></View>
-          <View style={styles.profileDetails}></View>
+          <View style={styles.profileImage}>
+            <Image
+              source={require('@/assets/icons/GamifiedUserAvatarOPT.svg')}
+              style={{ width: 80, height: 80 }}
+              contentFit="contain"
+            />
+          </View>
+          <View style={styles.profileDetails}>
+            <AppText variant="headline" emphasis="emphasized" color="accent">
+              John Doe
+            </AppText>
+            <AppText variant="footnote" emphasis="emphasized" color="primary">
+              Institute Of Mental Health
+            </AppText>
+            <View style={styles.levelText}>
+              <AppText variant="caption1">Level: </AppText>
+              <AppText variant="footnote" emphasis="emphasized">
+                Basic
+              </AppText>
+            </View>
+          </View>
         </View>
         <View style={styles.xpSection}>
-          <View style={styles.expBarContainer}></View>
-          <View style={styles.xpCardsContainer}></View>
+          <LinearGradient
+            colors={['#1D47DC', '#0E7FBC']}
+            style={styles.xpBarContainer}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            locations={[0, 0.5]}
+          >
+            <View style={styles.xpText}>
+              <AppText variant="footnote" emphasis="regular" color="secondary">
+                Level 1
+              </AppText>
+              <View style={styles.xpAmount}>
+                <AppText
+                  variant="footnote"
+                  emphasis="emphasized"
+                  color="secondary"
+                >
+                  XP:
+                </AppText>
+                <AppText
+                  variant="footnote"
+                  emphasis="regular"
+                  color="secondary"
+                >
+                  150/300
+                </AppText>
+              </View>
+            </View>
+            <View style={styles.xpBar}>
+              <View style={styles.xpBarFill}></View>
+            </View>
+          </LinearGradient>
+          <View style={styles.xpCardsContainer}>
+            <View style={styles.card}>
+              <View>
+                <AppText variant="subhead" emphasis="emphasized">
+                  Daily login
+                </AppText>
+              </View>
+
+              <View style={styles.cardValue}>
+                <Image
+                  source={require('@/assets/images/fireIconOPT.webp')}
+                  style={{ width: 24, height: 24 }}
+                  contentFit="contain"
+                />
+                <AppText variant="title3" emphasis="emphasized">
+                  03
+                </AppText>
+              </View>
+            </View>
+          </View>
         </View>
         <View style={styles.Certificate}></View>
         <View style={styles.menuSection}></View>
@@ -57,12 +126,14 @@ const styles = StyleSheet.create((theme, rt) => ({
     inset: 0,
   },
   profileCard: {
-    backgroundColor: '#fddb00',
+    backgroundColor: '#CDE2FF',
     flexDirection: 'row',
-    flex: 1,
+    padding: theme.spacing.s3,
+    borderRadius: theme.radius.mdSoft,
+    alignItems: 'center',
+    gap: theme.spacing.s5,
   },
   xpSection: {
-    backgroundColor: '#00ff0d',
     flex: 1,
   },
   Certificate: {
@@ -74,20 +145,60 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
   },
   profileImage: {
-    backgroundColor: '#0000ff',
-    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: theme.spacing.s3,
   },
   profileDetails: {
-    backgroundColor: '#af0ee0',
-    flex: 1,
+    alignContent: 'center',
+    gap: theme.spacing.s2,
   },
-  expBarContainer: {
-    backgroundColor: '#ff5733',
-    flex: 1,
+  xpBarContainer: {
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.s3,
+    paddingVertical: theme.spacing.s4,
   },
   xpCardsContainer: {
     backgroundColor: '#33ff57',
     flexDirection: 'row',
     flex: 1,
+  },
+  levelText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s1,
+  },
+  xpText: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  xpAmount: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  xpBar: {
+    height: 12,
+    backgroundColor: theme.background.secondary,
+    borderRadius: theme.radius.full,
+    marginTop: theme.spacing.s2,
+  },
+  xpBarFill: {
+    height: '100%',
+    width: '50%',
+    backgroundColor: '#36D367',
+    borderRadius: theme.radius.full,
+  },
+  card: {
+    backgroundColor: '#72BCF8',
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.s3,
+    width: '100%',
+    height: 75,
+  },
+  cardValue: {
+    flexDirection: 'row',
+    gap: theme.spacing.s2,
+    paddingVertical: theme.spacing.s1,
   },
 }));
