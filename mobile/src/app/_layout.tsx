@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
-  duration: 3000,
+  duration: 400,
   fade: true,
 });
 
@@ -17,7 +17,10 @@ export default function Layout() {
 
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="user" />
+        <Stack.Screen name="volunteer" />
+      </Stack>
       <StatusBar />
     </View>
   );

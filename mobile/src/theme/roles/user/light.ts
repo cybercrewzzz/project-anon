@@ -32,6 +32,9 @@
 import { colors } from '@/theme/palettes/colors';
 import { common } from '@/theme/palettes/common';
 import { purple } from '@/theme/palettes/purple';
+import { elevation } from '@/theme/tokens/elevation';
+import { radius } from '@/theme/tokens/radius';
+import { spacing } from '@/theme/tokens/spacing';
 
 /**
  * Light theme for user role.
@@ -81,12 +84,11 @@ import { purple } from '@/theme/palettes/purple';
  */
 export const userLightTheme = {
   background: {
-    default: 'common.white',
+    default: common.white,
     secondary: purple[50],
     accent: purple[500],
     overlay: 'rgba(149, 0, 255, 0.8)',
   },
-
   surface: {
     primary: common.white,
     secondary: purple[50],
@@ -94,7 +96,6 @@ export const userLightTheme = {
     muted: common.gray[100],
     highlightedGradient: [purple[800], purple[500]],
   },
-
   text: {
     primary: common.black,
     secondary: common.white,
@@ -103,32 +104,32 @@ export const userLightTheme = {
     subtle1: purple[600],
     subtle2: purple[400],
   },
-
   border: {
     default: purple[200],
     focusGradient: [purple[800], purple[500]],
   },
-
   action: {
     primary: purple[700],
     secondary: purple[500],
     muted: common.gray[100],
     onPrimary: common.white,
   },
-
   state: {
     error: common.red[500],
     warning: common.yellow[500],
     success: common.green[500],
     info: common.blue[500],
   },
-
   gradient: {
-    backgroundPrimary: [colors.blue[200], colors.blue[50], purple[100]],
+    background: [purple[100], colors.blue[50], colors.blue[300]],
+    backgroundPrimary: [purple[100], colors.blue[50], colors.blue[200]],
     backgroundSecondary: [colors.blue[100], purple[50]],
     textGradient: [purple[800], purple[500]],
     callAction: [common.green[100], common.green[200]],
   },
+  radius,
+  spacing,
+  elevation,
 } as const;
 
 /**
