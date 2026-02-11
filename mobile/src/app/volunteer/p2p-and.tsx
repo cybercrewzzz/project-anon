@@ -121,67 +121,69 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      {/* Bubble Toggle Button */}
-      <View style={styles.toggleWrapper}>
-        <View style={styles.toggleContainer}>
-        <Pressable onPress={() => setSelectedOption('Offline')}>
-          <Animated.View
-            style={[
-              styles.toggleButton,
-              { backgroundColor: offlineBackgroundColor },
-            ]}
-          >
-            <Animated.Text
-              style={[
-                styles.toggleText,
-                { color: offlineTextColor },
-              ]}
-            >
-              Offline
-            </Animated.Text>
-          </Animated.View>
-        </Pressable>
-        <Pressable onPress={() => setSelectedOption('Active')}>
-          <Animated.View
-            style={[
-              styles.toggleButton,
-              { backgroundColor: activeBackgroundColor },
-            ]}
-          >
-            <Animated.Text
-              style={[
-                styles.toggleText,
-                { color: activeTextColor },
-              ]}
-            >
-              Active
-            </Animated.Text>
-          </Animated.View>
-        </Pressable>
-      </View>
-      </View>
- 
-      {/* Right Top Bubble Button */} 
-      <View style={styles.toggleWrapperRight}>
-        <Pressable onPress={() => console.log('Button pressed')}>
-          <LinearGradient
-            colors={['#D2ECFE', '#F9FBFF', '#F6ECFF']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.singleButton}
-          >
-            <AppText style={styles.singleButtonText}>
-             🌟 185
-            </AppText>
-          </LinearGradient>
-        </Pressable> 
-      </View>
-      
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
+      {/* Top Toggle Buttons Row */}
+      <View style={styles.topButtonsRow}>
+        {/* Bubble Toggle Button */}
+        <View style={styles.toggleWrapper}>
+          <View style={styles.toggleContainer}>
+          <Pressable onPress={() => setSelectedOption('Offline')}>
+            <Animated.View
+              style={[
+                styles.toggleButton,
+                { backgroundColor: offlineBackgroundColor },
+              ]}
+            >
+              <Animated.Text
+                style={[
+                  styles.toggleText,
+                  { color: offlineTextColor },
+                ]}
+              >
+                Offline
+              </Animated.Text>
+            </Animated.View>
+          </Pressable>
+          <Pressable onPress={() => setSelectedOption('Active')}>
+            <Animated.View
+              style={[
+                styles.toggleButton,
+                { backgroundColor: activeBackgroundColor },
+              ]}
+            >
+              <Animated.Text
+                style={[
+                  styles.toggleText,
+                  { color: activeTextColor },
+                ]}
+              >
+                Active
+              </Animated.Text>
+            </Animated.View>
+          </Pressable>
+        </View>
+        </View>
+   
+        {/* Right Top Bubble Button */} 
+        <View style={styles.toggleWrapperRight}>
+          <Pressable onPress={() => console.log('Button pressed')}>
+            <LinearGradient
+              colors={['#D2ECFE', '#F9FBFF', '#F6ECFF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.singleButton}
+            >
+              <AppText style={styles.singleButtonText}>
+               🌟 185
+              </AppText>
+            </LinearGradient>
+          </Pressable> 
+        </View>
+      </View>
       {/* Specialisations section */}        
       <View style={{ alignItems: 'flex-start', gap: 5, width: '100%', maxWidth: isSmallScreen ? 500 : 800 }}> 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: screenWidth < 560 ? 10 : 5 }}>
@@ -456,21 +458,28 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
     backgroundColor: theme.background.default,
   },
+  topButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    width: '100%',
+    marginBottom: 30,
+    marginTop: 0,
+    paddingHorizontal: 0,
+  },
   toggleWrapper: {
     position: 'absolute',
-    top: rt.insets.top + 10,
-    left: rt.screen.width < 560 ? 8 : 13,
+    left: rt.screen.width < 768 ? 10 : 16,
     zIndex: 10,
-    marginTop: rt.screen.width < 560 ? 0 : 3,
-    marginLeft: rt.screen.width < 560 ? 25 : 40,
+    marginTop: rt.screen.width < 560 ? 0 : 8,
+    marginLeft: rt.screen.width < 560 ? 14 : 18,
   },
   toggleWrapperRight: {
     position: 'absolute',
-    top: rt.insets.top + 10,
     fontSize: rt.screen.width < 560 ? 14 : 18,
     right: rt.screen.width < 560 ? 14 : 18,
     zIndex: 10,
-    marginTop: rt.screen.width < 560 ? 0 : 3,
+    marginTop: rt.screen.width < 560 ? 0 : 8,
     borderColor: '#9500FF',
     borderWidth: 2,
     borderRadius: 25,
