@@ -1,22 +1,58 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
 import { typography } from '@/theme/tokens/typography';
 //import { useRouter } from 'expo-router';
 
-const OTPInput = () => {
+interface OTPInputProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  inputRef?: React.RefObject<TextInput | null>;
+  onKeyPress?: (e: any) => void;
+}
+
+const OTPInput = ({ value, onChangeText, inputRef, onKeyPress }: OTPInputProps) => {
   return (
     <TextInput
+      ref={inputRef}
       style={styles.otpInput}
       maxLength={1}
       keyboardType="number-pad"
+      value={value}
+      onChangeText={onChangeText}
+      onKeyPress={onKeyPress}
     />
   );
 };
 
 const OTPVerification = () => {
   //const router = useRouter();
+  const [otp, setOtp] = useState(['', '', '', '']);
+  const inputRefs = [
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
+  ];
+
+  const handleOtpChange = (text: string, index: number) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (text && index < 3) {
+      inputRefs[index + 1].current?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    // Auto-focus previous input on backspace
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs[index - 1].current?.focus();
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -32,10 +68,30 @@ const OTPVerification = () => {
       </View>
 
       <View style={styles.otpContainer}>
-        <OTPInput />
-        <OTPInput />
-        <OTPInput />
-        <OTPInput />
+        <OTPInput
+          value={otp[0]}
+          onChangeText={(text) => handleOtpChange(text, 0)}
+          inputRef={inputRefs[0]}
+          onKeyPress={(e) => handleKeyPress(e, 0)}
+        />
+        <OTPInput
+          value={otp[1]}
+          onChangeText={(text) => handleOtpChange(text, 1)}
+          inputRef={inputRefs[1]}
+          onKeyPress={(e) => handleKeyPress(e, 1)}
+        />
+        <OTPInput
+          value={otp[2]}
+          onChangeText={(text) => handleOtpChange(text, 2)}
+          inputRef={inputRefs[2]}
+          onKeyPress={(e) => handleKeyPress(e, 2)}
+        />
+        <OTPInput
+          value={otp[3]}
+          onChangeText={(text) => handleOtpChange(text, 3)}
+          inputRef={inputRefs[3]}
+          onKeyPress={(e) => handleKeyPress(e, 3)}
+        />
       </View>
 
       <View>
