@@ -24,6 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         appEnv === 'development' ? 'com.cybercrewz.projectanon.development'
         : appEnv === 'preview' ? 'com.cybercrewz.projectanon.preview'
         : 'com.cybercrewz.projectanon',
+      softwareKeyboardLayoutMode: 'pan',
     },
     plugins: [
       'expo-router',
