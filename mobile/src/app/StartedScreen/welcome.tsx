@@ -25,7 +25,7 @@ export default function Welcome() {
 
        {/* Image in between */}
       <Image
-        source={require('@/assets/logo.png')}
+        source={require('@/mobile/assets/images/icon.png')}
         style={{ width: 100, height: 100 }}
       />
 
