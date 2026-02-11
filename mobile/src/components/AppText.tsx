@@ -8,7 +8,7 @@ import React from 'react';
 import { Text, TextProps, TextStyle } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-interface AppTextProps extends TextProps {
+export interface AppTextProps extends TextProps {
   variant?: TextVariant;
   color?: keyof AppTheme['text'];
   emphasis?: TextEmphasis;
