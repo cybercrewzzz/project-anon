@@ -1,17 +1,18 @@
-import { View, Pressable } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
-import { AppText } from '@/components/AppText';
 import { useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native-unistyles';
+import Button from '@/components/button';
 
 const Groups = () => {
   const router = useRouter();
 
   return (
     <View style={styles.screen}>
-      <Pressable onPress={() => router.navigate('/user/authScreens/signIn')}>
-        <AppText>Sign In</AppText>
-      </Pressable>
+      <Button
+        text="Sign In"
+        onPress={() => router.navigate('/user/authScreens/signIn')}
+      />
     </View>
   );
 };
@@ -23,5 +24,6 @@ const styles = StyleSheet.create(theme => ({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.background.default,
   },
 }));
