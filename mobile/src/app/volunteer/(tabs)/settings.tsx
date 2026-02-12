@@ -1,12 +1,66 @@
 import { View, ScrollView } from 'react-native';
 import React from 'react';
-import { AppText } from '@/components/AppText';
-import { Image } from 'expo-image';
+import { AppText, AppTextProps } from '@/components/AppText';
+import { Image, ImageSource } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
-import SideImageCard from '@/components/sideImageCard';
-import HomeTile from '@/components/homeTile';
-import { Background } from '@react-navigation/elements';
+
+interface XpCardProps {
+  text: string;
+  value: number;
+  icon: ImageSource;
+}
+
+interface MenuItemProps {
+  leftIcon: ImageSource;
+  text: string;
+  color?: AppTextProps['color'];
+  rightIcon?: ImageSource;
+}
+
+const XpCard = ({ text, value, icon }: XpCardProps) => {
+  return (
+    <View style={styles.card}>
+      <View>
+        <AppText variant="subhead" emphasis="emphasized" color="secondary">
+          {text}
+        </AppText>
+      </View>
+
+      <View style={styles.cardValue}>
+        <Image
+          source={icon}
+          style={{ width: 24, height: 24 }}
+          contentFit="contain"
+        />
+        <AppText variant="title3" emphasis="emphasized" color="secondary">
+          {value}
+        </AppText>
+      </View>
+    </View>
+  );
+};
+
+const MenuItem = ({
+  leftIcon,
+  text,
+  color = 'primary',
+  rightIcon,
+}: MenuItemProps) => {
+  return (
+    <View style={styles.menuItem}>
+      <View style={styles.menuItemText}>
+        <Image source={leftIcon} style={{ width: 24, height: 24 }} />
+        <AppText variant="body" emphasis="emphasized" color={color}>
+          {text}
+        </AppText>
+      </View>
+      <View style={styles.menuItemicon}>
+        <Image source={rightIcon} style={{ width: 18, height: 18 }} />
+      </View>
+    </View>
+  );
+};
 
 const Home = () => {
   return (
@@ -19,10 +73,7 @@ const Home = () => {
         locations={[0.38, 0.63, 0.8]}
       />
 
-      <ScrollView
-        contentContainerStyle={styles.contentContainer}
-        style={{ backgroundColor: '#ff0000' }}
-      >
+      <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.profileCard}>
           <View style={styles.profileImage}>
             <Image
@@ -80,28 +131,75 @@ const Home = () => {
             </View>
           </LinearGradient>
           <View style={styles.xpCardsContainer}>
-            <View style={styles.card}>
-              <View>
-                <AppText variant="subhead" emphasis="emphasized">
-                  Daily login
-                </AppText>
-              </View>
-
-              <View style={styles.cardValue}>
-                <Image
-                  source={require('@/assets/images/fireIconOPT.webp')}
-                  style={{ width: 24, height: 24 }}
-                  contentFit="contain"
-                />
-                <AppText variant="title3" emphasis="emphasized">
-                  03
-                </AppText>
-              </View>
-            </View>
+            <XpCard
+              text="Daily login"
+              value={3}
+              icon={require('@/assets/images/fireIconOPT.webp')}
+            />
+            <XpCard
+              text="Daily login"
+              value={3}
+              icon={require('@/assets/images/fireIconOPT.webp')}
+            />
+            <XpCard
+              text="Daily login"
+              value={3}
+              icon={require('@/assets/images/fireIconOPT.webp')}
+            />
           </View>
         </View>
-        <View style={styles.Certificate}></View>
-        <View style={styles.menuSection}></View>
+        <View style={styles.Certificate}>
+          <View style={styles.CertificateText}>
+            <AppText variant="title3" emphasis="emphasized">
+              Get Your
+            </AppText>
+            <AppText variant="title3" emphasis="emphasized">
+              Certificate !
+            </AppText>
+          </View>
+          <Image
+            source={require('@/assets/icons/certificateOPT.svg')}
+            style={styles.CertificateImage}
+            contentFit="contain"
+          />
+        </View>
+        <View style={styles.menuSection}>
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Select Language"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Select Language"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Select Language"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Select Language"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Select Language"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Select Language"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Select Language"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+        </View>
       </ScrollView>
     </View>
   );
@@ -134,15 +232,19 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: theme.spacing.s5,
   },
   xpSection: {
-    flex: 1,
+    gap: theme.spacing.s3,
   },
   Certificate: {
-    backgroundColor: '#00ffff',
-    flex: 1,
+    backgroundColor: '#CDE2FF',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: theme.spacing.s3,
+    borderRadius: theme.radius.mdSoft,
+    flexDirection: 'row',
   },
   menuSection: {
-    backgroundColor: '#ff00ff',
-    flex: 1,
+    backgroundColor: theme.background.secondary,
+    borderRadius: theme.radius.md,
   },
   profileImage: {
     justifyContent: 'center',
@@ -159,9 +261,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingVertical: theme.spacing.s4,
   },
   xpCardsContainer: {
-    backgroundColor: '#33ff57',
     flexDirection: 'row',
-    flex: 1,
+    gap: theme.spacing.s3,
   },
   levelText: {
     flexDirection: 'row',
@@ -192,13 +293,37 @@ const styles = StyleSheet.create((theme, rt) => ({
   card: {
     backgroundColor: '#72BCF8',
     borderRadius: theme.radius.md,
-    padding: theme.spacing.s3,
-    width: '100%',
-    height: 75,
+    paddingVertical: theme.spacing.s2,
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cardValue: {
     flexDirection: 'row',
     gap: theme.spacing.s2,
     paddingVertical: theme.spacing.s1,
   },
+  CertificateText: {
+    gap: theme.spacing.s1,
+  },
+  CertificateImage: {
+    width: 74,
+    height: 69,
+    position: 'absolute',
+    right: theme.spacing.s3,
+    bottom: -theme.spacing.s3,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s2,
+  },
+  menuItemText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s2,
+  },
+  menuItemicon: {},
 }));
