@@ -8,6 +8,22 @@ interface SmallButtonProps extends PressableProps {
   children: string;
 }
 
+/**
+ * A small, pill-shaped button component for selections with selected/unselected states.
+ *
+ * @component
+ * @example
+ * <SmallButton
+ *   selected={isSelected}
+ *   onPress={() => handleSelect()}
+ * >
+ *   English
+ * </SmallButton>
+ *
+ * @param {boolean} [selected=false] - Whether the button is in selected state
+ * @param {string} children - Button label text
+ * @param {PressableProps} props - All other Pressable props (onPress, disabled, etc.)
+ */
 export const SmallButton = ({
   selected = false,
   children,

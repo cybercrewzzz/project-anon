@@ -8,6 +8,26 @@ interface LanguageSelectionProps {
   onLanguageChange?: (language: string, talkLanguages: string[]) => void;
 }
 
+/**
+ * A comprehensive language selection component with app interface and talk language options.
+ *
+ * Includes two sections:
+ * - App Interface Language: Single selection (English or Sinhala)
+ * - Talk Languages: Multi-selection (Tamil, English, Sinhala)
+ *
+ * @component
+ * @example
+ * <LanguageSelection
+ *   onLanguageChange={(language, talkLanguages) => {
+ *     console.log('App Language:', language);
+ *     console.log('Talk Languages:', talkLanguages);
+ *   }}
+ * />
+ *
+ * @param {function} [onLanguageChange] - Callback function called when any language selection changes
+ * @param {string} onLanguageChange.language - Selected app interface language
+ * @param {string[]} onLanguageChange.talkLanguages - Array of selected talk languages
+ */
 export const LanguageSelection = ({
   onLanguageChange,
 }: LanguageSelectionProps) => {

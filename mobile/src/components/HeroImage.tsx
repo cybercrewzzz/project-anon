@@ -8,6 +8,22 @@ interface HeroImageProps {
   aspectRatio?: number;
 }
 
+/**
+ * A reusable hero image component with rounded corners and responsive sizing.
+ *
+ * @component
+ * @example
+ * <HeroImage source={require('@/assets/images/hero.webp')} />
+ *
+ * @example
+ * <HeroImage
+ *   source={require('@/assets/images/hero.webp')}
+ *   aspectRatio={16/9}
+ * />
+ *
+ * @param {ImageSourcePropType} source - The image source (required)
+ * @param {number} [aspectRatio=2] - The aspect ratio of the image (width/height)
+ */
 export const HeroImage = ({ source, aspectRatio = 2 }: HeroImageProps) => {
   return (
     <View style={styles.container}>

@@ -12,6 +12,28 @@ interface GradientBackgroundProps extends Omit<
   useDefaultStyle?: boolean;
 }
 
+/**
+ * A flexible gradient background component that wraps LinearGradient with theme support.
+ *
+ * @component
+ * @example
+ * // Using default theme gradient
+ * <GradientBackground />
+ *
+ * @example
+ * // Using custom colors with additional props
+ * <GradientBackground
+ *   colors={['#F6E0FF', '#F9FBFF', '#D2ECFE']}
+ *   start={{ x: 0, y: 0 }}
+ *   end={{ x: 1, y: 1 }}
+ *   locations={[0.38, 0.63, 0.8]}
+ * />
+ *
+ * @param {LinearGradientProps['colors']} [colors] - Array of gradient colors. Uses theme.gradient.backgroundPrimary if not provided
+ * @param {StyleProp<ViewStyle>} [style] - Custom style to apply
+ * @param {boolean} [useDefaultStyle=true] - Whether to use default absolute positioning style
+ * @param {...LinearGradientProps} props - All other LinearGradient props (start, end, locations, etc.)
+ */
 export const GradientBackground = ({
   colors,
   style,

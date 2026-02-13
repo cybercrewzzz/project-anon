@@ -7,6 +7,18 @@ interface FullWidthButtonProps extends PressableProps {
   children: string;
 }
 
+/**
+ * A full-width primary action button component.
+ *
+ * @component
+ * @example
+ * <FullWidthButton onPress={handleContinue}>
+ *   Continue
+ * </FullWidthButton>
+ *
+ * @param {string} children - Button text label
+ * @param {PressableProps} props - All other Pressable props (onPress, disabled, etc.)
+ */
 export const FullWidthButton = ({
   children,
   ...pressableProps
@@ -38,4 +50,3 @@ const styles = StyleSheet.create(theme => ({
     color: theme.action.onPrimary,
   },
 }));
-
