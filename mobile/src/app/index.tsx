@@ -4,8 +4,7 @@ import { useRole } from '@/store/useRole';
 
 const Index = () => {
   const role = useRole(state => state.role);
-  //if (role === 'user') return <Redirect href="/user/home" />;
-  if (role === 'user') return <Redirect href='/StartedScreens/selectLanguage'/>;
+  if (role === 'user') return <Redirect href="/user/home" />;
   if (role === 'volunteer') return <Redirect href="/volunteer/home" />;
   if (!role) {
     console.log(

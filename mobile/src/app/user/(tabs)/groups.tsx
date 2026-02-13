@@ -7,7 +7,7 @@ const Groups = () => {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Button
         title="Get Started"
-        onPress={() => router.navigate('/StartedScreens/selectLanguage')}
+        onPress={() => router.navigate('/user/StartedScreens/selectLanguage')}
       />
     </View>
   );
