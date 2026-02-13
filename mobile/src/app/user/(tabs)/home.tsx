@@ -3,19 +3,20 @@ import React from 'react';
 import { AppText } from '@/components/AppText';
 import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
-import { LinearGradient } from 'expo-linear-gradient';
+import { GradientBackground } from '@/components/GradientBackground';
 import SideImageCard from '@/components/sideImageCard';
 import HomeTile from '@/components/homeTile';
 
 const Home = () => {
   return (
     <View style={styles.screen}>
-      <LinearGradient
+      <GradientBackground
         colors={['#F6E0FF', '#F9FBFF', '#D2ECFE']}
         style={styles.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         locations={[0.38, 0.63, 0.8]}
+        useDefaultStyle={false}
       />
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.header}>
