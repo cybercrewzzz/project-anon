@@ -111,14 +111,10 @@ const styles = StyleSheet.create((theme, rt) => ({
     height: 24,
   },
   heroImageContainer: {
-    flex: 1,
-    backgroundColor: 'black',
-    width: '100%',
     borderRadius: theme.radius.sm,
     overflow: 'hidden',
   },
   heroImage: {
-    width: '100%',
     aspectRatio: '2',
   },
   tileContainer: {
