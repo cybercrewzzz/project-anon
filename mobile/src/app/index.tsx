@@ -1,63 +1,15 @@
-import { AppText } from '@/components/AppText';
-import { Button, View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
-import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
+import React from 'react';
+import { Redirect } from 'expo-router';
 
-export default function Index() {
-  return (
-    <View style={styles.container}>
-      <View>
-        <AppText
-          variant="largeTitle"
-          color="primary"
-          emphasis="emphasized"
-          style={{ textAlign: 'center' }}
-        >
-          Welcome to Anora
-        </AppText>
-        <AppText variant="title1" style={{ textAlign: 'center' }}>
-          The Project Anon
-        </AppText>
-        <AppText style={{ textAlign: 'center' }}>
-          - Proudly presented by SDGP-140 -
-        </AppText>
-      </View>
-      <View>
-        <AppText variant="largeTitle">largeTitle</AppText>
-        <AppText variant="title1">title1</AppText>
-        <AppText variant="title2">title2</AppText>
-        <AppText variant="title3">title3</AppText>
-        <AppText variant="headline">headline</AppText>
-        <AppText variant="body">body</AppText>
-        <AppText variant="callout">callout</AppText>
-        <AppText variant="subhead">subhead</AppText>
-        <AppText variant="footnote">footnote</AppText>
-        <AppText variant="caption1">caption1</AppText>
-        <AppText variant="caption2">caption2</AppText>
-      </View>
-      <StatusBar />
+const Index = () => {
+  const role = process.env.EXPO_PUBLIC_ROLE;
+  if (role === 'user') return <Redirect href="/user/home" />;
+  if (role === 'volunteer') return <Redirect href="/volunteer/home" />;
+  if (!role) {
+    console.log(
+      'Add EXPO_PUBLIC_ROLE=user or EXPO_PUBLIC_ROLE=volunteer to env file',
+    );
+  }
+};
 
-      <Button
-        title="OTP Verification"
-        onPress={() => router.navigate('/authScreens/OTPVerification')}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create((theme, rt) => ({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.background.default,
-    marginTop: rt.insets.top,
-    gap: 50,
-  },
-  textContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-}));
+export default Index;

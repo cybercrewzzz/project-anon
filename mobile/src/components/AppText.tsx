@@ -5,25 +5,32 @@ import {
   typography,
 } from '@/theme/tokens/typography';
 import React from 'react';
-import { Text, TextProps } from 'react-native';
+import { Text, TextProps, TextStyle } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 interface AppTextProps extends TextProps {
   variant?: TextVariant;
   color?: keyof AppTheme['text'];
   emphasis?: TextEmphasis;
+  textAlign?: TextStyle['textAlign'];
 }
 
 export const AppText = ({
   variant = 'body',
   color = 'primary',
   emphasis = 'regular',
+  textAlign,
   style,
   ...props
 }: AppTextProps) => {
   return (
     <Text
-      style={[typography[variant][emphasis], styles.textColor(color), style]}
+      style={[
+        typography[variant][emphasis],
+        { textAlign: textAlign },
+        styles.textColor(color),
+        style,
+      ]}
       {...props}
     />
   );
