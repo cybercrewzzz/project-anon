@@ -1,16 +1,33 @@
-import { View, Button } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { StyleSheet } from 'react-native-unistyles';
+import Button from '@/components/button';
 
 const Groups = () => {
+  const router = useRouter();
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={styles.screen}>
       <Button
-        title="Get Started"
+        text="Get Started"
         onPress={() => router.navigate('/user/StartedScreens/selectLanguage')}
+      />
+      <Button
+        text="Sign In"
+        onPress={() => router.navigate('/user/authScreens/signIn')}
       />
     </View>
   );
 };
 
 export default Groups;
+
+const styles = StyleSheet.create(theme => ({
+  screen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.background.default,
+  },
+}));
