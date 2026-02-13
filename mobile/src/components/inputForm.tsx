@@ -17,7 +17,6 @@ interface InputFormProps extends TextInputProps {
   placeholderColor?: AppTextProps['color'];
   placeholderVariant?: AppTextProps['variant'];
   placeholderEmphasis?: AppTextProps['emphasis'];
-  placeholderStyle?: StyleProp<TextStyle>;
   formColor?: ColorValue;
   contentContainerStyle?: StyleProp<ViewStyle>;
   outputVariant?: AppTextProps['variant'];
