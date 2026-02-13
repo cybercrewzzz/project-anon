@@ -83,17 +83,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   greeting: {
     justifyContent: 'center',
   },
-  notificationIconBg: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.s3,
-    backgroundColor: theme.background.default,
-    borderRadius: theme.radius.full,
-  },
-  notificationIcon: {
-    width: 24,
-    height: 24,
-  },
   heroImageContainer: {
     flex: 1,
     backgroundColor: 'black',
