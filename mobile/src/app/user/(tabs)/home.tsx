@@ -12,7 +12,7 @@ const Home = () => {
     <View style={styles.screen}>
       <LinearGradient
         colors={['#F6E0FF', '#F9FBFF', '#D2ECFE']}
-        style={styles.background}
+        style={styles.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         locations={[0.38, 0.63, 0.8]}
@@ -78,17 +78,17 @@ export default Home;
 const styles = StyleSheet.create((theme, rt) => ({
   screen: {
     flex: 1,
-    paddingTop: rt.insets.top + theme.spacing.s6,
+    paddingTop: rt.insets.top + theme.spacing.s7,
     paddingBottom: rt.insets.bottom,
     paddingLeft: rt.insets.left + theme.spacing.s5,
     paddingRight: rt.insets.right + theme.spacing.s5,
   },
-  contentContainer: {
-    gap: theme.spacing.s4,
-  },
-  background: {
+  gradient: {
     position: 'absolute',
     inset: 0,
+  },
+  contentContainer: {
+    gap: theme.spacing.s4,
   },
   header: {
     flexDirection: 'row',
@@ -110,14 +110,10 @@ const styles = StyleSheet.create((theme, rt) => ({
     height: 24,
   },
   heroImageContainer: {
-    flex: 1,
-    backgroundColor: 'black',
-    width: '100%',
     borderRadius: theme.radius.sm,
     overflow: 'hidden',
   },
   heroImage: {
-    width: '100%',
     aspectRatio: '2',
   },
   tileContainer: {
