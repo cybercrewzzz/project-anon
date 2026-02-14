@@ -6,7 +6,7 @@ const ProTalk = () => {
   return (
     <View>
       <Text>ProTalk</Text>
-      <Button title="P2P-P2V" onPress={() => router.push('/StartedScreen/welcome')} />
+      <Button title="P2P-P2V" onPress={() => router.push('/volunteer/StartedScreen/welcome')} />
     </View>
   );
 };

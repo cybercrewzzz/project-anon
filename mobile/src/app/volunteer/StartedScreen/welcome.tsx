@@ -39,7 +39,7 @@ export default function Welcome() {
           </AppText>
         </Pressable>
 
-        <AppText style={styles.volunteerText}onPress={() => router.navigate('/StartedScreen/signup')}>
+        <AppText style={styles.volunteerText}onPress={() => router.navigate('/volunteer/StartedScreen/signup')}>
           Continue as a Volunteer
         </AppText>
        
