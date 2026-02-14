@@ -1,13 +1,11 @@
 import { AppText } from '@/components/AppText';
-import { Button, Pressable, View } from 'react-native';
+import { Pressable, View, Image } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
-import { Image } from 'react-native';
 import { purple } from '@/theme/palettes/purple';
 import { common } from '@/theme/palettes/common';
-import { Platform, TextStyle } from 'react-native';
-import { typography, weight } from '@/theme/tokens/typography';
+import { weight } from '@/theme/tokens/typography';
 import React from 'react';
 
 
@@ -25,7 +23,7 @@ export default function Welcome() {
 
        {/* Image in between */}
       <Image
-        source={require('@/mobile/assets/images/icon.png')}
+        source={require('../../../assets/images/logo.png')}
         style={{ width: 100, height: 100 }}
       />
 
