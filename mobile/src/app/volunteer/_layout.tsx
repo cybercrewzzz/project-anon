@@ -1,6 +1,5 @@
 import React from 'react';
-import { Stack, Tabs } from 'expo-router';
-import {Image } from 'expo-image';
+import { Stack } from 'expo-router';
 
 // const VolunteerTabsLayout = () => {
 //   return (
