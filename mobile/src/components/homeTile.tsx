@@ -17,7 +17,7 @@ const HomeTile = ({ title, description, icon, onPress }: HomeTileProps) => {
       <AppText variant="subhead" emphasis="emphasized" textAlign="center">
         {title}
       </AppText>
-      <AppText variant="footnote" textAlign="center">
+      <AppText variant="caption1" textAlign="center">
         {description}
       </AppText>
       <Image source={icon} style={styles.icon} contentFit="contain" />
@@ -31,7 +31,8 @@ const styles = StyleSheet.create(theme => ({
   tile: {
     flex: 1,
     backgroundColor: theme.background.default,
-    padding: theme.spacing.s4,
+    paddingVertical: theme.spacing.s4,
+    paddingHorizontal: theme.spacing.s3,
     borderRadius: theme.radius.xxlSoft,
     justifyContent: 'center',
     alignItems: 'center',

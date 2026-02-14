@@ -4,7 +4,10 @@ import { Image } from 'expo-image';
 
 const UserTabsLayout = () => {
   return (
-    <Tabs initialRouteName="home" screenOptions={{ headerShown: false }}>
+    <Tabs
+      initialRouteName="home"
+      screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true }}
+    >
       <Tabs.Screen
         name="home"
         options={{
