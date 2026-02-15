@@ -13,7 +13,7 @@ import { useState, useRef, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Index() {
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth } = useWindowDimensions();
   const isSmallScreen = screenWidth < 768;
   const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>(
     'Offline',
@@ -117,10 +117,10 @@ export default function Index() {
     outputRange: ['transparent', '#9500FF'],
   });
 
-  const recommendedTextColor = recommendedAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#666', '#FFFFFF'],
-  });
+  // const recommendedTextColor = recommendedAnim.interpolate({
+  //   inputRange: [0, 1],
+  //   outputRange: ['#666', '#FFFFFF'],
+  // });
 
   const allTextColor = allAnim.interpolate({
     inputRange: [0, 1],
