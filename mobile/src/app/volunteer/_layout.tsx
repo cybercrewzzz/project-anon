@@ -75,17 +75,16 @@ import { Stack } from 'expo-router';
 
 // export default VolunteerTabsLayout;
 
-
 const VolunteerLayout = () => {
   return (
-    <Stack screenOptions={{ headerShown: false, headerTitleAlign: 'center'}}>
+    <Stack screenOptions={{ headerShown: false, headerTitleAlign: 'center' }}>
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen 
-        name="p2p-and" 
-        options={{ 
+      <Stack.Screen
+        name="p2p-and"
+        options={{
           headerShown: true,
-          title: 'Volunteer Connect'
-        }} 
+          title: 'Volunteer Connect',
+        }}
       />
     </Stack>
   );

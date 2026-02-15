@@ -1,5 +1,12 @@
 import { AppText } from '@/components/AppText';
-import { Animated, Pressable, View, Text, useWindowDimensions, ScrollView } from 'react-native';
+import {
+  Animated,
+  Pressable,
+  View,
+  Text,
+  useWindowDimensions,
+  ScrollView,
+} from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useRef, useEffect } from 'react';
@@ -8,8 +15,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function Index() {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const isSmallScreen = screenWidth < 768;
-  const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>('Offline');
-  const [connectFilter, setConnectFilter] = useState<'Recommended' | 'All'>('Recommended');
+  const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>(
+    'Offline',
+  );
+  const [connectFilter, setConnectFilter] = useState<'Recommended' | 'All'>(
+    'Recommended',
+  );
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const offlineAnim = useRef(new Animated.Value(1)).current;
   const activeAnim = useRef(new Animated.Value(0)).current;
@@ -118,334 +129,543 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
-      {/* Top Toggle Buttons Row */}
-      <View style={styles.topButtonsRow}>
-        {/* Bubble Toggle Button */}
-        <View style={styles.toggleWrapper}>
-          <View style={styles.toggleContainer}>
-          <Pressable onPress={() => setSelectedOption('Offline')}>
-            <Animated.View
-              style={[
-                styles.toggleButton,
-                { backgroundColor: offlineBackgroundColor },
-              ]}
-            >
-              <Animated.Text
-                style={[
-                  styles.toggleText,
-                  { color: offlineTextColor },
-                ]}
-              >
-                Offline
-              </Animated.Text>
-            </Animated.View>
-          </Pressable>
-          <Pressable onPress={() => setSelectedOption('Active')}>
-            <Animated.View
-              style={[
-                styles.toggleButton,
-                { backgroundColor: activeBackgroundColor },
-              ]}
-            >
-              <Animated.Text
-                style={[
-                  styles.toggleText,
-                  { color: activeTextColor },
-                ]}
-              >
-                Active
-              </Animated.Text>
-            </Animated.View>
-          </Pressable>
-        </View>
-        </View>
-   
-        {/* Right Top Bubble Button */} 
-        <View style={styles.toggleWrapperRight}>
-          <Pressable onPress={() => console.log('Button pressed')}>
-            <LinearGradient
-              colors={['#D2ECFE', '#F9FBFF', '#F6ECFF']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.singleButton}
-            >
-              <AppText style={styles.singleButtonText}>
-               🌟 185
-              </AppText>
-            </LinearGradient>
-          </Pressable> 
-        </View>
-      </View>
-      {/* Specialisations section */}        
-      <View style={{ alignItems: 'flex-start', gap: 5, width: '100%', maxWidth: isSmallScreen ? 500 : 800 }}> 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: screenWidth < 560 ? 10 : 5 }}>
-          <AppText
-            variant="callout"
-            color="primary"
-            style={{ textAlign: 'left' }}
-          >
-            Your Specialisations:
-          </AppText>
-          <Pressable 
-            style={styles.plusButton}
-            onPress={() => console.log('Add specialisation')}
-          >
-            <AppText style={styles.plusButtonText}>+</AppText>
-          </Pressable>
-        </View>
-        <View style={styles.specialisations}>
-          <Pressable style={styles.specialisationButton}>
-            <AppText style={styles.specialisationButtonText}>Anxiety</AppText>
-          </Pressable>
-          <Pressable style={styles.specialisationButton}>
-            <AppText style={styles.specialisationButtonText}>Stress</AppText>
-          </Pressable>
-          <Pressable style={styles.specialisationButton}>
-            <AppText style={styles.specialisationButtonText}>Depression</AppText>
-          </Pressable>
-        </View>
-
-        {/* Connect With Section */}
-        <AppText variant="callout" style={{ textAlign: 'left', marginTop: 20 , marginLeft: screenWidth < 560 ? 10 : 5}}>
-          You Can Connect With:
-        </AppText>
-        
-        <View style={styles.connectwith}>
-          {/* Connect Filter Toggle */}
-          <View style={styles.connectToggleContainer}>
-            <Pressable onPress={() => setConnectFilter('Recommended')}>
-              <Animated.View
-                style={[
-                  styles.connectToggleButton,
-                  { 
-                    borderColor: recommendedBackgroundColor,
-                    borderWidth: 2,
-                  },
-                ]}
-              >
-                <Animated.Text
+        {/* Top Toggle Buttons Row */}
+        <View style={styles.topButtonsRow}>
+          {/* Bubble Toggle Button */}
+          <View style={styles.toggleWrapper}>
+            <View style={styles.toggleContainer}>
+              <Pressable onPress={() => setSelectedOption('Offline')}>
+                <Animated.View
                   style={[
-                    styles.connectToggleText,
-                    { color: recommendedBackgroundColor },
+                    styles.toggleButton,
+                    { backgroundColor: offlineBackgroundColor },
                   ]}
                 >
-                  Recommended
-                </Animated.Text>
-              </Animated.View>
-            </Pressable>
-            <Pressable onPress={() => setConnectFilter('All')}>
-              <Animated.View
-                style={[
-                  styles.connectToggleButton,
-                  { 
-                    borderColor: allBackgroundColor,
-                    borderWidth: 2,
-                  },
-                ]}
-              >
-                <Animated.Text
+                  <Animated.Text
+                    style={[styles.toggleText, { color: offlineTextColor }]}
+                  >
+                    Offline
+                  </Animated.Text>
+                </Animated.View>
+              </Pressable>
+              <Pressable onPress={() => setSelectedOption('Active')}>
+                <Animated.View
                   style={[
-                    styles.connectToggleText,
-                    { color: allBackgroundColor },
+                    styles.toggleButton,
+                    { backgroundColor: activeBackgroundColor },
                   ]}
                 >
-                  All
-                </Animated.Text>
-              </Animated.View>
-            </Pressable>
-          </View>
-
-          {/* Profile Cards */}
-          <View style={styles.connectProfilesContainer}>
-            {/* Profile Card 1 */}
-            <View style={styles.profileCard}>
-              <View style={styles.profileInfo}>
-                <LinearGradient
-                  colors={['#1D47DC', '#0E7FBC']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.profileImage}
-                >
-                  <AppText style={styles.profileImageText}>JD</AppText>
-                </LinearGradient>
-                <View style={styles.profileTextContainer}>
-                  <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>RecAnonUser89</Text>
-                  <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Stress</Text>
-                  <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Waiting - 8 minutes</Text>
-                </View>
-              </View>
-              <Pressable>
-                <LinearGradient
-                  colors={['#1D47DC', '#0E7FBC']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.connectButton}
-                >
-                  <AppText style={styles.connectButtonText}>Connect</AppText>
-                </LinearGradient>
-              </Pressable>
-            </View>
-
-            {/* Profile Card 2 */}
-            <View style={styles.profileCard}>
-              <View style={styles.profileInfo}>
-                <LinearGradient
-                  colors={['#1D47DC', '#0E7FBC']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.profileImage}
-                >
-                  <AppText style={styles.profileImageText}>SA</AppText>
-                </LinearGradient>
-                <View style={styles.profileTextContainer}>
-                  <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>RecAnonUser159</Text>
-                  <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Anxiety</Text>
-                  <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Waiting - 5 minutes</Text>
-                </View>
-              </View>
-              <Pressable>
-                <LinearGradient
-                  colors={['#1D47DC', '#0E7FBC']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.connectButton}
-                >
-                  <AppText style={styles.connectButtonText}>Connect</AppText>
-                </LinearGradient>
-              </Pressable>
-            </View>
-
-            {/* Profile Card 3 */}
-            <View style={styles.profileCard}>
-              <View style={styles.profileInfo}>
-                <LinearGradient
-                  colors={['#1D47DC', '#0E7FBC']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.profileImage}
-                >
-                  <AppText style={styles.profileImageText}>MJ</AppText>
-                </LinearGradient>
-                <View style={styles.profileTextContainer}>
-                  <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>RecAnonUser289</Text>
-                  <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Depression</Text>
-                  <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Waiting - 2 minutes</Text>                
-                </View>
-              </View>
-              <Pressable>
-                <LinearGradient
-                  colors={['#1D47DC', '#0E7FBC']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.connectButton}
-                >
-                  <AppText style={styles.connectButtonText}>Connect</AppText>
-                </LinearGradient>
+                  <Animated.Text
+                    style={[styles.toggleText, { color: activeTextColor }]}
+                  >
+                    Active
+                  </Animated.Text>
+                </Animated.View>
               </Pressable>
             </View>
           </View>
+
+          {/* Right Top Bubble Button */}
+          <View style={styles.toggleWrapperRight}>
+            <Pressable onPress={() => console.log('Button pressed')}>
+              <LinearGradient
+                colors={['#D2ECFE', '#F9FBFF', '#F6ECFF']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.singleButton}
+              >
+                <AppText style={styles.singleButtonText}>🌟 185</AppText>
+              </LinearGradient>
+            </Pressable>
+          </View>
         </View>
-      </View>
-
-
-      {/* Connection History Section */}            
-      <View style={{ alignItems: 'flex-start', gap: 5, width: '100%', maxWidth: isSmallScreen ? 500 : 800 }}>
-        <Pressable 
-          onPress={() => setHistoryExpanded(!historyExpanded)}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: screenWidth < 560 ? 10 : 5 }}
+        {/* Specialisations section */}
+        <View
+          style={{
+            alignItems: 'flex-start',
+            gap: 5,
+            width: '100%',
+            maxWidth: isSmallScreen ? 500 : 800,
+          }}
         >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              marginLeft: screenWidth < 560 ? 10 : 5,
+            }}
+          >
+            <AppText
+              variant="callout"
+              color="primary"
+              style={{ textAlign: 'left' }}
+            >
+              Your Specialisations:
+            </AppText>
+            <Pressable
+              style={styles.plusButton}
+              onPress={() => console.log('Add specialisation')}
+            >
+              <AppText style={styles.plusButtonText}>+</AppText>
+            </Pressable>
+          </View>
+          <View style={styles.specialisations}>
+            <Pressable style={styles.specialisationButton}>
+              <AppText style={styles.specialisationButtonText}>Anxiety</AppText>
+            </Pressable>
+            <Pressable style={styles.specialisationButton}>
+              <AppText style={styles.specialisationButtonText}>Stress</AppText>
+            </Pressable>
+            <Pressable style={styles.specialisationButton}>
+              <AppText style={styles.specialisationButtonText}>
+                Depression
+              </AppText>
+            </Pressable>
+          </View>
+
+          {/* Connect With Section */}
           <AppText
             variant="callout"
-            color="primary"
-            style={{ textAlign: 'left' }}
+            style={{
+              textAlign: 'left',
+              marginTop: 20,
+              marginLeft: screenWidth < 560 ? 10 : 5,
+            }}
           >
-            Connection History
+            You Can Connect With:
           </AppText>
-          <AppText style={{ fontSize: 20, color: '#349EDB' }}>
-            {historyExpanded ? '▼' : '▶'}
-          </AppText>
-        </Pressable>
-        
-        {historyExpanded && (
-          <View style={styles.connectionhistory}>
-            {/* Profile Cards from History */}
+
+          <View style={styles.connectwith}>
+            {/* Connect Filter Toggle */}
+            <View style={styles.connectToggleContainer}>
+              <Pressable onPress={() => setConnectFilter('Recommended')}>
+                <Animated.View
+                  style={[
+                    styles.connectToggleButton,
+                    {
+                      borderColor: recommendedBackgroundColor,
+                      borderWidth: 2,
+                    },
+                  ]}
+                >
+                  <Animated.Text
+                    style={[
+                      styles.connectToggleText,
+                      { color: recommendedBackgroundColor },
+                    ]}
+                  >
+                    Recommended
+                  </Animated.Text>
+                </Animated.View>
+              </Pressable>
+              <Pressable onPress={() => setConnectFilter('All')}>
+                <Animated.View
+                  style={[
+                    styles.connectToggleButton,
+                    {
+                      borderColor: allBackgroundColor,
+                      borderWidth: 2,
+                    },
+                  ]}
+                >
+                  <Animated.Text
+                    style={[
+                      styles.connectToggleText,
+                      { color: allBackgroundColor },
+                    ]}
+                  >
+                    All
+                  </Animated.Text>
+                </Animated.View>
+              </Pressable>
+            </View>
+
+            {/* Profile Cards */}
             <View style={styles.connectProfilesContainer}>
-              {/* History Profile Card 1 */}
+              {/* Profile Card 1 */}
               <View style={styles.profileCard}>
                 <View style={styles.profileInfo}>
                   <LinearGradient
-                    colors={['#9500FF', '#7B00D6']}
+                    colors={['#1D47DC', '#0E7FBC']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.profileImage}
                   >
-                    <AppText style={styles.profileImageText}>AL</AppText>
+                    <AppText style={styles.profileImageText}>JD</AppText>
                   </LinearGradient>
                   <View style={styles.profileTextContainer}>
-                    <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>AnonUser42</Text>
-                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Anxiety</Text>
-                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Session - 45 minutes</Text>
+                    <Text
+                      variant="callout"
+                      style={{
+                        fontSize: isSmallScreen ? 14 : 16,
+                        fontWeight: '600',
+                      }}
+                    >
+                      RecAnonUser89
+                    </Text>
+                    <Text
+                      variant="caption1"
+                      style={{
+                        fontSize: isSmallScreen ? 10 : 12,
+                        color: '#666666',
+                      }}
+                    >
+                      Issue - Stress
+                    </Text>
+                    <Text
+                      variant="caption1"
+                      style={{
+                        fontSize: isSmallScreen ? 10 : 12,
+                        color: '#666666',
+                      }}
+                    >
+                      Waiting - 8 minutes
+                    </Text>
                   </View>
                 </View>
-                <View style={{ paddingVertical: isSmallScreen ? 6 : 8, paddingHorizontal: isSmallScreen ? 12 : 20 }}>
-                  <AppText style={{ fontSize: isSmallScreen ? 12 : 14, color: '#666666', fontWeight: '600' }}>2 days ago</AppText>
-                </View>
+                <Pressable>
+                  <LinearGradient
+                    colors={['#1D47DC', '#0E7FBC']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.connectButton}
+                  >
+                    <AppText style={styles.connectButtonText}>Connect</AppText>
+                  </LinearGradient>
+                </Pressable>
               </View>
 
-              {/* History Profile Card 2 */}
+              {/* Profile Card 2 */}
               <View style={styles.profileCard}>
                 <View style={styles.profileInfo}>
                   <LinearGradient
-                    colors={['#9500FF', '#7B00D6']}
+                    colors={['#1D47DC', '#0E7FBC']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.profileImage}
                   >
-                    <AppText style={styles.profileImageText}>TC</AppText>
+                    <AppText style={styles.profileImageText}>SA</AppText>
                   </LinearGradient>
                   <View style={styles.profileTextContainer}>
-                    <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>AnonUser231</Text>
-                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Stress</Text>
-                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Session - 30 minutes</Text>
+                    <Text
+                      variant="callout"
+                      style={{
+                        fontSize: isSmallScreen ? 14 : 16,
+                        fontWeight: '600',
+                      }}
+                    >
+                      RecAnonUser159
+                    </Text>
+                    <Text
+                      variant="caption1"
+                      style={{
+                        fontSize: isSmallScreen ? 10 : 12,
+                        color: '#666666',
+                      }}
+                    >
+                      Issue - Anxiety
+                    </Text>
+                    <Text
+                      variant="caption1"
+                      style={{
+                        fontSize: isSmallScreen ? 10 : 12,
+                        color: '#666666',
+                      }}
+                    >
+                      Waiting - 5 minutes
+                    </Text>
                   </View>
                 </View>
-                <View style={{ paddingVertical: isSmallScreen ? 6 : 8, paddingHorizontal: isSmallScreen ? 12 : 20 }}>
-                  <AppText style={{ fontSize: isSmallScreen ? 12 : 14, color: '#666666', fontWeight: '600' }}>5 days ago</AppText>
-                </View>
+                <Pressable>
+                  <LinearGradient
+                    colors={['#1D47DC', '#0E7FBC']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.connectButton}
+                  >
+                    <AppText style={styles.connectButtonText}>Connect</AppText>
+                  </LinearGradient>
+                </Pressable>
               </View>
 
-              {/* History Profile Card 3 */}
+              {/* Profile Card 3 */}
               <View style={styles.profileCard}>
                 <View style={styles.profileInfo}>
                   <LinearGradient
-                    colors={['#9500FF', '#7B00D6']}
+                    colors={['#1D47DC', '#0E7FBC']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.profileImage}
                   >
-                    <AppText style={styles.profileImageText}>RK</AppText>
+                    <AppText style={styles.profileImageText}>MJ</AppText>
                   </LinearGradient>
                   <View style={styles.profileTextContainer}>
-                    <Text variant="callout" style={{ fontSize: isSmallScreen ? 14 : 16, fontWeight: '600' }}>AnonUser567</Text>
-                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Issue - Depression</Text>
-                    <Text variant="caption1" style={{ fontSize: isSmallScreen ? 10 : 12, color: '#666666' }}>Session - 60 minutes</Text>
+                    <Text
+                      variant="callout"
+                      style={{
+                        fontSize: isSmallScreen ? 14 : 16,
+                        fontWeight: '600',
+                      }}
+                    >
+                      RecAnonUser289
+                    </Text>
+                    <Text
+                      variant="caption1"
+                      style={{
+                        fontSize: isSmallScreen ? 10 : 12,
+                        color: '#666666',
+                      }}
+                    >
+                      Issue - Depression
+                    </Text>
+                    <Text
+                      variant="caption1"
+                      style={{
+                        fontSize: isSmallScreen ? 10 : 12,
+                        color: '#666666',
+                      }}
+                    >
+                      Waiting - 2 minutes
+                    </Text>
                   </View>
                 </View>
-                <View style={{ paddingVertical: isSmallScreen ? 6 : 8, paddingHorizontal: isSmallScreen ? 12 : 20 }}>
-                  <AppText style={{ fontSize: isSmallScreen ? 12 : 14, color: '#666666', fontWeight: '600' }}>1 week ago</AppText>
-                </View>
+                <Pressable>
+                  <LinearGradient
+                    colors={['#1D47DC', '#0E7FBC']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.connectButton}
+                  >
+                    <AppText style={styles.connectButtonText}>Connect</AppText>
+                  </LinearGradient>
+                </Pressable>
               </View>
             </View>
           </View>
-        )}
-      </View>
-      <StatusBar />
-    </ScrollView>
+        </View>
+
+        {/* Connection History Section */}
+        <View
+          style={{
+            alignItems: 'flex-start',
+            gap: 5,
+            width: '100%',
+            maxWidth: isSmallScreen ? 500 : 800,
+          }}
+        >
+          <Pressable
+            onPress={() => setHistoryExpanded(!historyExpanded)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              marginLeft: screenWidth < 560 ? 10 : 5,
+            }}
+          >
+            <AppText
+              variant="callout"
+              color="primary"
+              style={{ textAlign: 'left' }}
+            >
+              Connection History
+            </AppText>
+            <AppText style={{ fontSize: 20, color: '#349EDB' }}>
+              {historyExpanded ? '▼' : '▶'}
+            </AppText>
+          </Pressable>
+
+          {historyExpanded && (
+            <View style={styles.connectionhistory}>
+              {/* Profile Cards from History */}
+              <View style={styles.connectProfilesContainer}>
+                {/* History Profile Card 1 */}
+                <View style={styles.profileCard}>
+                  <View style={styles.profileInfo}>
+                    <LinearGradient
+                      colors={['#9500FF', '#7B00D6']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.profileImage}
+                    >
+                      <AppText style={styles.profileImageText}>AL</AppText>
+                    </LinearGradient>
+                    <View style={styles.profileTextContainer}>
+                      <Text
+                        variant="callout"
+                        style={{
+                          fontSize: isSmallScreen ? 14 : 16,
+                          fontWeight: '600',
+                        }}
+                      >
+                        AnonUser42
+                      </Text>
+                      <Text
+                        variant="caption1"
+                        style={{
+                          fontSize: isSmallScreen ? 10 : 12,
+                          color: '#666666',
+                        }}
+                      >
+                        Issue - Anxiety
+                      </Text>
+                      <Text
+                        variant="caption1"
+                        style={{
+                          fontSize: isSmallScreen ? 10 : 12,
+                          color: '#666666',
+                        }}
+                      >
+                        Session - 45 minutes
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      paddingVertical: isSmallScreen ? 6 : 8,
+                      paddingHorizontal: isSmallScreen ? 12 : 20,
+                    }}
+                  >
+                    <AppText
+                      style={{
+                        fontSize: isSmallScreen ? 12 : 14,
+                        color: '#666666',
+                        fontWeight: '600',
+                      }}
+                    >
+                      2 days ago
+                    </AppText>
+                  </View>
+                </View>
+
+                {/* History Profile Card 2 */}
+                <View style={styles.profileCard}>
+                  <View style={styles.profileInfo}>
+                    <LinearGradient
+                      colors={['#9500FF', '#7B00D6']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.profileImage}
+                    >
+                      <AppText style={styles.profileImageText}>TC</AppText>
+                    </LinearGradient>
+                    <View style={styles.profileTextContainer}>
+                      <Text
+                        variant="callout"
+                        style={{
+                          fontSize: isSmallScreen ? 14 : 16,
+                          fontWeight: '600',
+                        }}
+                      >
+                        AnonUser231
+                      </Text>
+                      <Text
+                        variant="caption1"
+                        style={{
+                          fontSize: isSmallScreen ? 10 : 12,
+                          color: '#666666',
+                        }}
+                      >
+                        Issue - Stress
+                      </Text>
+                      <Text
+                        variant="caption1"
+                        style={{
+                          fontSize: isSmallScreen ? 10 : 12,
+                          color: '#666666',
+                        }}
+                      >
+                        Session - 30 minutes
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      paddingVertical: isSmallScreen ? 6 : 8,
+                      paddingHorizontal: isSmallScreen ? 12 : 20,
+                    }}
+                  >
+                    <AppText
+                      style={{
+                        fontSize: isSmallScreen ? 12 : 14,
+                        color: '#666666',
+                        fontWeight: '600',
+                      }}
+                    >
+                      5 days ago
+                    </AppText>
+                  </View>
+                </View>
+
+                {/* History Profile Card 3 */}
+                <View style={styles.profileCard}>
+                  <View style={styles.profileInfo}>
+                    <LinearGradient
+                      colors={['#9500FF', '#7B00D6']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.profileImage}
+                    >
+                      <AppText style={styles.profileImageText}>RK</AppText>
+                    </LinearGradient>
+                    <View style={styles.profileTextContainer}>
+                      <Text
+                        variant="callout"
+                        style={{
+                          fontSize: isSmallScreen ? 14 : 16,
+                          fontWeight: '600',
+                        }}
+                      >
+                        AnonUser567
+                      </Text>
+                      <Text
+                        variant="caption1"
+                        style={{
+                          fontSize: isSmallScreen ? 10 : 12,
+                          color: '#666666',
+                        }}
+                      >
+                        Issue - Depression
+                      </Text>
+                      <Text
+                        variant="caption1"
+                        style={{
+                          fontSize: isSmallScreen ? 10 : 12,
+                          color: '#666666',
+                        }}
+                      >
+                        Session - 60 minutes
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      paddingVertical: isSmallScreen ? 6 : 8,
+                      paddingHorizontal: isSmallScreen ? 12 : 20,
+                    }}
+                  >
+                    <AppText
+                      style={{
+                        fontSize: isSmallScreen ? 12 : 14,
+                        color: '#666666',
+                        fontWeight: '600',
+                      }}
+                    >
+                      1 week ago
+                    </AppText>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+        </View>
+        <StatusBar />
+      </ScrollView>
     </View>
   );
 }
@@ -526,7 +746,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   specialisations: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    backgroundColor: '#349EDB33' ,
+    backgroundColor: '#349EDB33',
     padding: rt.screen.width < 560 ? 10 : 15,
     borderRadius: 30,
     gap: rt.screen.width < 560 ? 8 : 10,
