@@ -21,7 +21,9 @@ const SelectLanguage = () => {
       <HeroImage source={require('@/assets/images/hero.webp')} />
       <LanguageSelection />
       <FullWidthButton>
-        <AppText variant='headline' color='secondary'>Continue</AppText>
+        <AppText variant="headline" color="secondary">
+          Continue
+        </AppText>
       </FullWidthButton>
     </View>
   );

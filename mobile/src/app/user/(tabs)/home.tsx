@@ -10,8 +10,7 @@ import HomeTile from '@/components/homeTile';
 const Home = () => {
   return (
     <View style={styles.screen}>
-        <LinearGradient
-
+      <LinearGradient
         colors={['#F6E0FF', '#F9FBFF', '#D2ECFE']}
         style={styles.gradient}
         start={{ x: 0, y: 0 }}

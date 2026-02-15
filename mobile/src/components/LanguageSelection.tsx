@@ -103,25 +103,25 @@ export const LanguageSelection = ({
 };
 
 const styles = StyleSheet.create(theme => ({
-  container: { gap: 32 },
+  container: { gap: theme.spacing.s6 },
   interfaceCard: {
-    padding: 20,
+    padding: theme.spacing.s4 + theme.spacing.s2,
     backgroundColor: theme.surface.primary,
-    borderRadius: 17,
+    borderRadius: theme.radius.mdSoft,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
+    gap: theme.spacing.s3 + theme.spacing.s1,
   },
   talkCard: {
-    padding: 20,
+    padding: theme.spacing.s4 + theme.spacing.s2,
     backgroundColor: theme.surface.primary,
-    borderRadius: 17,
+    borderRadius: theme.radius.mdSoft,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
+    gap: theme.spacing.s3 + theme.spacing.s1,
   },
   selectionButtons: {
     flexDirection: 'row',
-    gap: 10,
+    gap: theme.spacing.s3 + theme.spacing.s1,
   },
 }));

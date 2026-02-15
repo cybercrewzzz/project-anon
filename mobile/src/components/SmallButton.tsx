@@ -47,7 +47,7 @@ const styles = StyleSheet.create(theme => ({
     borderRadius: theme.radius.full,
   },
   selection: {
-    paddingVertical: theme.spacing.s2 ,
+    paddingVertical: theme.spacing.s2,
     paddingHorizontal: theme.spacing.s4 + theme.spacing.s1,
     borderRadius: theme.radius.full,
     borderColor: theme.action.primary,
