@@ -115,12 +115,13 @@ const Verify = () => {
           Yes, I confirm that the above information is true.
         </AppText>
       </Pressable>
-
-      <FullWidthButton>
-        <AppText variant="headline" color="secondary" emphasis="emphasized">
-          Verify Me
-        </AppText>
-      </FullWidthButton>
+      <View style={styles.buttonWrapper}>
+        <FullWidthButton>
+          <AppText variant="headline" color="secondary" emphasis="emphasized">
+            Verify Me
+          </AppText>
+        </FullWidthButton>
+      </View>
     </KeyboardAwareScrollView>
   );
 };
@@ -185,5 +186,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   checkboxText: {
     flex: 1,
+  },
+  buttonWrapper: {
+    marginTop: theme.spacing.s7,
   },
 }));
