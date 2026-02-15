@@ -27,7 +27,12 @@ const Verify = () => {
       style={styles.screen}
       keyboardShouldPersistTaps="always"
     >
-      <AppText variant="title1" color="accent" textAlign="center" emphasis="emphasized">
+      <AppText
+        variant="title1"
+        color="accent"
+        textAlign="center"
+        emphasis="emphasized"
+      >
         Verification
       </AppText>
 

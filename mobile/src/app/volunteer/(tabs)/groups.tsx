@@ -7,7 +7,10 @@ const Groups = () => {
   const router = useRouter();
   return (
     <View>
-      <Button text='Verify' onPress={() => router.navigate('/volunteer/getStarted/verify')} />
+      <Button
+        text="Verify"
+        onPress={() => router.navigate('/volunteer/getStarted/verify')}
+      />
     </View>
   );
 };
