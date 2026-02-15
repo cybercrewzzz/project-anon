@@ -1,10 +1,13 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
+import Button from '@/components/button';
+import { useRouter } from 'expo-router';
 
 const Groups = () => {
+  const router = useRouter();
   return (
     <View>
-      <Text>Groups</Text>
+      <Button text='Verify' onPress={() => router.navigate('/volunteer/getStarted/verify')} />
     </View>
   );
 };
