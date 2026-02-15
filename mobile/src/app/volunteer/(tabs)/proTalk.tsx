@@ -6,10 +6,12 @@ const ProTalk = () => {
   return (
     <View>
       <Text>ProTalk</Text>
-      <Button title="To OTP Verification" onPress={() => router.push('/volunteer/authScreens/OTPVerification')} />
+      <Button
+        title="To OTP Verification"
+        onPress={() => router.push('/volunteer/authScreens/OTPVerification')}
+      />
     </View>
   );
 };
-
 
 export default ProTalk;
