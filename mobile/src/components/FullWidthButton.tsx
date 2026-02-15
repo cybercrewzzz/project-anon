@@ -16,7 +16,7 @@ interface FullWidthButtonProps extends PressableProps {
  * </FullWidthButton>
  *
  * @param {React.ReactNode} children - Button content (typically AppText component)
- * @param {PressableProps} props - All other Pressable props (onPress, disabled, etc.)
+ * @param {PressableProps} pressableProps - All other Pressable props (onPress, disabled, etc.)
  */
 export const FullWidthButton = ({
   children,
@@ -39,5 +39,4 @@ const styles = StyleSheet.create(theme => ({
     backgroundColor: theme.action.secondary,
     borderRadius: theme.radius.full,
   },
-
 }));

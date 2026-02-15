@@ -41,16 +41,16 @@ export const SmallButton = ({
 
 const styles = StyleSheet.create(theme => ({
   selected: {
-    paddingVertical: 6,
-    paddingHorizontal: 20,
+    paddingVertical: theme.spacing.s2 + theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s4 + theme.spacing.s2,
     backgroundColor: theme.action.primary,
-    borderRadius: 9999,
+    borderRadius: theme.radius.full,
   },
   selection: {
-    paddingVertical: 4,
-    paddingHorizontal: 18,
-    borderRadius: 9999,
+    paddingVertical: theme.spacing.s2 ,
+    paddingHorizontal: theme.spacing.s4 + theme.spacing.s1,
+    borderRadius: theme.radius.full,
     borderColor: theme.action.primary,
-    borderWidth: 2,
+    borderWidth: theme.spacing.s1,
   },
 }));
