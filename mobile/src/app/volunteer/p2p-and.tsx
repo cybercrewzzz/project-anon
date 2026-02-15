@@ -122,10 +122,10 @@ export default function Index() {
   //   outputRange: ['#666', '#FFFFFF'],
   // });
 
-  const allTextColor = allAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#666', '#FFFFFF'],
-  });
+  // const allTextColor = allAnim.interpolate({
+  //   inputRange: [0, 1],
+  //   outputRange: ['#666', '#FFFFFF'],
+  // });
 
   return (
     <View style={styles.container}>
