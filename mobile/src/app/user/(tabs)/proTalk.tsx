@@ -6,7 +6,10 @@ const ProTalk = () => {
   return (
     <View>
       <Text>ProTalk</Text>
-      <Button title="TnS Agreee" onPress={() => router.push('/user/TnS agree/TnS')} />
+      <Button
+        title="TnS Agreee"
+        onPress={() => router.push('/user/TnS agree/TnS')}
+      />
     </View>
   );
 };

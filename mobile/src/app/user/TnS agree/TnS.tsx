@@ -7,21 +7,39 @@ import { purple } from '@/theme/palettes/purple';
 export default function TnS() {
   return (
     <View style={styles.container}>
-      <View style={{justifyContent: 'flex-start'}}>
+      <View style={{ justifyContent: 'flex-start' }}>
         <AppText
           variant="largeTitle"
           color="primary"
-          style={{ textAlign: 'center', paddingTop: 80, color: purple[600], fontSize: 26, fontWeight: "bold" }}
+          style={{
+            textAlign: 'center',
+            paddingTop: 80,
+            color: purple[600],
+            fontSize: 26,
+            fontWeight: 'bold',
+          }}
         >
           Terms & Conditions
         </AppText>
-        </View>
+      </View>
 
-        <Pressable style={{backgroundColor: purple[700], padding: 15, borderRadius: 25, width: 300, alignItems: "center", marginTop: 510}} onPress={() => router.push("/")}>
-            <AppText style={{color: "#FFFFFF", fontSize: 16, fontWeight: "bold"}} >Agree & Continue</AppText>
-        </Pressable>
+      <Pressable
+        style={{
+          backgroundColor: purple[700],
+          padding: 15,
+          borderRadius: 25,
+          width: 300,
+          alignItems: 'center',
+          marginTop: 510,
+        }}
+        onPress={() => router.push('/')}
+      >
+        <AppText style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>
+          Agree & Continue
+        </AppText>
+      </Pressable>
     </View>
-    );
+  );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
