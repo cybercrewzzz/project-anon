@@ -4,8 +4,10 @@ import {
   Text,
   TextInput,
   Pressable,
-  StyleSheet,
 } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
+
+
 import { AppTheme } from '@/theme/roles/user/light';
 import { Button } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -72,8 +74,8 @@ const styles = StyleSheet.create({
     fontSize: typography.title1.regular.fontSize,
     color: common.black,
     textAlign: 'center',
-    width: '100%', // to center the title
-    position: 'absolute', // to overlay on top of the arrow
+    width: '100%', 
+    position: 'absolute', 
     left: 0,
   },
   star185: {

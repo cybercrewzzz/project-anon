@@ -4,8 +4,9 @@ import {
   Text,
   TextInput,
   Pressable,
-  StyleSheet,
 } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
+
 import { AppText } from '@/components/AppText';
 import { Button } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -270,7 +271,7 @@ ageChipTextActive: {
 
   button: {
     backgroundColor:purple[700],
-    paddingVertical: spacing.s5,
+    paddingVertical: spacing.s4,
     borderRadius: radius.xxlSoft,
     alignItems: 'center',
     marginTop: spacing.s3,
