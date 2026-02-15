@@ -12,7 +12,12 @@ interface OTPInputProps {
   onKeyPress?: (e: any) => void;
 }
 
-const OTPInput = ({ value, onChangeText, inputRef, onKeyPress }: OTPInputProps) => {
+const OTPInput = ({
+  value,
+  onChangeText,
+  inputRef,
+  onKeyPress,
+}: OTPInputProps) => {
   return (
     <TextInput
       ref={inputRef}
@@ -70,27 +75,27 @@ const OTPVerification = () => {
       <View style={styles.otpContainer}>
         <OTPInput
           value={otp[0]}
-          onChangeText={(text) => handleOtpChange(text, 0)}
+          onChangeText={text => handleOtpChange(text, 0)}
           inputRef={inputRefs[0]}
-          onKeyPress={(e) => handleKeyPress(e, 0)}
+          onKeyPress={e => handleKeyPress(e, 0)}
         />
         <OTPInput
           value={otp[1]}
-          onChangeText={(text) => handleOtpChange(text, 1)}
+          onChangeText={text => handleOtpChange(text, 1)}
           inputRef={inputRefs[1]}
-          onKeyPress={(e) => handleKeyPress(e, 1)}
+          onKeyPress={e => handleKeyPress(e, 1)}
         />
         <OTPInput
           value={otp[2]}
-          onChangeText={(text) => handleOtpChange(text, 2)}
+          onChangeText={text => handleOtpChange(text, 2)}
           inputRef={inputRefs[2]}
-          onKeyPress={(e) => handleKeyPress(e, 2)}
+          onKeyPress={e => handleKeyPress(e, 2)}
         />
         <OTPInput
           value={otp[3]}
-          onChangeText={(text) => handleOtpChange(text, 3)}
+          onChangeText={text => handleOtpChange(text, 3)}
           inputRef={inputRefs[3]}
-          onKeyPress={(e) => handleKeyPress(e, 3)}
+          onKeyPress={e => handleKeyPress(e, 3)}
         />
       </View>
 
