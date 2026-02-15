@@ -1,9 +1,7 @@
 import { AppText } from '@/components/AppText';
 import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
-import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
-import { colors } from '@/theme/palettes/colors';
 import { purple } from '@/theme/palettes/purple';
 
 export default function TnS() {
@@ -11,9 +9,9 @@ export default function TnS() {
     <View style={styles.container}>
       <View style={{justifyContent: 'flex-start'}}>
         <AppText
-          variant="screenTitle"
+          variant="largeTitle"
           color="primary"
-          style={{ textAlign: 'center', paddingTop: 80, color: purple[600], fontSize: 26 }}
+          style={{ textAlign: 'center', paddingTop: 80, color: purple[600], fontSize: 26, fontWeight: "bold" }}
         >
           Terms & Conditions
         </AppText>
