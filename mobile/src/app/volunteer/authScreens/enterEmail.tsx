@@ -2,6 +2,7 @@ import React from 'react';
 import { AppText } from '@/components/AppText';
 import { Pressable, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+import { typography } from '@/theme/tokens/typography';
 //import { useRouter } from 'expo-router';
 
 const EnterEmail = () => {
@@ -11,7 +12,7 @@ const EnterEmail = () => {
     <View style={styles.container}>
       <View style={styles.contentContainer}>
         <View>
-          <AppText variant="sectionTitle" color="primary" style={styles.title}>
+          <AppText variant="title1" color="primary" style={styles.title}>
             Reset Your Password 🔑
           </AppText>
           <AppText variant="body" style={styles.description}>
@@ -21,7 +22,7 @@ const EnterEmail = () => {
         </View>
 
         <View>
-          <AppText variant="listHeader" style={styles.inputName}>
+          <AppText variant="headline" style={styles.inputName}>
             {' '}
             Email
           </AppText>
@@ -39,7 +40,7 @@ const EnterEmail = () => {
           style={styles.button}
           //onPress={() => router.navigate('')}
         >
-          <AppText variant="listHeader" color="secondary">
+          <AppText variant="headline" color="secondary">
             {' '}
             Continue{' '}
           </AppText>
@@ -72,6 +73,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   title: {
     textAlign: 'left',
     paddingLeft: 5,
+    fontWeight: typography.title1.emphasized.fontWeight,
   },
   description: {
     textAlign: 'left',

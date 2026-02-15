@@ -1,58 +1,16 @@
-import { AppText } from '@/components/AppText';
-import { Button, View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
-import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
+import React from 'react';
+import { Redirect } from 'expo-router';
+import { useRole } from '@/store/useRole';
 
-export default function Index() {
-  return (
-    <View style={styles.container}>
-      <View>
-        <AppText
-          variant="screenTitle"
-          color="primary"
-          style={{ textAlign: 'center' }}
-        >
-          Welcome to Anora
-        </AppText>
-        <AppText variant="cardTitle" style={{ textAlign: 'center' }}>
-          The Project Anon
-        </AppText>
-        <AppText style={{ textAlign: 'center' }}>
-          - Proudly presented by SDGP-140 -
-        </AppText>
-      </View>
-      <View>
-        <AppText variant="screenTitle">screenTitle</AppText>
-        <AppText variant="sectionTitle">sectionTitle</AppText>
-        <AppText variant="cardTitle">cardTitle</AppText>
-        <AppText variant="listHeader">listHeader</AppText>
-        <AppText variant="body">body</AppText>
-        <AppText variant="bodySecondary">bodySecondary</AppText>
-        <AppText variant="caption">caption</AppText>
-      </View>
-      <StatusBar />
+const Index = () => {
+  const role = useRole(state => state.role);
+  if (role === 'user') return <Redirect href="/user/home" />;
+  if (role === 'volunteer') return <Redirect href="/volunteer/home" />;
+  if (!role) {
+    console.log(
+      'Add EXPO_PUBLIC_ROLE=user or EXPO_PUBLIC_ROLE=volunteer to mobile/.env file',
+    );
+  }
+};
 
-      <Button
-        title="Reset Password"
-        onPress={() => router.navigate('/authScreens/enterEmail')}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create((theme, rt) => ({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.background.default,
-    marginTop: rt.insets.top,
-    gap: 50,
-  },
-  textContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-}));
+export default Index;
