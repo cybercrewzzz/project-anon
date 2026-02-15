@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Expo Clear",
+      "type": "shell",
+      "command": "yarn start --localhost --clear",
+      "options": {
+        "cwd": "${workspaceFolder}/mobile"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true,
+        "focus": true
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
+
