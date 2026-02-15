@@ -112,8 +112,8 @@ export default function SignUp() {
       </Pressable>
 
       {/* Button */}
-      <Pressable style={styles.button}>
-        <Text style={styles.buttonText } onPress={() => router.push("/volunteer/StartedScreen/p2pp2v")}>Create Account</Text>
+      <Pressable style={styles.button} onPress={() => router.push("/volunteer/StartedScreen/p2pp2v")}>
+        <Text style={styles.buttonText }>Create Account</Text>
       </Pressable>
 
     </View>
@@ -124,28 +124,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: common.white,
-    padding: spacing.s9,
+    padding: spacing.s6,
     justifyContent: 'center',
   },
   
 
   title: {
     color: common.black,
-    fontSize: typography.largeTitle.regular.fontSize,
-    lineHeight: typography.largeTitle.regular.lineHeight,
+    fontSize: typography.title1.regular.fontSize,
+    lineHeight: typography.subhead.regular.lineHeight,
     fontWeight: weight.semiBold,
     textAlign: 'center',
-    marginBottom: 30,
+    marginTop: 50,
 
   },
 
   subtitle: {
-    fontSize: typography.title1.regular.fontSize,
-    lineHeight: typography.title1.regular.lineHeight,
+    fontSize: typography.title2.regular.fontSize,
+    lineHeight: typography.largeTitle.regular.lineHeight,
     color:purple[600],
     fontWeight: weight.semiBold,
     textAlign: 'center',
-    marginBottom: 24,
+    marginTop: 20,
+    marginBottom: 40,
   },
 
   input: {
@@ -153,25 +154,29 @@ const styles = StyleSheet.create({
     backgroundColor: common.gray[100],
     borderRadius: radius.md,
     paddingHorizontal: spacing.s4,
-    marginBottom: 16,
+    marginBottom: spacing.s5,
     fontSize: typography.body.regular.fontSize,
     color: common.black,
   },
 
   ageInsideLabel: {
-  fontSize: typography.body.regular.fontSize,
-  color: purple[400],
-  marginRight: spacing.s2,
-},
+    fontSize: typography.body.regular.fontSize,
+    paddingHorizontal: spacing.s4,
+    color: purple[400],
+    marginRight: spacing.s2,
+    marginBottom: spacing.s4,
+
+  },
 
 
   fieldWrapper: {
   marginBottom: 16,
+  
 },
 
 label: {
   color: purple[400],
-  marginBottom: 6,
+  marginBottom: spacing.s4,
   fontSize: typography.body.regular.fontSize,
 },
 
@@ -183,33 +188,37 @@ fakeInput: {
   flexDirection: 'row',
   alignItems: 'center',
   gap: spacing.s2,
+  
+
 },
 
 
 
   ageButton: {
     backgroundColor: common.gray[100],
-    paddingVertical: spacing.s2,
-    paddingHorizontal: spacing.s4,
-    borderRadius: radius.mdSoft,
-    marginRight: 8,
+    paddingVertical: spacing.s1,
+    paddingHorizontal: spacing.s1,
+    borderRadius: radius.sm,
+    marginRight: spacing.s1,
+    lineHeight: typography.title2.regular.lineHeight,
   },
 
   ageButtonActive: {
-    backgroundColor: purple[700],
+  backgroundColor: purple[700],
   },
 
   ageText: {
     color:purple[400],
     fontSize: typography.body.regular.fontSize,
-    gap: spacing.s8,
+    gap: spacing.s5,
     marginRight: spacing.s4,
   },
     ageChip: {
   paddingVertical: spacing.s1,
-  paddingHorizontal: spacing.s4,
-  borderRadius: radius.mdSoft,
+  paddingHorizontal: spacing.s3,
+  borderRadius: radius.xl,
   backgroundColor: common.gray[200],
+
 },
 
 ageChipActive: {
@@ -243,7 +252,8 @@ ageChipTextActive: {
     height: 16,
     borderWidth: 1,
     borderColor: purple[700],
-    marginRight: 8,
+    marginRight: spacing.s3,
+    marginBottom: spacing.s6,
   },
 
   checkboxChecked: {
@@ -263,7 +273,7 @@ ageChipTextActive: {
     paddingVertical: spacing.s5,
     borderRadius: radius.xxlSoft,
     alignItems: 'center',
-    marginTop: spacing.s9,
+    marginTop: spacing.s3,
   },
 
   buttonText: {

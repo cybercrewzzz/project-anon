@@ -54,14 +54,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: common.white,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.huge,
+    paddingHorizontal: spacing.s6,
+    paddingTop: spacing.s9,
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between', // arrow left, title center
-    marginBottom: spacing.lg,
+    marginBottom: spacing.s8,
   },
   arrow: {
     fontSize: typography.largeTitle.regular.fontSize,
@@ -82,8 +82,8 @@ const styles = StyleSheet.create({
     color: common.white,
     backgroundColor:purple[500],
     alignSelf: 'flex-start',
-    paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.s2,
+    paddingVertical: spacing.s2,
     borderRadius: radius.xlSoft,
     left: 200,
     
@@ -95,8 +95,8 @@ const styles = StyleSheet.create({
     color: common.white,
     backgroundColor:purple[500],
     alignSelf: 'flex-start',
-    paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.s2,
+    paddingVertical: spacing.s2,
     borderRadius: radius.xlSoft,
     left: 270,
     bottom: 30,
