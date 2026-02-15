@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { AppText } from '@/components/AppText';
 import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
@@ -38,19 +39,21 @@ export default function Index() {
     </View>
   );
 }
+=======
+import React from 'react';
+import { Redirect } from 'expo-router';
+import { useRole } from '@/store/useRole';
 
-const styles = StyleSheet.create((theme, rt) => ({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.background.default,
-    marginTop: rt.insets.top,
-    gap: 50,
-  },
-  textContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-}));
+const Index = () => {
+  const role = useRole(state => state.role);
+  if (role === 'user') return <Redirect href="/user/home" />;
+  if (role === 'volunteer') return <Redirect href="/volunteer/home" />;
+  if (!role) {
+    console.log(
+      'Add EXPO_PUBLIC_ROLE=user or EXPO_PUBLIC_ROLE=volunteer to mobile/.env file',
+    );
+  }
+};
+>>>>>>> main
+
+export default Index;
