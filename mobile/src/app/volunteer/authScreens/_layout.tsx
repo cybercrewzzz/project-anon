@@ -14,6 +14,15 @@ export default function RootLayout() {
             headerTransparent: true,
           }}
         />
+        <Stack.Screen
+          name="enterEmail"
+          options={{
+            headerShown: false,
+            title: '',
+            headerTitleAlign: 'center',
+            headerTransparent: true,
+          }}
+        />
       </Stack>
     </View>
   );
