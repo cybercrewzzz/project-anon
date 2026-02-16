@@ -11,6 +11,10 @@ const Groups = () => {
         text="Verify"
         onPress={() => router.navigate('/volunteer/getStarted/verify')}
       />
+      <Button
+        text="Select Language"
+        onPress={() => router.navigate('/volunteer/getStarted/selectLanguage')}
+      />
     </View>
   );
 };
