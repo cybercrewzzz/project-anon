@@ -4,11 +4,7 @@
     {
       "label": "Start Expo Clear",
       "type": "shell",
-<<<<<<< fe/DEV-32-otpVerification
-      "command": "yarn expo start --clear",
-=======
       "command": "yarn start --localhost --clear",
->>>>>>> main
       "options": {
         "cwd": "${workspaceFolder}/mobile"
       },
@@ -27,7 +23,6 @@
   ]
 }
 
-<<<<<<< fe/DEV-32-otpVerification
 /*
 For create custom keyboard shortcuts to run the task, follow these steps:
 1. Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P).
@@ -40,6 +35,3 @@ For create custom keyboard shortcuts to run the task, follow these steps:
     "args": "Start Expo Clear"
 }
 */
-
-=======
->>>>>>> main
