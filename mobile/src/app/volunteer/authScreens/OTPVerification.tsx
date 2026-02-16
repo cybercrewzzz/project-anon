@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
-import { typography } from '@/theme/tokens/typography';
 //import { useRouter } from 'expo-router';
 
 interface OTPInputProps {
@@ -62,7 +61,12 @@ const OTPVerification = () => {
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
-        <AppText variant="title1" color="primary" style={styles.title}>
+        <AppText
+          variant="title1"
+          color="primary"
+          emphasis="emphasized"
+          style={styles.title}
+        >
           OTP Code Verification 🔒
         </AppText>
 
@@ -144,10 +148,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: 64,
   },
   title: {
-    textAlign: 'left',
     paddingLeft: 5,
-    fontSize: typography.title1.emphasized.fontSize,
-    fontWeight: typography.title1.emphasized.fontWeight,
   },
   description: {
     textAlign: 'left',
