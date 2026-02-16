@@ -10,6 +10,10 @@ const Groups = () => {
   return (
     <View style={styles.screen}>
       <Button
+        text="Get Started"
+        onPress={() => router.navigate('/user/StartedScreens/selectLanguage')}
+      />
+      <Button
         text="Sign In"
         onPress={() => router.navigate('/user/authScreens/signIn')}
       />
