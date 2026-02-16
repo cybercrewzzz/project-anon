@@ -20,7 +20,11 @@ const EnterEmail = () => {
           >
             Reset Your Password
           </AppText>
-          <AppText variant="subhead" textAlign="left" style={styles.description}>
+          <AppText
+            variant="subhead"
+            textAlign="left"
+            style={styles.description}
+          >
             Please enter your email address below and we will send an OTP code
             to reset your password.
           </AppText>
@@ -57,7 +61,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
     backgroundColor: theme.surface.primary,
-    paddingTop: rt.insets.top+ theme.spacing.s6,
+    paddingTop: rt.insets.top + theme.spacing.s6,
     paddingBottom: rt.insets.bottom,
     paddingLeft: rt.insets.left + theme.spacing.s4,
     paddingRight: rt.insets.right + theme.spacing.s4,
