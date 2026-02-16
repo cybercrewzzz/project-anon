@@ -4,7 +4,7 @@
     {
       "label": "Start Expo Clear",
       "type": "shell",
-      "command": "yarn expo start --clear",
+      "command": "yarn start --localhost --clear",
       "options": {
         "cwd": "${workspaceFolder}/mobile"
       },
@@ -35,4 +35,3 @@ For create custom keyboard shortcuts to run the task, follow these steps:
     "args": "Start Expo Clear"
 }
 */
-
