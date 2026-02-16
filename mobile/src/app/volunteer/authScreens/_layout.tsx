@@ -6,6 +6,15 @@ export default function RootLayout() {
     <View style={{ backgroundColor: 'bg-default', flex: 1 }}>
       <Stack>
         <Stack.Screen
+          name="OTPVerification"
+          options={{
+            headerShown: false,
+            title: '',
+            headerTitleAlign: 'center',
+            headerTransparent: true,
+          }}
+        />
+        <Stack.Screen
           name="enterEmail"
           options={{
             headerShown: false,

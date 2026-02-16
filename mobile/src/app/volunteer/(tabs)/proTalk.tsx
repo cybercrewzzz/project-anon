@@ -7,6 +7,10 @@ const ProTalk = () => {
     <View>
       <Text>ProTalk</Text>
       <Button
+        title="To the OTPVerification"
+        onPress={() => router.push('/volunteer/authScreens/OTPVerification')}
+      />
+      <Button
         title="To Enter Email"
         onPress={() => router.push('/volunteer/authScreens/enterEmail')}
       />
