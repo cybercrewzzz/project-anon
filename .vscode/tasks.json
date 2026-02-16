@@ -22,16 +22,3 @@
     }
   ]
 }
-
-/*
-For create custom keyboard shortcuts to run the task, follow these steps:
-1. Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P).
-2. Type "Preferences: Open Keyboard Shortcuts (JSON)" and select it.
-3. paste the following JSON snippet into the keybindings.json file:
-
-{
-    "key": "ctrl+alt+z", // Change this to your preferred key combination
-    "command": "workbench.action.tasks.runTask",
-    "args": "Start Expo Clear"
-}
-*/
