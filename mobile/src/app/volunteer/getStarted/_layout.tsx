@@ -6,6 +6,7 @@ const GetStartedLayout = () => {
     <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="verify" />
+        <Stack.Screen name="signUp" />
         <Stack.Screen name="selectLanguage" />
       </Stack>
     </>
