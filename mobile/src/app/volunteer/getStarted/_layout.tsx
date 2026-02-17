@@ -1,13 +1,12 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 
-const VolunteerLayout = () => {
+const GetStartedLayout = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="getStarted" />
+      <Stack.Screen name="verify" />
     </Stack>
   );
 };
 
-export default VolunteerLayout;
+export default GetStartedLayout;
