@@ -15,6 +15,10 @@ const Groups = () => {
         text="Sign Up"
         onPress={() => router.navigate('/volunteer/getStarted/signUp')}
       />
+      <Button
+        text="Select Language"
+        onPress={() => router.navigate('/volunteer/getStarted/selectLanguage')}
+      />
     </View>
   );
 };
