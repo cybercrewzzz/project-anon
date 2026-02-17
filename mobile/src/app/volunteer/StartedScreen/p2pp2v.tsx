@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-} from 'react-native';
+import { View, Text, TextInput, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
-
 
 import { AppTheme } from '@/theme/roles/user/light';
 import { Button } from 'react-native';
@@ -20,7 +14,6 @@ import { colors } from '@/theme/palettes/colors';
 import { spacing } from '@/theme/tokens/spacing';
 import { radius } from '@/theme/tokens/radius';
 
-
 export default function P2PP2V() {
   const [selectedAge, setSelectedAge] = useState('21-26');
   const [checked, setChecked] = useState(false);
@@ -31,7 +24,6 @@ export default function P2PP2V() {
 
   return (
     <View style={styles.container}>
-      
       {/* Top bar with arrow and title */}
       <View style={styles.topBar}>
         <Pressable onPress={() => router.back()}>
@@ -42,12 +34,7 @@ export default function P2PP2V() {
 
       <Text style={styles.star185}> 🌟185 </Text>
 
-      <Text style={styles.ticket}>  🎫 5  </Text>
-
-   
-
-
-      
+      <Text style={styles.ticket}> 🎫 5 </Text>
     </View>
   );
 }
@@ -74,37 +61,32 @@ const styles = StyleSheet.create({
     fontSize: typography.title1.regular.fontSize,
     color: common.black,
     textAlign: 'center',
-    width: '100%', 
-    position: 'absolute', 
+    width: '100%',
+    position: 'absolute',
     left: 0,
   },
   star185: {
     flexDirection: 'row',
     fontSize: typography.body.regular.fontSize,
     color: common.white,
-    backgroundColor:purple[500],
+    backgroundColor: purple[500],
     alignSelf: 'flex-start',
     paddingHorizontal: spacing.s2,
     paddingVertical: spacing.s2,
     borderRadius: radius.xlSoft,
     left: 200,
-    
   },
 
   ticket: {
     flexDirection: 'row',
     fontSize: typography.body.regular.fontSize,
     color: common.white,
-    backgroundColor:purple[500],
+    backgroundColor: purple[500],
     alignSelf: 'flex-start',
     paddingHorizontal: spacing.s2,
     paddingVertical: spacing.s2,
     borderRadius: radius.xlSoft,
     left: 270,
     bottom: 30,
-    
   },
-
-  
-
 });

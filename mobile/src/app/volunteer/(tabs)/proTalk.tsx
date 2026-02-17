@@ -6,7 +6,10 @@ const ProTalk = () => {
   return (
     <View>
       <Text>ProTalk</Text>
-      <Button title="P2P-P2V" onPress={() => router.push('/volunteer/StartedScreen/welcome')} />
+      <Button
+        title="P2P-P2V"
+        onPress={() => router.push('/volunteer/StartedScreen/welcome')}
+      />
       <Button
         title="To the OTPVerification"
         onPress={() => router.push('/volunteer/authScreens/OTPVerification')}

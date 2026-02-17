@@ -8,20 +8,15 @@ import { common } from '@/theme/palettes/common';
 import { weight } from '@/theme/tokens/typography';
 import React from 'react';
 
-
 export default function Welcome() {
   return (
     <View style={styles.container}>
-
       {/* Top*/}
-      <AppText
-        variant="largeTitle"
-        style={styles.welcomeText}
-      >
+      <AppText variant="largeTitle" style={styles.welcomeText}>
         Welcome!
       </AppText>
 
-       {/* Image in between */}
+      {/* Image in between */}
       <Image
         source={require('../../../assets/images/logo.png')}
         style={{ width: 100, height: 100 }}
@@ -29,20 +24,16 @@ export default function Welcome() {
 
       {/* Bottom */}
       <View style={styles.bottom}>
-        <Pressable
-          style={styles.button}
-          
-        >
-          <AppText style={styles.buttonText}>
-            
-            Get Started
-          </AppText>
+        <Pressable style={styles.button}>
+          <AppText style={styles.buttonText}>Get Started</AppText>
         </Pressable>
 
-        <AppText style={styles.volunteerText}onPress={() => router.navigate('/volunteer/StartedScreen/signup')}>
+        <AppText
+          style={styles.volunteerText}
+          onPress={() => router.navigate('/volunteer/StartedScreen/signup')}
+        >
           Continue as a Volunteer
         </AppText>
-       
       </View>
 
       <StatusBar />
@@ -53,7 +44,7 @@ export default function Welcome() {
 const styles = StyleSheet.create((_theme, rt) => ({
   container: {
     flex: 1,
-    backgroundColor:'#D2ECFE',
+    backgroundColor: '#D2ECFE',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: rt.insets.top + 40,

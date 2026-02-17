@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-} from 'react-native';
+import { View, Text, TextInput, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { AppText } from '@/components/AppText';
@@ -19,23 +14,16 @@ import { colors } from '@/theme/palettes/colors';
 import { spacing } from '@/theme/tokens/spacing';
 import { radius } from '@/theme/tokens/radius';
 
-
 export default function SignUp() {
   const [selectedAge, setSelectedAge] = useState('21-26');
   const [checked, setChecked] = useState(false);
   const fontFamily = Platform.select({
-  ios: undefined,
-  android: 'Poppins',
-  
+    ios: undefined,
+    android: 'Poppins',
+  });
 
-
-});
-  
-
-  
   return (
     <View style={styles.container}>
-
       {/* Title */}
       <Text style={[styles.title]}>Project Anon</Text>
       <Text style={styles.subtitle}>Sign Up</Text>
@@ -48,34 +36,32 @@ export default function SignUp() {
       />
 
       {/* Age */}
-<View style={styles.fieldWrapper}>
-  <View style={styles.fakeInput}>
-    {/* Age label INSIDE the box */}
-    <Text style={styles.ageInsideLabel}>Age</Text>
+      <View style={styles.fieldWrapper}>
+        <View style={styles.fakeInput}>
+          {/* Age label INSIDE the box */}
+          <Text style={styles.ageInsideLabel}>Age</Text>
 
-    {['16-20', '21-26', '27+'].map((age) => (
-      <Pressable
-        key={age}
-        onPress={() => setSelectedAge(age)}
-        style={[
-          styles.ageChip,
-          selectedAge === age && styles.ageChipActive,
-        ]}
-      >
-        <Text
-          style={[
-            styles.ageChipText,
-            selectedAge === age && styles.ageChipTextActive,
-          ]}
-        >
-          {age.replace('-', ' - ')}
-        </Text>
-      </Pressable>
-    ))}
-  </View>
-</View>
-
-      
+          {['16-20', '21-26', '27+'].map(age => (
+            <Pressable
+              key={age}
+              onPress={() => setSelectedAge(age)}
+              style={[
+                styles.ageChip,
+                selectedAge === age && styles.ageChipActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.ageChipText,
+                  selectedAge === age && styles.ageChipTextActive,
+                ]}
+              >
+                {age.replace('-', ' - ')}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
 
       {/* Email */}
       <TextInput
@@ -113,10 +99,12 @@ export default function SignUp() {
       </Pressable>
 
       {/* Button */}
-      <Pressable style={styles.button} onPress={() => router.push("/volunteer/StartedScreen/p2pp2v")}>
-        <Text style={styles.buttonText }>Create Account</Text>
+      <Pressable
+        style={styles.button}
+        onPress={() => router.push('/volunteer/StartedScreen/p2pp2v')}
+      >
+        <Text style={styles.buttonText}>Create Account</Text>
       </Pressable>
-
     </View>
   );
 }
@@ -128,7 +116,6 @@ const styles = StyleSheet.create({
     padding: spacing.s6,
     justifyContent: 'center',
   },
-  
 
   title: {
     color: common.black,
@@ -137,13 +124,12 @@ const styles = StyleSheet.create({
     fontWeight: weight.semiBold,
     textAlign: 'center',
     marginTop: 50,
-
   },
 
   subtitle: {
     fontSize: typography.title2.regular.fontSize,
     lineHeight: typography.largeTitle.regular.lineHeight,
-    color:purple[600],
+    color: purple[600],
     fontWeight: weight.semiBold,
     textAlign: 'center',
     marginTop: 20,
@@ -166,34 +152,27 @@ const styles = StyleSheet.create({
     color: purple[400],
     marginRight: spacing.s2,
     marginBottom: spacing.s4,
-
   },
 
-
   fieldWrapper: {
-  marginBottom: 16,
-  
-},
+    marginBottom: 16,
+  },
 
-label: {
-  color: purple[400],
-  marginBottom: spacing.s4,
-  fontSize: typography.body.regular.fontSize,
-},
+  label: {
+    color: purple[400],
+    marginBottom: spacing.s4,
+    fontSize: typography.body.regular.fontSize,
+  },
 
-fakeInput: {
-  paddingVertical: spacing.s2,
-  backgroundColor: common.gray[100],
-  borderRadius: radius.md,
-  paddingHorizontal: spacing.s2,
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: spacing.s2,
-  
-
-},
-
-
+  fakeInput: {
+    paddingVertical: spacing.s2,
+    backgroundColor: common.gray[100],
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.s2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.s2,
+  },
 
   ageButton: {
     backgroundColor: common.gray[100],
@@ -205,37 +184,35 @@ fakeInput: {
   },
 
   ageButtonActive: {
-  backgroundColor: purple[700],
+    backgroundColor: purple[700],
   },
 
   ageText: {
-    color:purple[400],
+    color: purple[400],
     fontSize: typography.body.regular.fontSize,
     gap: spacing.s5,
     marginRight: spacing.s4,
   },
-    ageChip: {
-  paddingVertical: spacing.s1,
-  paddingHorizontal: spacing.s3,
-  borderRadius: radius.xl,
-  backgroundColor: common.gray[200],
+  ageChip: {
+    paddingVertical: spacing.s1,
+    paddingHorizontal: spacing.s3,
+    borderRadius: radius.xl,
+    backgroundColor: common.gray[200],
+  },
 
-},
+  ageChipActive: {
+    backgroundColor: purple[700],
+  },
 
-ageChipActive: {
-  backgroundColor: purple[700],
-},
+  ageChipText: {
+    fontSize: typography.body.regular.fontSize,
+    color: purple[400],
+  },
 
-ageChipText: {
-  fontSize: typography.body.regular.fontSize,
-  color: purple[400],
-},
-
-ageChipTextActive: {
-  color: common.white,
-  fontWeight: weight.medium,
-},
-
+  ageChipTextActive: {
+    color: common.white,
+    fontWeight: weight.medium,
+  },
 
   ageTextActive: {
     color: common.white,
@@ -270,7 +247,7 @@ ageChipTextActive: {
   },
 
   button: {
-    backgroundColor:purple[700],
+    backgroundColor: purple[700],
     paddingVertical: spacing.s4,
     borderRadius: radius.xxlSoft,
     alignItems: 'center',
@@ -282,6 +259,5 @@ ageChipTextActive: {
     fontSize: typography.body.regular.fontSize,
     lineHeight: typography.body.regular.lineHeight,
     fontWeight: weight.semiBold,
-    
   },
 });
