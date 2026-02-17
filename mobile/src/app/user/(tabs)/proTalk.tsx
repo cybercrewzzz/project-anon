@@ -10,6 +10,10 @@ const ProTalk = () => {
         title="TnS Agreee"
         onPress={() => router.push('/user/TnS agree/TnS')}
       />
+      <Button
+        title="Special Notice"
+        onPress={() => router.push('/user/Special Notice/specialnotice')}
+      />
     </View>
   );
 };
