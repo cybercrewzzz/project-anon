@@ -6,25 +6,25 @@ import { router } from 'expo-router';
 export default function TnS() {
   return (
     <View style={styles.container}>
-        <View style={styles.containernote}>
-            <AppText
-                variant="title2"
-                emphasis="emphasized"
-                color="subtle1"
-                textAlign="center"
-            >
-                Special Note
-            </AppText>
-            <AppText
-                variant="body"
-                emphasis="regular"
-                color="subtle1"
-                textAlign="center"
-                style={{ marginTop: 100, borderRadius: 5 }}
-            >
-                Hide and Protect Your Data.
-            </AppText>
-        </View>
+      <View style={styles.containernote}>
+        <AppText
+          variant="title2"
+          emphasis="emphasized"
+          color="subtle1"
+          textAlign="center"
+        >
+          Special Note
+        </AppText>
+        <AppText
+          variant="body"
+          emphasis="regular"
+          color="subtle1"
+          textAlign="center"
+          style={{ marginTop: 100, borderRadius: 5 }}
+        >
+          Hide and Protect Your Data.
+        </AppText>
+      </View>
 
       <Pressable style={styles.textContainer} onPress={() => router.push('/')}>
         <AppText style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>
@@ -42,7 +42,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     backgroundColor: theme.background.default,
     paddingTop: rt.insets.top + 80,
-    gap: 50
+    gap: 50,
   },
   containernote: {
     backgroundColor: theme.background.secondary,
@@ -52,7 +52,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     maxWidth: 420,
     minHeight: 540,
     alignItems: 'center',
-    gap: 10
+    gap: 10,
   },
   textContainer: {
     backgroundColor: '#570096',
