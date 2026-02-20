@@ -19,7 +19,6 @@ const Groups = () => {
         text="Select Language"
         onPress={() => router.navigate('/volunteer/getStarted/selectLanguage')}
       />
-
     </View>
   );
 };
