@@ -1,81 +1,152 @@
 import { Platform, TextStyle } from 'react-native';
 
-const fontFamily = Platform.select({
-  ios: undefined,
-  android: 'Poppins',
-});
+type FontGroup = 'text' | 'display' | 'displayLarge';
 
-export const weight = {
+const getFontFamily = (group: FontGroup) => {
+  if (Platform.OS === 'ios') return undefined;
+
+  switch (group) {
+    case 'displayLarge':
+      return 'Inter 28pt';
+    case 'display':
+      return 'Inter 24pt';
+    case 'text':
+    default:
+      return 'Inter 18pt';
+  }
+};
+
+const weight = {
   regular: '400',
   medium: '500',
   semiBold: '600',
+  bold: '700',
 } as const;
 
-const baseText: TextStyle = {
-  fontFamily,
-  includeFontPadding: false,
+export type TextEmphasis = 'regular' | 'emphasized';
+
+const sizes = {
+  largeTitle: {
+    fontSize: 34,
+    lineHeight: 41,
+  },
+  title1: {
+    fontSize: 28,
+    lineHeight: 34,
+  },
+  title2: {
+    fontSize: 22,
+    lineHeight: 28,
+  },
+  title3: {
+    fontSize: 20,
+    lineHeight: 25,
+  },
+  headline: {
+    fontSize: 17,
+    lineHeight: 22,
+  },
+  body: {
+    fontSize: 17,
+    lineHeight: 22,
+  },
+  callout: {
+    fontSize: 16,
+    lineHeight: 21,
+  },
+  subhead: {
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  footnote: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  caption1: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  caption2: {
+    fontSize: 11,
+    lineHeight: 13,
+  },
+} as const;
+
+const fontGroupMap: Record<TextVariant, FontGroup> = {
+  largeTitle: 'displayLarge',
+  title1: 'displayLarge',
+  title2: 'display',
+  title3: 'display',
+  headline: 'text',
+  body: 'text',
+  callout: 'text',
+  subhead: 'text',
+  footnote: 'text',
+  caption1: 'text',
+  caption2: 'text',
+};
+
+const createStyle = (
+  key: keyof typeof sizes,
+  fontWeight: TextStyle['fontWeight'],
+): TextStyle => {
+  const size = sizes[key];
+  const fontGroup = fontGroupMap[key];
+
+  return {
+    includeFontPadding: false,
+    fontFamily: getFontFamily(fontGroup),
+    fontWeight,
+    fontSize: size.fontSize,
+    lineHeight: size.lineHeight,
+  };
 };
 
 export const typography = {
-  headingXL: {
-    ...baseText,
-    fontSize: 32,
-    lineHeight: 40,
-    fontWeight: weight.semiBold,
+  largeTitle: {
+    regular: createStyle('largeTitle', weight.regular),
+    emphasized: createStyle('largeTitle', weight.bold),
   },
-  headingLG: {
-    ...baseText,
-    fontSize: 28,
-    lineHeight: 36,
-    fontWeight: weight.semiBold,
+  title1: {
+    regular: createStyle('title1', weight.regular),
+    emphasized: createStyle('title1', weight.bold),
   },
-  headingMD: {
-    ...baseText,
-    fontSize: 20,
-    lineHeight: 28,
-    fontWeight: weight.semiBold,
+  title2: {
+    regular: createStyle('title2', weight.regular),
+    emphasized: createStyle('title2', weight.bold),
   },
-  headingSM: {
-    ...baseText,
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: weight.semiBold,
+  title3: {
+    regular: createStyle('title3', weight.regular),
+    emphasized: createStyle('title3', weight.semiBold),
   },
-  bodyLG: {
-    ...baseText,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: weight.medium,
+  headline: {
+    regular: createStyle('headline', weight.semiBold),
+    emphasized: createStyle('headline', weight.semiBold),
   },
-  bodyMD: {
-    ...baseText,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: weight.medium,
+  body: {
+    regular: createStyle('body', weight.regular),
+    emphasized: createStyle('body', weight.semiBold),
   },
-  bodySM: {
-    ...baseText,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: weight.regular,
+  callout: {
+    regular: createStyle('callout', weight.regular),
+    emphasized: createStyle('callout', weight.semiBold),
   },
-  bodyXS: {
-    ...baseText,
-    fontSize: 10,
-    lineHeight: 14,
-    fontWeight: weight.regular,
+  subhead: {
+    regular: createStyle('subhead', weight.regular),
+    emphasized: createStyle('subhead', weight.semiBold),
   },
-} satisfies Record<string, TextStyle>;
+  footnote: {
+    regular: createStyle('footnote', weight.regular),
+    emphasized: createStyle('footnote', weight.semiBold),
+  },
+  caption1: {
+    regular: createStyle('caption1', weight.regular),
+    emphasized: createStyle('caption1', weight.semiBold),
+  },
+  caption2: {
+    regular: createStyle('caption2', weight.regular),
+    emphasized: createStyle('caption2', weight.semiBold),
+  },
+} satisfies Record<keyof typeof sizes, Record<TextEmphasis, TextStyle>>;
 
-export const textStyles = {
-  screenTitle: typography.headingXL,
-  sectionTitle: typography.headingLG,
-  cardTitle: typography.headingMD,
-  listHeader: typography.headingSM,
-  body: typography.bodyMD,
-  bodySecondary: typography.bodySM,
-  caption: typography.bodyXS,
-} as const;
-
-export type TypographyKey = keyof typeof typography;
-export type TextStyleKey = keyof typeof textStyles;
+export type TextVariant = keyof typeof typography;
