@@ -24,8 +24,8 @@ const MenuItem = ({
           {text}
         </AppText>
       </View>
-      <View style={styles.menuItemicon}>
-        <Image source={rightIcon} style={{ width: 18, height: 18 }} />
+      <View>
+        <Image source={rightIcon} style={styles.menuItemicon} />
       </View>
     </View>
   );
@@ -34,22 +34,22 @@ const MenuItem = ({
 const UserProfile = () => {
   return (
     <View style={styles.container}>
-      <View style={{ alignItems: 'center', marginTop: 20 }}>
+      <View style={styles.screenTitle}>
         <AppText variant="headline">User Profile</AppText>
       </View>
       <View style={styles.profileCardContainer}>
-        <View >
+        <View>
           <AppText variant="body" emphasis="emphasized">
-          AnonymousUser47
-        </AppText>
-        <AppText variant="caption1" style={{ marginTop: 4 }}>
-          Rael Usre Nema | RaelUserNema@gmail.com
-        </AppText>
-        <AppText variant="footnote" style={{ marginTop: 4 }}>
-          View Activity
-        </AppText>
+            AnonymousUser47
+          </AppText>
+          <AppText variant="caption1" style={styles.profileCardText}>
+            Rael Usre Nema | RaelUserNema@gmail.com
+          </AppText>
+          <AppText variant="footnote" style={styles.profileCardText}>
+            View Activity
+          </AppText>
         </View>
-        <View style={{ paddingLeft: 10, justifyContent: 'center'}}>
+        <View style={styles.profileCardIcon}>
           <Image
             source={require('@/assets/icons/profileIconOPT.svg')}
             style={{ width: 49, height: 49, borderRadius: 40 }}
@@ -114,12 +114,23 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingLeft: rt.insets.left + 16,
     paddingRight: rt.insets.right + 16,
   },
+  screenTitle: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
   profileCardContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: rt.insets.top + 30,
     backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.md,
     padding: theme.spacing.s4,
+  },
+  profileCardText: {
+    marginTop: 4,
+  },
+  profileCardIcon: {
+    paddingLeft: 10,
+    justifyContent: 'center',
   },
   settingMenuCardContainer: {
     marginTop: rt.insets.top + 10,
@@ -140,6 +151,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: theme.spacing.s3,
   },
   menuItemicon: {
-
+    width: 15,
+    height: 15,
   },
 }));
