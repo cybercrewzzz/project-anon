@@ -5,14 +5,14 @@ import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { purple } from '@/theme/palettes/purple';
 import { common } from '@/theme/palettes/common';
-import { weight } from '@/theme/tokens/typography';
+//import { weight } from '@/theme/tokens/typography';
 import React from 'react';
 
 export default function Welcome() {
   return (
     <View style={styles.container}>
       {/* Top*/}
-      <AppText variant="largeTitle" style={styles.welcomeText}>
+      <AppText variant="largeTitle" emphasis="emphasized" style={styles.welcomeText}>
         Welcome!
       </AppText>
 
@@ -52,7 +52,7 @@ const styles = StyleSheet.create((_theme, rt) => ({
   },
 
   welcomeText: {
-    fontWeight: weight.semiBold,
+    //fontWeight: theme.weight.semiBold,
     fontSize: 32,
     color: purple[500],
     textAlign: 'center',
