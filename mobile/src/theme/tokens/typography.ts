@@ -16,7 +16,7 @@ const getFontFamily = (group: FontGroup) => {
   }
 };
 
-const weight = {
+export const weight = {
   regular: '400',
   medium: '500',
   semiBold: '600',
