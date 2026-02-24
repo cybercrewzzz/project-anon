@@ -14,10 +14,6 @@ const ProTalk = () => {
         title="To Enter Email"
         onPress={() => router.push('/volunteer/authScreens/enterEmail')}
       />
-      <Button
-        title="To User Profile"
-        onPress={() => router.push('/volunteer/userProfile/UserProfile')}
-      />
     </View>
   );
 };
