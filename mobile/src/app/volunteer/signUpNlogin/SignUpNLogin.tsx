@@ -10,8 +10,7 @@ const SignUpNLogin = () => {
     <View style={styles.container}>
       <View style={styles.screenTitleContainer}>
         <AppText variant="largeTitle" color="primary" emphasis="emphasized">
-          {' '}
-          Hello!{' '}
+          Hello!
         </AppText>
       </View>
       <View style={styles.buttonContainer}>
