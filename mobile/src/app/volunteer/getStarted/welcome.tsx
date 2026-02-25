@@ -2,7 +2,7 @@ import { AppText } from '@/components/AppText';
 import { Pressable, View, Image } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
+//import { router } from 'expo-router';
 import { purple } from '@/theme/palettes/purple';
 import { common } from '@/theme/palettes/common';
 //import { weight } from '@/theme/tokens/typography';
@@ -29,9 +29,7 @@ export default function Welcome() {
         </Pressable>
 
         <AppText
-          style={styles.volunteerText}
-          onPress={() => router.navigate('/volunteer/StartedScreen/signup')}
-        >
+          style={styles.volunteerText}>
           Continue as a Volunteer
         </AppText>
       </View>
