@@ -16,7 +16,7 @@ const ProTalk = () => {
       />
       <Button
         title="peer to peer"
-        onPress={() => router.push('/user/Special Notice/peertopeer')}
+        onPress={() => router.push('/user/PeertoPeer/peertopeer')}
       />
 
 
