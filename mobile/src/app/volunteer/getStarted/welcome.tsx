@@ -59,13 +59,13 @@ const styles = StyleSheet.create((_theme, rt) => ({
 
   bottom: {
     alignItems: 'center',
-    gap: 20,
+    gap: _theme.spacing.s5,
   },
 
   button: {
     backgroundColor: _theme.background.accent,
     padding: 12,
-    borderRadius: 25,
+    borderRadius: _theme.radius.xl,
     width: 300,
     alignItems: 'center',
   },
