@@ -12,7 +12,11 @@ export default function Welcome() {
   return (
     <View style={styles.container}>
       {/* Top*/}
-      <AppText variant="largeTitle" emphasis="emphasized" style={styles.welcomeText}>
+      <AppText
+        variant="largeTitle"
+        emphasis="emphasized"
+        style={styles.welcomeText}
+      >
         Welcome!
       </AppText>
 
@@ -28,10 +32,7 @@ export default function Welcome() {
           <AppText style={styles.buttonText}>Get Started</AppText>
         </Pressable>
 
-        <AppText
-          style={styles.volunteerText}>
-          Continue as a Volunteer
-        </AppText>
+        <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>
       </View>
 
       <StatusBar />
