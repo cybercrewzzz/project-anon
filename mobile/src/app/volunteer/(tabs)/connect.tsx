@@ -6,6 +6,7 @@ const Connect = () => {
     <View>
       <Text>Connect</Text>
     </View>
+    
   );
 };
 
