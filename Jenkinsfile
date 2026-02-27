@@ -9,25 +9,32 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
-    environment {
-        SETUP = "fullstack"
-    }
-
     stages {
+        stage('Determine Changes') {
+            when {
+                not { branch 'main' }
+            }
+            steps {
+                script {
+                    sh 'git fetch origin main:refs/remotes/origin/main'
+                    def changes = sh(script: 'git diff --name-only origin/main...HEAD', returnStdout: true).trim()
+                    def changedFiles = changes ? changes.split('\n').toList() : []
+
+                    env.HAS_MOBILE_CHANGES = changedFiles.any { it.startsWith('mobile/') }.toString()
+                    env.HAS_BACKEND_CHANGES = changedFiles.any { it.startsWith('backend/') }.toString()
+                    env.HAS_OTHER_CHANGES = changedFiles.any { !it.startsWith('mobile/') && !it.startsWith('backend/') }.toString()
+                }
+            }
+        }
+
         stage("Setup") {
             when {
                 anyOf {
                     branch "main"
+                    environment name: 'HAS_OTHER_CHANGES', value: 'true'
                     allOf {
-                        changeset "mobile/**"
-                        changeset "backend/**"
-                    }
-                    changeset "*"
-                    not {
-                        anyOf {
-                            changeset "mobile/**"
-                            changeset "backend/**"
-                        }
+                        environment name: 'HAS_MOBILE_CHANGES', value: 'true'
+                        environment name: 'HAS_BACKEND_CHANGES', value: 'true'
                     }
                 }
             }
@@ -41,13 +48,11 @@ pipeline {
         }
         stage('Setup Mobile') {
             when {
-                changeset "mobile/**"
-                not {
-                    anyOf {
-                        branch "main"
-                        changeset "backend/**"
-                        changeset "*"
-                    }
+                allOf {
+                    not { branch 'main' }
+                    environment name: 'HAS_MOBILE_CHANGES', value: 'true'
+                    environment name: 'HAS_BACKEND_CHANGES', value: 'false'
+                    environment name: 'HAS_OTHER_CHANGES', value: 'false'
                 }
             }
             steps {
@@ -61,13 +66,11 @@ pipeline {
         }
         stage('Setup Backend') {
             when {
-                changeset "backend/**"
-                not {
-                    anyOf {
-                        branch "main"
-                        changeset "mobile/**"
-                        changeset "*"
-                    }
+                allOf {
+                    not { branch 'main' }
+                    environment name: 'HAS_BACKEND_CHANGES', value: 'true'
+                    environment name: 'HAS_MOBILE_CHANGES', value: 'false'
+                    environment name: 'HAS_OTHER_CHANGES', value: 'false'
                 }
             }
             steps {
