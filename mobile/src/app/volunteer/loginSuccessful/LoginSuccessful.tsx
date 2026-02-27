@@ -20,16 +20,10 @@ const LoginSuccessful = () => {
   return (
     <View style={styles.container}>
       <View style={styles.cardContainer}>
-        <View
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingBottom: 32,
-          }}
-        >
+        <View style={styles.imageContainer}>
           <Image
             source={require('@/assets/images/loginSuccessful.webp')}
-            style={{ width: 200, height: 185 }}
+            style={styles.image}
           />
         </View>
         <View>
@@ -37,31 +31,14 @@ const LoginSuccessful = () => {
             variant="title3"
             color="primary"
             emphasis="emphasized"
-            style={{ justifyContent: 'center', textAlign: 'center' }}
+            style={styles.textLine1}
           >
             Login Successful!
           </AppText>
-          <AppText
-            variant="subhead"
-            color="primary"
-            style={{
-              paddingTop: 32,
-              justifyContent: 'center',
-              textAlign: 'center',
-            }}
-          >
+          <AppText variant="subhead" color="primary" style={styles.textLine2}>
             Please Wait
           </AppText>
-          <AppText
-            variant="subhead"
-            color="primary"
-            style={{
-              paddingTop: 8,
-              marginTop: 8,
-              justifyContent: 'center',
-              textAlign: 'center',
-            }}
-          >
+          <AppText variant="subhead" color="primary" style={styles.textLine3}>
             You will be directed to the homepage.
           </AppText>
         </View>
@@ -99,6 +76,36 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     elevation: 10,
   },
+
+  imageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 32,
+  },
+
+  image: {
+    width: 200,
+    height: 185,
+  },
+
+  textLine1: {
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+
+  textLine2: {
+    paddingTop: 32,
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+
+  textLine3: {
+    paddingTop: 8,
+    marginTop: 8,
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+
   loaderContainer: {
     marginTop: theme.spacing.s6,
     paddingTop: theme.spacing.s4,
