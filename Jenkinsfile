@@ -37,7 +37,7 @@ pipeline {
 
         stage('Build Backend') {
             steps {
-                sh "Build in progress..."
+                echo "Build in progress..."
             }
         }
     }
