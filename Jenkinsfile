@@ -17,21 +17,27 @@ pipeline {
         stage('Code Quality') {
             parallel {
                 stage('Mobile') {
-                    when {
-                        changeset 'mobile/**'
-                    }
+                    // when {
+                    //     changeset 'mobile/**'
+                    // }
                     steps {
                         sh 'yarn workspace mobile run format_lint:ci'
                     }
                 }
                 stage('Backend') {
-                    when {
-                        changeset 'backend/**'
-                    }
+                    // when {
+                    //     changeset 'backend/**'
+                    // }
                     steps {
                         sh 'yarn workspace backend run format_lint:ci'
                     }
                 }
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                sh "yarn build"
             }
         }
     }
