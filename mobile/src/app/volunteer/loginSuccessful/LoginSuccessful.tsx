@@ -1,10 +1,22 @@
 import { AppText } from '@/components/AppText';
-import React from 'react';
-import { View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
 
 const LoginSuccessful = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Stop loading after 5 seconds
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      // Add your navigation logic here
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.cardContainer}>
@@ -53,6 +65,13 @@ const LoginSuccessful = () => {
             You will be directed to the homepage.
           </AppText>
         </View>
+
+        {/* Animated Loader */}
+        {isLoading && (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#9500FF" />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -79,5 +98,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: 24,
     alignItems: 'center',
     elevation: 10,
+  },
+  loaderContainer: {
+    marginTop: theme.spacing.s6,
+    paddingTop: theme.spacing.s4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }));
