@@ -2,16 +2,21 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Format & Lint') {
+            agent {
+                label "jenkins-agent-node"
+            }
             steps {
-                echo "Building.."
+                echo "Formatting & Linting.."
             }
         }
+
         stage("Test") {
             steps {
                 echo "Testing.."
             }
         }
+        
         stage("Deploy") {
             steps {
                 echo "Deploying...."
