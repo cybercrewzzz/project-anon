@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo "Formatting & Linting.."
                 sh "yarn workspaces focus mobile"
-                sh "yarn workspaces mobile format:ci"
+                sh "yarn workspaces focus mobile format:ci"
             }
         }
 
