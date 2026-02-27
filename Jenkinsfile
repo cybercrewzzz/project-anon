@@ -8,69 +8,28 @@ pipeline {
     }
 
     stages {
-        stage("Setup") {
-            parallel {
-                stage("Setup Mobile") {
-                    when {
-                        changeset "mobile/**"
-                    }
-                    steps {
-                        echo "Setting up mobile..."
-                        sh 'yarn workspaces focus mobile'
-                    }
-                }
-
-                stage("Setup Backend") {
-                    when {
-                        changeset "backend/**"
-                    }
-                    steps {
-                        echo "Setting up backend..."
-                        sh "yarn workspaces focus backend"
-                    }
-                }
+        stage('Setup') {
+            steps {
+                sh 'yarn install'
             }
         }
 
         stage('Code Quality') {
             parallel {
-                stage("Code Quality Mobile") {
+                stage('Mobile') {
                     when {
-                        changeset "mobile/**"
+                        changeset 'mobile/**'
                     }
-                    parallel {
-                        stage("Format") {
-                            steps {
-                                echo "Checking formatting..."
-                                sh 'yarn workspace mobile run format:ci'
-                            }
-                        }
-                        stage("Lint") {
-                            steps {
-                                echo "Running Linter..."
-                                sh 'yarn workspace mobile run lint:ci'
-                            }
-                        }
+                    steps {
+                        sh 'yarn workspace mobile run format_lint:ci'
                     }
                 }
-
-                stage("Code Quality Backend") {
+                stage('Backend') {
                     when {
-                        changeset "backend/**"
+                        changeset 'backend/**'
                     }
-                    parallel {
-                        stage("Format") {
-                            steps {
-                                echo "Checking formatting..."
-                                sh 'yarn workspace backend run format:ci'
-                            }
-                        }
-                        stage("Lint") {
-                            steps {
-                                echo "Running Linter..."
-                                sh 'yarn workspace backend run lint:ci'
-                            }
-                        }
+                    steps {
+                        sh 'yarn workspace backend run format_lint:ci'
                     }
                 }
             }
