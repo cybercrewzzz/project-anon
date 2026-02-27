@@ -16,9 +16,10 @@ const ProTalk = () => {
       />
       <Button
         title="To Login Successful"
-        onPress={() =>
-          router.push('/volunteer/loginSuccessful/LoginSuccessful')
-        }
+        onPress={() => router.push('/volunteer/loginSuccessful/LoginSuccessful')}
+      <Button
+        title="To Sign Up and Login"
+        onPress={() => router.navigate('/volunteer/signUpNlogin/SignUpNLogin')}
       />
     </View>
   );
