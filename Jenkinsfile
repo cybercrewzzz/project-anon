@@ -37,7 +37,7 @@ pipeline {
 
         stage('Build Backend') {
             steps {
-                sh "yarn build"
+                sh "yarn workspace backend build"
             }
         }
     }
