@@ -1,4 +1,14 @@
-@Library('shared-library') _
+def withCheck(String checkName, Closure body) {
+    publishChecks name: checkName, status: 'IN_PROGRESS'
+    try {
+        body()
+        publishChecks name: checkName, status: 'COMPLETED', conclusion: 'SUCCESS'
+    } catch (Exception e) {
+        publishChecks name: checkName, status: 'COMPLETED', conclusion: 'FAILURE',
+            summary: "Stage failed: ${e.message}"
+        throw e
+    }
+}
 
 pipeline {
     agent { label 'jenkins-agent-node' }
@@ -39,7 +49,7 @@ pipeline {
             }
             steps {
                 script {
-                    withGitHubCheck('Setup') {
+                    withCheck('Setup') {
                         sh 'yarn install --immutable'
                     }
                 }
@@ -56,7 +66,7 @@ pipeline {
             }
             steps {
                 script {
-                    withGitHubCheck('Setup: Mobile') {
+                    withCheck('Setup: Mobile') {
                         sh 'yarn workspaces focus mobile'
                         env.SETUP = "mobile"
                     }
@@ -74,7 +84,7 @@ pipeline {
             }
             steps {
                 script {
-                    withGitHubCheck('Setup: Backend') {
+                    withCheck('Setup: Backend') {
                         sh 'yarn workspaces focus backend'
                         env.SETUP = "backend"
                     }
@@ -93,7 +103,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             script {
-                                withGitHubCheck('Lint: Mobile') {
+                                withCheck('Lint: Mobile') {
                                     sh 'yarn workspace mobile run format_lint:ci'
                                 }
                             }
@@ -109,7 +119,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             script {
-                                withGitHubCheck('Lint: Backend') {
+                                withCheck('Lint: Backend') {
                                     sh 'yarn workspace backend run format_lint:ci'
                                 }
                             }
@@ -129,7 +139,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                     script {
-                        withGitHubCheck('Build: Backend') {
+                        withCheck('Build: Backend') {
                             // WIP
                             echo "Build in progress..."
                         }
