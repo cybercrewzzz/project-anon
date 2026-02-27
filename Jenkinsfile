@@ -1,4 +1,4 @@
-def withCheck(String checkName, Closure body) {
+def withChecks(String checkName, Closure body) {
     publishChecks name: checkName, status: 'IN_PROGRESS'
     try {
         body()
@@ -49,7 +49,7 @@ pipeline {
             }
             steps {
                 script {
-                    withCheck('Setup') {
+                    withChecks('Setup') {
                         sh 'yarn install --immutable'
                     }
                 }
@@ -66,7 +66,7 @@ pipeline {
             }
             steps {
                 script {
-                    withCheck('Setup: Mobile') {
+                    withChecks('Setup: Mobile') {
                         sh 'yarn workspaces focus mobile'
                         env.SETUP = "mobile"
                     }
@@ -84,7 +84,7 @@ pipeline {
             }
             steps {
                 script {
-                    withCheck('Setup: Backend') {
+                    withChecks('Setup: Backend') {
                         sh 'yarn workspaces focus backend'
                         env.SETUP = "backend"
                     }
@@ -103,7 +103,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             script {
-                                withCheck('Lint: Mobile') {
+                                withChecks('Lint: Mobile') {
                                     sh 'yarn workspace mobile run format_lint:ci'
                                 }
                             }
@@ -119,7 +119,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                             script {
-                                withCheck('Lint: Backend') {
+                                withChecks('Lint: Backend') {
                                     sh 'yarn workspace backend run format_lint:ci'
                                 }
                             }
@@ -139,7 +139,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                     script {
-                        withCheck('Build: Backend') {
+                        withChecks('Build: Backend') {
                             // WIP
                             echo "Build in progress..."
                         }
