@@ -23,6 +23,12 @@ pipeline {
                         changeset "backend/**"
                     }
                     changeset "*"
+                    not {
+                        anyOf {
+                            changeset "mobile/**"
+                            changeset "backend/**"
+                        }
+                    }
                 }
             }
             steps {
