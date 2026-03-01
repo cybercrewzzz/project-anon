@@ -1,100 +1,74 @@
-import { AppText } from '@/components/AppText';
-import { FullWidthButton } from '@/components/FullWidthButton';
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { Pressable, View } from 'react-native';
-import { StyleSheet, withUnistyles } from 'react-native-unistyles';
-
-const GradientBackground = withUnistyles(LinearGradient, theme => ({
-  colors: theme.gradient.backgroundPrimary as unknown as [string, string, ...string[]],
-}));
+import { AppText } from '@/components/AppText';  
+import { Pressable, View, Image } from 'react-native';  
+import { StyleSheet } from 'react-native-unistyles';  
+import { StatusBar } from 'expo-status-bar';  
+import React from 'react';  
 
 export default function Welcome() {
   return (
-    <View style={styles.screen}>
-      <StatusBar style="dark" />
-      <GradientBackground style={styles.gradient} />
+    <View style={styles.container}>
+      {/* Top*/}
+      <AppText
+        variant="largeTitle"
+        emphasis="emphasized"
+        style={styles.welcomeText}
+      >
+        Welcome!
+      </AppText>
 
-      {/* Hero Logo */}
-      <View style={styles.heroContainer}>
-        <Image
-          source={require('@/assets/images/logo.png')}
-          style={styles.logo}
-          contentFit="contain"
-        />
-      </View>
+      {/* Image in between */}
+      <Image
+        source={require('@/assets/images/hero.webp')}
+        style={{ width: 100, height: 100 }}
+      />
 
-      {/* Center Content */}
-      <View style={styles.content}>
-        <AppText variant="largeTitle" emphasis="emphasized" color="accent" textAlign="center">
-          Welcome!
-        </AppText>
-        <AppText variant="body" color="subtle1" textAlign="center" style={styles.subtitle}>
-          Connect with volunteers and get the support you need, in the language you understand.
-        </AppText>
-      </View>
-
-      {/* Bottom Actions */}
-      <View style={styles.actions}>
-        <FullWidthButton onPress={() => router.push('/user/StartedScreens/selectLanguage')}>
-          <AppText variant="headline" emphasis="emphasized" color="secondary">
-            Get Started
-          </AppText>
-        </FullWidthButton>
-
-        <Pressable onPress={() => router.push('/volunteer/getStarted/selectLanguage')}>
-          <AppText variant="subhead" emphasis="emphasized" color="subtle1" textAlign="center">
-            Continue as a Volunteer
-          </AppText>
+      {/* Bottom */}
+      <View style={styles.bottom}>
+        <Pressable style={styles.button}>
+          <AppText style={styles.buttonText}>Get Started</AppText>
         </Pressable>
+
+        <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>
       </View>
+
+      <StatusBar />
     </View>
   );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
-  screen: {
+  container: {
     flex: 1,
-    alignItems: 'center',
+    backgroundColor: '#D2ECFE',
     justifyContent: 'space-between',
-    paddingTop: rt.insets.top + theme.spacing.s6,
-    paddingBottom: rt.insets.bottom + theme.spacing.s7,
-    paddingHorizontal: theme.spacing.s5,
-  },
-
-  gradient: {
-    position: 'absolute',
-    inset: 0,
-  },
-
-  heroContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: rt.insets.top + 40,
+    paddingBottom: 80,
   },
-
-  logo: {
-    width: 200,
-    height: 200,
+  welcomeText: {
+    fontSize: 32,
+    color: theme.text.accent,
+    textAlign: 'center',
+    lineHeight: 40,
   },
-
-  content: {
-    alignItems: 'center',
-    gap: theme.spacing.s3,
-    paddingHorizontal: theme.spacing.s4,
-    paddingBottom: theme.spacing.s6,
-  },
-
-  subtitle: {
-    maxWidth: 320,
-  },
-
-  actions: {
-    width: '100%',
+  bottom: {
     alignItems: 'center',
     gap: theme.spacing.s5,
+  },
+  button: {
+    backgroundColor: theme.background.accent,
+    padding: 12,
+    borderRadius: theme.radius.xl,
+    width: 300,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: theme.text.secondary,
+    fontWeight: 'bold',
+  },
+  volunteerText: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    color: theme.text.accent,
   },
 }));
