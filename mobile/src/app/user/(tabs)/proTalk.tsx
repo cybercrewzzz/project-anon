@@ -20,7 +20,7 @@ const ProTalk = () => {
       />
       <Button
         title="To User Profile"
-        onPress={() => router.push('/volunteer/userProfile/UserProfile')}
+        onPress={() => router.push('/user/userProfile/UserProfile')}
       />
     </View>
   );
