@@ -1,0 +1,115 @@
+import { AppText } from '@/components/AppText';
+import React, { useState, useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
+import { StyleSheet } from 'react-native-unistyles';
+
+const LoginSuccessful = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Stop loading after 5 seconds
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      // Add your navigation logic here
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.cardContainer}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={require('@/assets/images/loginSuccessful.webp')}
+            style={styles.image}
+          />
+        </View>
+        <View>
+          <AppText
+            variant="title3"
+            color="primary"
+            emphasis="emphasized"
+            style={styles.textLine1}
+          >
+            Login Successful!
+          </AppText>
+          <AppText variant="subhead" color="primary" style={styles.textLine2}>
+            Please Wait
+          </AppText>
+          <AppText variant="subhead" color="primary" style={styles.textLine3}>
+            You will be directed to the homepage.
+          </AppText>
+        </View>
+
+        {/* Animated Loader */}
+        {isLoading && (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#9500FF" />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
+
+export default LoginSuccessful;
+
+const styles = StyleSheet.create((theme, rt) => ({
+  container: {
+    flex: 1,
+    backgroundColor: '#333333',
+    paddingTop: rt.insets.top,
+    paddingBottom: rt.insets.bottom,
+    paddingLeft: rt.insets.left + 16,
+    paddingRight: rt.insets.right + 16,
+    justifyContent: 'center',
+  },
+
+  cardContainer: {
+    backgroundColor: theme.surface.primary,
+    borderRadius: theme.radius.mdSoft,
+    width: '100%',
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    elevation: 10,
+  },
+
+  imageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 32,
+  },
+
+  image: {
+    width: 200,
+    height: 185,
+  },
+
+  textLine1: {
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+
+  textLine2: {
+    paddingTop: 32,
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+
+  textLine3: {
+    paddingTop: 8,
+    marginTop: 8,
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+
+  loaderContainer: {
+    marginTop: theme.spacing.s6,
+    paddingTop: theme.spacing.s4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));

@@ -18,6 +18,10 @@ const ProTalk = () => {
         title="Peer to Peer"
         onPress={() => router.push('/user/PeertoPeer/peertopeer')}
       />
+      <Button
+        title="To User Profile"
+        onPress={() => router.push('/volunteer/userProfile/UserProfile')}
+      />
     </View>
   );
 };

@@ -14,6 +14,16 @@ const ProTalk = () => {
         title="To Enter Email"
         onPress={() => router.push('/volunteer/authScreens/enterEmail')}
       />
+      <Button
+        title="To Login Successful"
+        onPress={() =>
+          router.push('/volunteer/loginSuccessful/LoginSuccessful')
+        }
+      />
+      <Button
+        title="To Sign Up and Login"
+        onPress={() => router.navigate('/volunteer/signUpNlogin/SignUpNLogin')}
+      />
     </View>
   );
 };
