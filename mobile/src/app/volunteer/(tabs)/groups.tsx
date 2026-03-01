@@ -19,10 +19,6 @@ const Groups = () => {
         text="Select Language"
         onPress={() => router.navigate('/volunteer/getStarted/selectLanguage')}
       />
-      <Button
-        text="Peer to Peer"
-        onPress={() => router.navigate('/volunteer/StartedScreen/peertopeer')}
-      />
     </View>
   );
 };
