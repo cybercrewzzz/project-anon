@@ -123,7 +123,7 @@ export default function PeerToPeer() {
           <AppText variant="body" emphasis="emphasized" color="accent">
             Connection History
           </AppText>
-          {connectionHistory.map((user) => (
+          {connectionHistory.map(user => (
             <View key={user.id} style={styles.userRow}>
               <View style={styles.avatarContainer}>
                 <View style={styles.avatar}>
@@ -133,16 +133,19 @@ export default function PeerToPeer() {
                   style={[
                     styles.onlineDot,
                     {
-                      backgroundColor: user.online
-                        ? common.green[500]
-                        : common.gray[300],
+                      backgroundColor:
+                        user.online ? common.green[500] : common.gray[300],
                     },
                   ]}
                 />
               </View>
 
               <View style={styles.userInfo}>
-                <AppText variant="callout" emphasis="emphasized" color="primary">
+                <AppText
+                  variant="callout"
+                  emphasis="emphasized"
+                  color="primary"
+                >
                   {user.name}
                 </AppText>
                 <View style={styles.ratingRow}>
@@ -154,7 +157,11 @@ export default function PeerToPeer() {
               </View>
 
               <Pressable style={styles.favoriteBtn}>
-                <Ionicons name="star-outline" size={22} color={common.red[500]} />
+                <Ionicons
+                  name="star-outline"
+                  size={22}
+                  color={common.red[500]}
+                />
               </Pressable>
             </View>
           ))}
