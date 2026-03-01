@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { AppTheme } from '@/theme/roles/user/light';
 import { Button } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
