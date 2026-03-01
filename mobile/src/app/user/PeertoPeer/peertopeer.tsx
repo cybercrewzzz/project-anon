@@ -114,6 +114,7 @@ export default function PeerToPeer() {
           </View>
 
           <Pressable style={styles.connectBtn} onPress={handleConnect}>
+          <Pressable style={styles.connectBtn}>
             <AppText variant="headline" emphasis="emphasized" color="secondary">
               Connect
             </AppText>
@@ -130,6 +131,7 @@ export default function PeerToPeer() {
             Connection History
           </AppText>
           {connectionHistory.map((user) => (
+          {connectionHistory.map(user => (
             <View key={user.id} style={styles.userRow}>
               <View style={styles.avatarContainer}>
                 <View style={styles.avatar}>
@@ -142,6 +144,8 @@ export default function PeerToPeer() {
                       backgroundColor: user.online
                         ? common.green[500]
                         : common.gray[300],
+                      backgroundColor:
+                        user.online ? common.green[500] : common.gray[300],
                     },
                   ]}
                 />
@@ -149,6 +153,11 @@ export default function PeerToPeer() {
 
               <View style={styles.userInfo}>
                 <AppText variant="callout" emphasis="emphasized" color="primary">
+                <AppText
+                  variant="callout"
+                  emphasis="emphasized"
+                  color="primary"
+                >
                   {user.name}
                 </AppText>
                 <View style={styles.ratingRow}>
@@ -161,6 +170,11 @@ export default function PeerToPeer() {
 
               <Pressable style={styles.favoriteBtn}>
                 <Ionicons name="star-outline" size={22} color={common.red[500]} />
+                <Ionicons
+                  name="star-outline"
+                  size={22}
+                  color={common.red[500]}
+                />
               </Pressable>
             </View>
           ))}
