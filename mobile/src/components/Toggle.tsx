@@ -24,11 +24,11 @@ export default function Toggle({ label, initialValue = false }: ToggleProps) {
         activeOpacity={0.8}
       >
         {/* Track — gray when OFF, purple when ON */}
-        <View
-          style={[styles.track, isOn ? styles.trackOn : styles.trackOff]}
-              >
-                  {/* Thumb — slides left when OFF, right when ON */}
-          <View style={[styles.thumb, isOn ? styles.thumbOn : styles.thumbOff]} />
+        <View style={[styles.track, isOn ? styles.trackOn : styles.trackOff]}>
+          {/* Thumb — slides left when OFF, right when ON */}
+          <View
+            style={[styles.thumb, isOn ? styles.thumbOn : styles.thumbOff]}
+          />
         </View>
       </TouchableOpacity>
     </View>
@@ -52,13 +52,13 @@ const styles = StyleSheet.create((theme, rt) => ({
   trackOff: {
     backgroundColor: theme.surface.muted,
   }, // gray when OFF
-    trackOn: { backgroundColor: theme.surface.tertiary },  // purple when ON
-    thumb: {
+  trackOn: { backgroundColor: theme.surface.tertiary }, // purple when ON
+  thumb: {
     width: 18,
     height: 18,
     borderRadius: 9,
     backgroundColor: theme.surface.primary,
-    },
-    thumbOff: { alignSelf: 'flex-start' },  // sits on the LEFT when OFF
-  thumbOn:  { alignSelf: 'flex-end' },    // sits on the RIGHT when ON
+  },
+  thumbOff: { alignSelf: 'flex-start' }, // sits on the LEFT when OFF
+  thumbOn: { alignSelf: 'flex-end' }, // sits on the RIGHT when ON
 }));

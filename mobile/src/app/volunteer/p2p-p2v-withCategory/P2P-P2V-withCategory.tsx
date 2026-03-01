@@ -163,8 +163,8 @@ const P2P_P2V_withCategory = () => {
           </View>
 
           <View style={styles.toggleRow}>
-              <Toggle label="Same-Gender"    initialValue={false} />
-            <Toggle label="Volunteer Only" initialValue={true}  />
+            <Toggle label="Same-Gender" initialValue={false} />
+            <Toggle label="Volunteer Only" initialValue={true} />
           </View>
         </View>
       </View>
