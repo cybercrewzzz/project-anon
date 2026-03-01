@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
+import Toggle from '@/components/Toggle';
 
 const P2P_P2V_withCategory = () => {
   return (
@@ -142,6 +143,30 @@ const P2P_P2V_withCategory = () => {
             </View>
           </View>
         </View>
+        <View>
+          <AppText
+            variant="body"
+            emphasis="emphasized"
+            style={styles.descriptionTitleText}
+          >
+            {' '}
+            Tell Your Problem{' '}
+          </AppText>
+          <View style={styles.categoryType}>
+            <AppText
+              variant="body"
+              emphasis="emphasized"
+              style={styles.descriptionText}
+            >
+              Tell us about your issue
+            </AppText>
+          </View>
+
+          <View style={styles.toggleRow}>
+              <Toggle label="Same-Gender"    initialValue={false} />
+            <Toggle label="Volunteer Only" initialValue={true}  />
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -202,6 +227,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   emotionCardText: {
     color: theme.text.subtle1,
     margin: 5,
+    marginTop: 10,
   },
   emojeeContainer: {
     flexDirection: 'row',
@@ -210,6 +236,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     padding: 4,
   },
   categoryCard: {
+    flex: 1,
     backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.md,
     padding: theme.spacing.s4,
@@ -247,5 +274,22 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginTop: 4,
     gap: 16,
     padding: 10,
+  },
+  descriptionTitleText: {
+    marginTop: 20,
+    color: theme.text.subtle1,
+  },
+  descriptionText: {
+    color: theme.text.subtle2,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+    marginTop: 10,
+    paddingHorizontal: 4,
+    paddingVertical: 8,
   },
 }));
