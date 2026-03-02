@@ -20,7 +20,11 @@ const ProTalk = () => {
       />
       <Button
         title="To P2P-P2V-withCategory"
-        onPress={() => router.navigate('/volunteer/p2p-p2v-withCategory/P2P-P2V-withCategory')}
+        onPress={() =>
+          router.navigate(
+            '/volunteer/p2p-p2v-withCategory/P2P-P2V-withCategory',
+          )
+        }
       />
     </View>
   );
