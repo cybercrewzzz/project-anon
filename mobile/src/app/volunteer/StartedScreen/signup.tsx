@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { AppText } from '@/components/AppText';
 import { Button } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
