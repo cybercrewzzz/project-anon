@@ -26,7 +26,7 @@ export function WaitingModal({ visible, onDismiss }: WaitingModalProps) {
             duration: 700,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
       loop.start();
       return () => loop.stop();
@@ -59,7 +59,7 @@ export function WaitingModal({ visible, onDismiss }: WaitingModalProps) {
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create(theme => ({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.70)',

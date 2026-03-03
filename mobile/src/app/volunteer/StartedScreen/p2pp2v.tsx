@@ -104,13 +104,11 @@ const SignUp = () => {
         </AppText>
       </Pressable>
 
-          <FullWidthButton>
-            <AppText variant="headline" color= 'secondary'>
-              Sign Up
-            </AppText>
-          </FullWidthButton>
-
-
+      <FullWidthButton>
+        <AppText variant="headline" color="secondary">
+          Sign Up
+        </AppText>
+      </FullWidthButton>
     </KeyboardAwareScrollView>
   );
 };

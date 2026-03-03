@@ -14,14 +14,7 @@ const ProTalk = () => {
         title="Special Notice"
         onPress={() => router.push('/user/Special Notice/specialnotice')}
       />
-       <Button
-        title="welcome"
-        onPress={() => router.push('/welcome')}
-      />
-
-
     </View>
-
   );
 };
 

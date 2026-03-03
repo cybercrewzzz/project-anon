@@ -18,8 +18,17 @@ const ProTalk = () => {
         title="Welcome-screen"
         onPress={() => router.push('/volunteer/WelcomeScreen/welcome')}
       />
-      
-      
+
+      <Button
+        title="To Login Successful"
+        onPress={() =>
+          router.push('/volunteer/loginSuccessful/LoginSuccessful')
+        }
+      />
+      <Button
+        title="To Sign Up and Login"
+        onPress={() => router.navigate('/volunteer/signUpNlogin/SignUpNLogin')}
+      />
     </View>
   );
 };

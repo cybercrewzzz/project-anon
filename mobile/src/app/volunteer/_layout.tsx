@@ -7,7 +7,6 @@ const VolunteerLayout = () => {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="getStarted" />
     </Stack>
-    
   );
 };
 
