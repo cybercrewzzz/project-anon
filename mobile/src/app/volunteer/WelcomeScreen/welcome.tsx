@@ -1,7 +1,6 @@
 import { AppText } from '@/components/AppText';
 import { Pressable, View, Image } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 
 export default function Welcome() {
@@ -30,8 +29,6 @@ export default function Welcome() {
 
         <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>
       </View>
-
-      <StatusBar />
     </View>
   );
 }
