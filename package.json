@@ -5,7 +5,8 @@
   "private": true,
   "workspaces": [
     "mobile",
-    "backend"
+    "backend",
+    "admin"
   ],
   "devDependencies": {
     "husky": "^9.1.7"
