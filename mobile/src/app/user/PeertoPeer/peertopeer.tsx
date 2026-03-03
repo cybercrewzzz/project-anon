@@ -143,15 +143,13 @@ export default function PeerToPeer() {
                           backgroundColor: user.online
                             ? common.green[500]
                             : common.gray[300],
-                          backgroundColor:
-                            user.online ? common.green[500] : common.gray[300],
                         },
                       ]}
                     />
                   </View>
 
                   <View style={styles.userInfo}>
-                    <AppText variant="callout" emphasis="emphasized" color="primary">
+                    <AppText variant="callout" emphasis="emphasized" color="primary"></AppText>
                       <AppText
                         variant="callout"
                         emphasis="emphasized"
