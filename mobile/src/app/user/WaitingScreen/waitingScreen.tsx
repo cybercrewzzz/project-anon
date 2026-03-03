@@ -22,7 +22,7 @@ export default function WaitingScreen() {
       ),
       -1,
     );
-  }, []);
+  }, [scale]);
 
   const dotStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
