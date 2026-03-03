@@ -22,6 +22,10 @@ const ProTalk = () => {
         title="To User Profile"
         onPress={() => router.push('/user/userProfile/UserProfile')}
       />
+      <Button
+        title="To Waiting Screen"
+        onPress={() => router.push('/user/WaitingScreen/waitingScreen')}
+      />
     </View>
   );
 };
