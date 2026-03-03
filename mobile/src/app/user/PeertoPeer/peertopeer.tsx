@@ -129,52 +129,58 @@ export default function PeerToPeer() {
           <AppText variant="body" emphasis="emphasized" color="accent">
             Connection History
           </AppText>
-          {connectionHistory.map((user) => (
-            
-                <View key={user.id} style={styles.userRow}>
-                  <View style={styles.avatarContainer}>
-                    <View style={styles.avatar}>
-                      <Ionicons name="person" size={24} color={common.white} />
-                    </View>
-                    <View
-                      style={[
-                        styles.onlineDot,
-                        {
-                          backgroundColor: user.online
-                            ? common.green[500]
-                            : common.gray[300],
-                        },
-                      ]}
-                    />
-                  </View>
-
-                  <View style={styles.userInfo}>
-                    <AppText variant="callout" emphasis="emphasized" color="primary"></AppText>
-                      <AppText
-                        variant="callout"
-                        emphasis="emphasized"
-                        color="primary"
-                      >
-                        {user.name}
-                      </AppText>
-                      <View style={styles.ratingRow}>
-                        <AppText variant="footnote" color="muted">
-                          {user.rating}
-                        </AppText>
-                        <Ionicons name="star" size={12} color={common.yellow[500]} />
-                      </View>
-                  </View>
-
-                  <Pressable style={styles.favoriteBtn}>
-                    <Ionicons name="star-outline" size={22} color={common.red[500]} />
-                    <Ionicons
-                      name="star-outline"
-                      size={22}
-                      color={common.red[500]}
-                    />
-                  </Pressable>
+          {connectionHistory.map(user => (
+            <View key={user.id} style={styles.userRow}>
+              <View style={styles.avatarContainer}>
+                <View style={styles.avatar}>
+                  <Ionicons name="person" size={24} color={common.white} />
                 </View>
-              ))}
+                <View
+                  style={[
+                    styles.onlineDot,
+                    {
+                      backgroundColor:
+                        user.online ? common.green[500] : common.gray[300],
+                    },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.userInfo}>
+                <AppText
+                  variant="callout"
+                  emphasis="emphasized"
+                  color="primary"
+                ></AppText>
+                <AppText
+                  variant="callout"
+                  emphasis="emphasized"
+                  color="primary"
+                >
+                  {user.name}
+                </AppText>
+                <View style={styles.ratingRow}>
+                  <AppText variant="footnote" color="muted">
+                    {user.rating}
+                  </AppText>
+                  <Ionicons name="star" size={12} color={common.yellow[500]} />
+                </View>
+              </View>
+
+              <Pressable style={styles.favoriteBtn}>
+                <Ionicons
+                  name="star-outline"
+                  size={22}
+                  color={common.red[500]}
+                />
+                <Ionicons
+                  name="star-outline"
+                  size={22}
+                  color={common.red[500]}
+                />
+              </Pressable>
+            </View>
+          ))}
         </View>
       </ScrollView>
 
