@@ -22,6 +22,10 @@ const ProTalk = () => {
         title="To User Profile"
         onPress={() => router.push('/user/userProfile/UserProfile')}
       />
+      <Button
+        title="SignupNLogin"
+        onPress={() => router.push('/user/SignupNLogin/signupNlogin')}
+      />
     </View>
   );
 };
