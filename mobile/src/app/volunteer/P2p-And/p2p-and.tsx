@@ -870,7 +870,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: rt.screen.width < 768 ? 85 : 115,
+    paddingTop: rt.screen.width < 768 ? 35 : 55,
     paddingHorizontal: rt.screen.width < 768 ? 15 : 50,
     paddingBottom: 30,
     gap: rt.screen.width < 768 ? 30 : 50,
