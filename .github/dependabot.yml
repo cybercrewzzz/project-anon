@@ -1,66 +1,29 @@
 version: 2
 updates:
-  # ──────────────────────────────────────────────
-  # MOBILE (Expo) — ignore Expo-managed packages
-  # Expo pins exact dependency versions per SDK.
-  # Use `npx expo doctor` to manage these instead.
-  # ──────────────────────────────────────────────
+  # Single entry for the whole Yarn Workspaces monorepo
+  # Dependabot will scan all workspace package.json files
+  # and update the single root yarn.lock
   - package-ecosystem: "npm"
-    directory: "/mobile"
+    directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     groups:
-      mobile-security:
+      # Group all security fixes into one PR
+      security-updates:
         applies-to: security-updates
         patterns:
           - "*"
-      mobile-deps:
+      # Group all version updates into one PR
+      version-updates:
         applies-to: version-updates
         patterns:
           - "*"
     ignore:
+      # Expo-managed packages — use `npx expo doctor` instead
       - dependency-name: "expo"
       - dependency-name: "expo-*"
       - dependency-name: "react-native"
       - dependency-name: "react-native-*"
       - dependency-name: "@expo/*"
       - dependency-name: "@react-native/*"
-      - dependency-name: "react"
-      - dependency-name: "react-dom"
-
-  # ──────────────────────────────────────────────
-  # ADMIN (Next.js) — safe to update normally
-  # ──────────────────────────────────────────────
-  - package-ecosystem: "npm"
-    directory: "/admin"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    groups:
-      admin-security:
-        applies-to: security-updates
-        patterns:
-          - "*"
-      admin-deps:
-        applies-to: version-updates
-        patterns:
-          - "*"
-
-  # ──────────────────────────────────────────────
-  # BACKEND (NestJS) — safe to update normally
-  # ──────────────────────────────────────────────
-  - package-ecosystem: "npm"
-    directory: "/backend"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    groups:
-      backend-security:
-        applies-to: security-updates
-        patterns:
-          - "*"
-      backend-deps:
-        applies-to: version-updates
-        patterns:
-          - "*"
