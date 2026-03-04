@@ -1,11 +1,66 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  # ──────────────────────────────────────────────
+  # MOBILE (Expo) — ignore Expo-managed packages
+  # Expo pins exact dependency versions per SDK.
+  # Use `npx expo doctor` to manage these instead.
+  # ──────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/mobile"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      mobile-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      mobile-deps:
+        applies-to: version-updates
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "@react-native/*"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+
+  # ──────────────────────────────────────────────
+  # ADMIN (Next.js) — safe to update normally
+  # ──────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/admin"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      admin-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      admin-deps:
+        applies-to: version-updates
+        patterns:
+          - "*"
+
+  # ──────────────────────────────────────────────
+  # BACKEND (NestJS) — safe to update normally
+  # ──────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      backend-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      backend-deps:
+        applies-to: version-updates
+        patterns:
+          - "*"
