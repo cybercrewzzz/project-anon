@@ -18,7 +18,9 @@ const Groups = () => {
         />
         <Button
           text="Select Language"
-          onPress={() => router.navigate('/volunteer/getStarted/selectLanguage')}
+          onPress={() =>
+            router.navigate('/volunteer/getStarted/selectLanguage')
+          }
         />
       </View>
     </SafeAreaView>
