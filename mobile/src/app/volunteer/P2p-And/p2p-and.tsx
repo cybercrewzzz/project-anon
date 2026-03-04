@@ -300,7 +300,7 @@ export default function Index() {
                     <AppText style={styles.profileImageText}>JD</AppText>
                   </LinearGradient>
                   <View style={styles.profileTextContainer}>
-                    <Text
+                    <AppText
                       variant="callout"
                       style={{
                         fontSize: isSmallScreen ? 14 : 16,
@@ -308,8 +308,8 @@ export default function Index() {
                       }}
                     >
                       RecAnonUser89
-                    </Text>
-                    <Text
+                    </AppText>
+                    <AppText
                       variant="caption1"
                       style={{
                         fontSize: isSmallScreen ? 10 : 12,
@@ -317,8 +317,8 @@ export default function Index() {
                       }}
                     >
                       Issue - Stress
-                    </Text>
-                    <Text
+                    </AppText>
+                    <AppText
                       variant="caption1"
                       style={{
                         fontSize: isSmallScreen ? 10 : 12,
@@ -326,7 +326,7 @@ export default function Index() {
                       }}
                     >
                       Waiting - 8 minutes
-                    </Text>
+                    </AppText>
                   </View>
                 </View>
                 <Pressable>
@@ -714,19 +714,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderRadius: 20,
     minWidth: rt.screen.width < 768 ? 80 : 120,
     alignItems: 'center',
-  },
-  toggleButtonActivePurple: {
-    backgroundColor: 'theme.action.primary',
-  },
-  toggleButtonActiveGreen: {
-    backgroundColor: 'theme.action.success',
-  },
-  toggleText: {
-    color: '#666',
-    fontWeight: '600',
-  },
-  toggleTextActive: {
-    color: '#FFFFFF',
   },
   singleButton: {
     paddingVertical: 10,
