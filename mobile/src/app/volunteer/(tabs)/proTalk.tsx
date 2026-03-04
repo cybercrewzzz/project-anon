@@ -6,7 +6,7 @@ const ProTalk = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text>ProTalk</Text>
+        <Text style={styles.title}>ProTalk</Text>
         <Button
           title="To the OTPVerification"
           onPress={() => router.push('/volunteer/authScreens/OTPVerification')}
@@ -44,5 +44,11 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    alignSelf: 'center',
   },
 });
