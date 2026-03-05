@@ -5,8 +5,6 @@ import React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-const emojis = ['😔', '😕', '😐', '🙂', '😊'];
-
 const issueGroups = [
   {
     title: 'Family Problems',
@@ -34,38 +32,8 @@ export default function VolunteerPeerToPeer() {
       <View style={styles.baseLayer}>
         <View style={styles.headerRow}>
           <Pressable style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={28} style={styles.backIcon} />
+            <Ionicons name="arrow-back" size={24} style={styles.backIcon} />
           </Pressable>
-          <AppText variant="title2" emphasis="emphasized">
-            Peer to Peer
-          </AppText>
-          <View style={styles.headerSpacer} />
-        </View>
-
-        <View style={styles.badgesRow}>
-          <View style={styles.starBadge}>
-            <AppText variant="title3" color="secondary" emphasis="emphasized">
-              ⭐ 185
-            </AppText>
-          </View>
-          <View style={styles.ticketBadge}>
-            <AppText variant="title3" color="accent" emphasis="emphasized">
-              🎟️ 5
-            </AppText>
-          </View>
-        </View>
-
-        <View style={styles.moodCard}>
-          <AppText variant="title2" color="accent" emphasis="emphasized">
-            How are you feeling Right Now?
-          </AppText>
-          <View style={styles.emojiRow}>
-            {emojis.map(item => (
-              <AppText key={item} style={styles.emojiText}>
-                {item}
-              </AppText>
-            ))}
-          </View>
         </View>
       </View>
 
@@ -73,7 +41,7 @@ export default function VolunteerPeerToPeer() {
 
       <View style={styles.sheet}>
         <AppText
-          variant="title1"
+          variant="title2"
           emphasis="emphasized"
           textAlign="center"
           style={styles.sheetTitle}
@@ -82,10 +50,14 @@ export default function VolunteerPeerToPeer() {
         </AppText>
 
         <View style={styles.searchBox}>
-          <AppText variant="body" color="muted" style={styles.searchPlaceholder}>
+          <AppText
+            variant="callout"
+            color="muted"
+            style={styles.searchPlaceholder}
+          >
             Search or Select Source
           </AppText>
-          <Ionicons name="search" size={34} style={styles.searchIcon} />
+          <Ionicons name="search" size={26} style={styles.searchIcon} />
         </View>
 
         <ScrollView
@@ -95,7 +67,7 @@ export default function VolunteerPeerToPeer() {
         >
           {issueGroups.map(group => (
             <View key={group.title} style={styles.issueCard}>
-              <AppText variant="title1" emphasis="emphasized">
+              <AppText variant="title3" emphasis="emphasized">
                 {group.title}
               </AppText>
 
@@ -103,7 +75,7 @@ export default function VolunteerPeerToPeer() {
                 {group.tags.map(tag => (
                   <Pressable key={`${group.title}-${tag}`} style={styles.tagPill}>
                     <AppText
-                      variant="headline"
+                      variant="footnote"
                       color="secondary"
                       emphasis="emphasized"
                     >
@@ -116,9 +88,9 @@ export default function VolunteerPeerToPeer() {
           ))}
 
           <Pressable style={styles.otherCard}>
-            <Ionicons name="add" size={48} style={styles.otherIcon} />
-            <AppText variant="title1" emphasis="emphasized">
-              <AppText variant="title1" color="accent" emphasis="emphasized">
+            <Ionicons name="add" size={36} style={styles.otherIcon} />
+            <AppText variant="title3" emphasis="emphasized">
+              <AppText variant="title3" color="accent" emphasis="emphasized">
                 Other :
               </AppText>{' '}
               Tell Your Problem
@@ -138,59 +110,23 @@ const styles = StyleSheet.create((theme, rt) => ({
     position: 'relative',
   },
   baseLayer: {
-    paddingHorizontal: theme.spacing.s5,
-    gap: theme.spacing.s4,
+    paddingHorizontal: theme.spacing.s4,
+    gap: theme.spacing.s2,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: theme.spacing.s4,
+    justifyContent: 'flex-start',
+    paddingTop: theme.spacing.s2,
   },
   backButton: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   backIcon: {
     color: theme.text.primary,
-  },
-  headerSpacer: {
-    width: 44,
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: theme.spacing.s3,
-  },
-  starBadge: {
-    backgroundColor: theme.action.secondary,
-    borderRadius: theme.radius.full,
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s5,
-  },
-  ticketBadge: {
-    borderWidth: 1,
-    borderColor: theme.border.default,
-    borderRadius: theme.radius.full,
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s5,
-    backgroundColor: theme.surface.primary,
-  },
-  moodCard: {
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.surface.primary,
-    padding: theme.spacing.s5,
-    gap: theme.spacing.s4,
-  },
-  emojiRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  emojiText: {
-    fontSize: 44,
   },
   overlay: {
     position: 'absolute',
@@ -206,25 +142,25 @@ const styles = StyleSheet.create((theme, rt) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    height: '74%',
+    height: '80%',
     backgroundColor: theme.surface.muted,
-    borderTopLeftRadius: 48,
-    borderTopRightRadius: 48,
-    paddingTop: theme.spacing.s6,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingTop: theme.spacing.s4,
   },
   sheetTitle: {
-    marginBottom: theme.spacing.s4,
+    marginBottom: theme.spacing.s3,
   },
   searchBox: {
-    marginHorizontal: theme.spacing.s5,
-    marginBottom: theme.spacing.s5,
+    marginHorizontal: theme.spacing.s4,
+    marginBottom: theme.spacing.s3,
     borderRadius: theme.radius.lg,
     backgroundColor: theme.surface.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.s4,
-    paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
   },
   searchPlaceholder: {
     flex: 1,
@@ -236,37 +172,37 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
   },
   issueContent: {
-    paddingHorizontal: theme.spacing.s5,
-    paddingBottom: rt.insets.bottom + theme.spacing.s4,
-    gap: theme.spacing.s5,
+    paddingHorizontal: theme.spacing.s4,
+    paddingBottom: rt.insets.bottom + theme.spacing.s2,
+    gap: theme.spacing.s3,
   },
   issueCard: {
     backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.xl,
-    padding: theme.spacing.s4,
-    gap: theme.spacing.s4,
+    padding: theme.spacing.s3,
+    gap: theme.spacing.s3,
   },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.s3,
+    gap: theme.spacing.s2,
   },
   tagPill: {
     borderRadius: theme.radius.full,
     backgroundColor: theme.action.secondary,
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s4,
-    minWidth: 130,
+    paddingVertical: theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s3,
+    minWidth: 100,
     alignItems: 'center',
   },
   otherCard: {
     backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.xl,
-    paddingHorizontal: theme.spacing.s4,
-    paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.s2,
+    gap: theme.spacing.s1,
   },
   otherIcon: {
     color: theme.text.primary,
