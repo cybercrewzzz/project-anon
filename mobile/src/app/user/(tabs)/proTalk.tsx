@@ -25,6 +25,16 @@ const ProTalk = () => {
       <Button
         title="SignupNLogin"
         onPress={() => router.push('/user/SignupNLogin/signupNlogin')}
+        />
+      <Button
+        title="To Waiting Screen"
+        onPress={() => router.push('/user/WaitingScreen/waitingScreen')}
+      />
+      <Button
+        title="To P2P-P2V-withCategory"
+        onPress={() =>
+          router.navigate('/user/p2p-p2v-withCategory/P2P-P2V-withCategory')
+        }
       />
     </View>
   );
