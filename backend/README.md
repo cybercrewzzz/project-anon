@@ -8,6 +8,10 @@
 
 ---
 
+[Database Schema Guide](DB_SCHEMA.md)
+
+---
+
 ## Table of Contents
 
 - [Backend Architecture \& Connection Paths](#backend-architecture--connection-paths)
