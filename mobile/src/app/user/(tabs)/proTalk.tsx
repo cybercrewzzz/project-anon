@@ -24,7 +24,7 @@ const ProTalk = () => {
       />
       <Button
         title="Create New Password"
-        onPress={() => router.push('/user/CreateNewPassword/createNewPassword')}
+        onPress={() => router.push('/user/createNewPassword/CreateNewPassword')}
       />
 
     </View>
