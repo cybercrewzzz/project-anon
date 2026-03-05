@@ -14,13 +14,13 @@ const SignUpNLogin = () => {
         </AppText>
       </View>
       <View style={styles.buttonContainer}>
-        <AuthButton label="Login" variant="secondary" />
+        <AuthButton label="Login" color="#9500FF" />
         <View style={styles.dividerText}>
           <AppText variant="headline" color="primary">
             OR
           </AppText>
         </View>
-        <AuthButton label="Sign Up" variant="primary" />
+        <AuthButton label="Sign Up" color="#570096" />
       </View>
     </View>
   );
