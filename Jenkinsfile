@@ -33,6 +33,7 @@ pipeline {
                     env.HAS_MOBILE_CHANGES = changedFiles.any { it.startsWith('mobile/') }.toString()
                     env.HAS_BACKEND_CHANGES = changedFiles.any { it.startsWith('backend/') }.toString()
                     env.HAS_OTHER_CHANGES = changedFiles.any { !it.startsWith('mobile/') && !it.startsWith('backend/') }.toString()
+                    env.HAS_CHANGES = (changedFiles.size() > 0).toString()
                 }
             }
         }
@@ -42,6 +43,7 @@ pipeline {
                 anyOf {
                     branch "main"
                     environment name: 'HAS_OTHER_CHANGES', value: 'true'
+                    environment name: 'HAS_CHANGES', value: 'false'
                     allOf {
                         environment name: 'HAS_MOBILE_CHANGES', value: 'true'
                         environment name: 'HAS_BACKEND_CHANGES', value: 'true'
