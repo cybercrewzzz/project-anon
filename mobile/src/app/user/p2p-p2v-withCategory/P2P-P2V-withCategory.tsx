@@ -4,7 +4,6 @@ import { Image } from 'expo-image';
 import { AppText } from '@/components/AppText';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
 import Toggle from '@/components/Toggle';
-//import { FullWidthButton } from '@/components/FullWidthButton';
 import { purple } from '@/theme/palettes/purple';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -39,7 +38,7 @@ const P2P_P2V_withCategory = () => {
               emphasis="emphasized"
               style={styles.pointText}
             >
-              185{' '}
+              185
             </AppText>
           </View>
           <View style={styles.ticketCard}>
@@ -52,8 +51,7 @@ const P2P_P2V_withCategory = () => {
               emphasis="emphasized"
               style={styles.ticketText}
             >
-              {' '}
-              5{' '}
+              5
             </AppText>
           </View>
         </View>
@@ -64,8 +62,7 @@ const P2P_P2V_withCategory = () => {
             emphasis="emphasized"
             style={styles.emotionCardText}
           >
-            {' '}
-            How are you feeling Right Now?{' '}
+            How are you feeling Right Now?
           </AppText>
           <View style={styles.emojeeContainer}>
             <Image
@@ -97,8 +94,7 @@ const P2P_P2V_withCategory = () => {
             emphasis="emphasized"
             style={styles.emotionCardText}
           >
-            {' '}
-            What is troubling you today?{' '}
+            What is troubling you today?
           </AppText>
           <View style={styles.categoryType}>
             <AppText
@@ -106,22 +102,20 @@ const P2P_P2V_withCategory = () => {
               emphasis="emphasized"
               style={styles.categoryTypeText}
             >
-              {' '}
-              Family Problem{' '}
+              Family Problem
             </AppText>
             <Image
               source={require('@/assets/icons/chevron-downOPT.svg')}
               style={styles.dropDownIcon}
             ></Image>
           </View>
-          <View style={styles.fellingDescriptionContainer}>
+          <View style={styles.feelingDescriptionContainer}>
             <AppText
               variant="body"
               emphasis="emphasized"
               style={styles.emotionCardText}
             >
-              {' '}
-              What Best Describes this Feeling?{' '}
+              What Best Describes this Feeling?
             </AppText>
 
             <View style={styles.descriptionCardContainer}>
@@ -195,7 +189,7 @@ const P2P_P2V_withCategory = () => {
               </AppText>
             </ConnectButtonGradient>
             <AppText variant="caption1" style={styles.anonymousText}>
-              Your match will remain anonymous !
+              Your match will remain anonymous!
             </AppText>
           </View>
         </View>
@@ -320,7 +314,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginRight: 8,
     marginLeft: 'auto',
   },
-  fellingDescriptionContainer: {
+  feelingDescriptionContainer: {
     marginTop: 10,
     backgroundColor: theme.surface.secondary,
     borderColor: theme.text.subtle2,
