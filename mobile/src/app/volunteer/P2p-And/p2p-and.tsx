@@ -3,7 +3,6 @@ import {
   Animated,
   Pressable,
   View,
-  Text,
   useWindowDimensions,
   ScrollView,
 } from 'react-native';
@@ -146,9 +145,7 @@ export default function Index() {
                     { backgroundColor: offlineBackgroundColor },
                   ]}
                 >
-                  <Animated.Text
-                    style={[styles.toggleText, { color: offlineTextColor }]}
-                  >
+                  <Animated.Text style={{ color: offlineTextColor }}>
                     Offline
                   </Animated.Text>
                 </Animated.View>
@@ -160,9 +157,7 @@ export default function Index() {
                     { backgroundColor: activeBackgroundColor },
                   ]}
                 >
-                  <Animated.Text
-                    style={[styles.toggleText, { color: activeTextColor }]}
-                  >
+                  <Animated.Text style={{ color: activeTextColor }}>
                     Active
                   </Animated.Text>
                 </Animated.View>
@@ -353,7 +348,7 @@ export default function Index() {
                     <AppText style={styles.profileImageText}>SA</AppText>
                   </LinearGradient>
                   <View style={styles.profileTextContainer}>
-                    <Text
+                    <AppText
                       variant="callout"
                       style={{
                         fontSize: isSmallScreen ? 14 : 16,
@@ -361,8 +356,8 @@ export default function Index() {
                       }}
                     >
                       RecAnonUser159
-                    </Text>
-                    <Text
+                    </AppText>
+                    <AppText
                       variant="caption1"
                       style={{
                         fontSize: isSmallScreen ? 10 : 12,
@@ -370,8 +365,8 @@ export default function Index() {
                       }}
                     >
                       Issue - Anxiety
-                    </Text>
-                    <Text
+                    </AppText>
+                    <AppText
                       variant="caption1"
                       style={{
                         fontSize: isSmallScreen ? 10 : 12,
@@ -379,7 +374,7 @@ export default function Index() {
                       }}
                     >
                       Waiting - 5 minutes
-                    </Text>
+                    </AppText>
                   </View>
                 </View>
                 <Pressable>
@@ -406,7 +401,7 @@ export default function Index() {
                     <AppText style={styles.profileImageText}>MJ</AppText>
                   </LinearGradient>
                   <View style={styles.profileTextContainer}>
-                    <Text
+                    <AppText
                       variant="callout"
                       style={{
                         fontSize: isSmallScreen ? 14 : 16,
@@ -414,8 +409,8 @@ export default function Index() {
                       }}
                     >
                       RecAnonUser289
-                    </Text>
-                    <Text
+                    </AppText>
+                    <AppText
                       variant="caption1"
                       style={{
                         fontSize: isSmallScreen ? 10 : 12,
@@ -423,8 +418,8 @@ export default function Index() {
                       }}
                     >
                       Issue - Depression
-                    </Text>
-                    <Text
+                    </AppText>
+                    <AppText
                       variant="caption1"
                       style={{
                         fontSize: isSmallScreen ? 10 : 12,
@@ -432,7 +427,7 @@ export default function Index() {
                       }}
                     >
                       Waiting - 2 minutes
-                    </Text>
+                    </AppText>
                   </View>
                 </View>
                 <Pressable>
@@ -496,7 +491,7 @@ export default function Index() {
                       <AppText style={styles.profileImageText}>AL</AppText>
                     </LinearGradient>
                     <View style={styles.profileTextContainer}>
-                      <Text
+                      <AppText
                         variant="callout"
                         style={{
                           fontSize: isSmallScreen ? 14 : 16,
@@ -504,8 +499,8 @@ export default function Index() {
                         }}
                       >
                         AnonUser42
-                      </Text>
-                      <Text
+                      </AppText>
+                      <AppText
                         variant="caption1"
                         style={{
                           fontSize: isSmallScreen ? 10 : 12,
@@ -513,8 +508,8 @@ export default function Index() {
                         }}
                       >
                         Issue - Anxiety
-                      </Text>
-                      <Text
+                      </AppText>
+                      <AppText
                         variant="caption1"
                         style={{
                           fontSize: isSmallScreen ? 10 : 12,
@@ -522,7 +517,7 @@ export default function Index() {
                         }}
                       >
                         Session - 45 minutes
-                      </Text>
+                      </AppText>
                     </View>
                   </View>
                   <View
@@ -555,7 +550,7 @@ export default function Index() {
                       <AppText style={styles.profileImageText}>TC</AppText>
                     </LinearGradient>
                     <View style={styles.profileTextContainer}>
-                      <Text
+                      <AppText
                         variant="callout"
                         style={{
                           fontSize: isSmallScreen ? 14 : 16,
@@ -563,8 +558,8 @@ export default function Index() {
                         }}
                       >
                         AnonUser231
-                      </Text>
-                      <Text
+                      </AppText>
+                      <AppText
                         variant="caption1"
                         style={{
                           fontSize: isSmallScreen ? 10 : 12,
@@ -572,8 +567,8 @@ export default function Index() {
                         }}
                       >
                         Issue - Stress
-                      </Text>
-                      <Text
+                      </AppText>
+                      <AppText
                         variant="caption1"
                         style={{
                           fontSize: isSmallScreen ? 10 : 12,
@@ -581,7 +576,7 @@ export default function Index() {
                         }}
                       >
                         Session - 30 minutes
-                      </Text>
+                      </AppText>
                     </View>
                   </View>
                   <View
@@ -614,7 +609,7 @@ export default function Index() {
                       <AppText style={styles.profileImageText}>RK</AppText>
                     </LinearGradient>
                     <View style={styles.profileTextContainer}>
-                      <Text
+                      <AppText
                         variant="callout"
                         style={{
                           fontSize: isSmallScreen ? 14 : 16,
@@ -622,8 +617,8 @@ export default function Index() {
                         }}
                       >
                         AnonUser567
-                      </Text>
-                      <Text
+                      </AppText>
+                      <AppText
                         variant="caption1"
                         style={{
                           fontSize: isSmallScreen ? 10 : 12,
@@ -631,8 +626,8 @@ export default function Index() {
                         }}
                       >
                         Issue - Depression
-                      </Text>
-                      <Text
+                      </AppText>
+                      <AppText
                         variant="caption1"
                         style={{
                           fontSize: isSmallScreen ? 10 : 12,
@@ -640,7 +635,7 @@ export default function Index() {
                         }}
                       >
                         Session - 60 minutes
-                      </Text>
+                      </AppText>
                     </View>
                   </View>
                   <View
