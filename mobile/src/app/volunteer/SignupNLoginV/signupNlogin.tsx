@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
-import { FullWidthButton } from '@/components/FullWidthButton';
+import { AuthButton } from '@/components/AuthButton';
 //import { router } from 'expo-router';
 
 const SignUpNLogin = () => {
@@ -14,25 +14,13 @@ const SignUpNLogin = () => {
         </AppText>
       </View>
       <View style={styles.buttonContainer}>
-        <View>
-          <FullWidthButton>
-            <AppText variant="headline" color="secondary">
-              Login
-            </AppText>
-          </FullWidthButton>
-        </View>
+        <AuthButton label="Login" color="#00A9D3" />
         <View style={styles.dividerText}>
           <AppText variant="headline" color="primary">
             OR
           </AppText>
         </View>
-        <View>
-          <FullWidthButton style={styles.signUpButton}>
-            <AppText variant="headline" color="secondary">
-              Sign Up
-            </AppText>
-          </FullWidthButton>
-        </View>
+        <AuthButton label="Sign Up" color="#0669B8" />
       </View>
     </View>
   );
@@ -63,11 +51,5 @@ const styles = StyleSheet.create((theme, rt) => ({
   dividerText: {
     alignItems: 'center',
     marginVertical: 16,
-  },
-  signUpButton: {
-    backgroundColor: theme.action.primary,
-    paddingVertical: theme.spacing.s4,
-    alignItems: 'center',
-    borderRadius: theme.radius.full,
   },
 }));

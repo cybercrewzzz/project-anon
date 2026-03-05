@@ -6,6 +6,7 @@ import { AppText } from '@/components/AppText';
 interface AuthButtonProps extends Omit<PressableProps, 'style'> {
   label: string;
   variant?: 'primary' | 'secondary';
+  color?: string;
 }
 
 /**
@@ -13,21 +14,28 @@ interface AuthButtonProps extends Omit<PressableProps, 'style'> {
  *
  * @component
  * @example
+ * // Theme-based colors
  * <AuthButton label="Login" variant="secondary" onPress={handleLogin} />
  * <AuthButton label="Sign Up" variant="primary" onPress={handleSignUp} />
+ *
+ * // Custom colors (overrides variant)
+ * <AuthButton label="Login" color="#00A9D3" onPress={handleLogin} />
+ * <AuthButton label="Sign Up" color="#0669B8" onPress={handleSignUp} />
  *
  * @param {string} label - Button text
  * @param {'primary' | 'secondary'} variant - 'primary' uses action.primary (dark purple),
  *   'secondary' uses action.secondary (brand purple). Defaults to 'secondary'.
+ * @param {string} color - Optional custom background color. Overrides variant when provided.
  * @param {PressableProps} pressableProps - All other Pressable props (onPress, disabled, etc.)
  */
 export const AuthButton = ({
   label,
   variant = 'secondary',
+  color,
   ...pressableProps
 }: AuthButtonProps) => {
   return (
-    <Pressable style={styles.button(variant)} {...pressableProps}>
+    <Pressable style={[styles.button(variant), color ? { backgroundColor: color } : undefined]} {...pressableProps}>
       <AppText variant="headline" color="secondary">
         {label}
       </AppText>
