@@ -13,6 +13,7 @@
 - [Backend Architecture \& Connection Paths](#backend-architecture--connection-paths)
   - [Table of Contents](#table-of-contents)
   - [1. Core Principles \& Constraints](#1-core-principles--constraints)
+    - [Role Rules](#role-rules)
   - [2. Technology Stack](#2-technology-stack)
   - [3. Packages to Install](#3-packages-to-install)
   - [4. Suggested Module Structure](#4-suggested-module-structure)
@@ -45,35 +46,44 @@
 
 ## 1. Core Principles & Constraints
 
-| Principle                            | What it means in practice                                                                                                                                                                                                                                                               |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Privacy First**                    | Chat message _content_ is never persisted to the database. Only session metadata (timestamps, ratings, category) is stored in PostgreSQL.                                                                                                                                               |
-| **Ephemeral Sessions**               | A chat session is time-limited (max **45 minutes**). All in-flight message data lives in Redis and is purged on session end.                                                                                                                                                            |
-| **No Forced Persistence**            | Users keep a session only if _they_ want one. There is no always-on connection or background sync.                                                                                                                                                                                      |
-| **End-to-End Encryption**            | Messages are encrypted on the client before transit. The backend relays opaque ciphertext -- it cannot read message content. Key exchange happens client-side during session setup (see [Section 7.4](#74-active-chat-session-real-time-messaging) for details).                        |
-| **Role-Based Access Control (RBAC)** | Every API endpoint is gated by roles (`user`, `volunteer`, `admin`) via the `role` -> `role_permission` -> `permission` chain in the DB. JWT claims carry the role.                                                                                                                     |
-| **One Account, Multiple Roles**      | A single `account` (one email) can hold both `user` and `volunteer` roles simultaneously via the `account_role` bridge table. There are no separate accounts per role. The JWT `roles[]` claim contains all assigned roles, and the client picks which role to act as.                  |
-| **Anonymous by Default**             | Seekers never see volunteer real names. Volunteers see only the category and session metadata.                                                                                                                                                                                          |
-| **Ticket-Gated Access**              | Each user has a daily ticket allowance (5 free tickets per day, resets at midnight **UTC**). A session consumes one ticket only after the grace period (3 minutes) has elapsed.                                                                                                         |
-| **One Session at a Time**            | A seeker can have at most **1 active session** at any time. A volunteer can listen to at most **1 seeker** at any time. This is enforced at both the REST layer (reject `POST /session/connect` if active session exists) and the pool layer (volunteer is removed from pool on match). |
-| **Single Device per Role**           | Each account maintains one active WebSocket connection at a time. If a second device connects, the previous socket is displaced. This simplifies message routing and session state management.                                                                                          |
+| Principle                               | What it means in practice                                                                                                                                                                                                                                                               |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Privacy First**                       | Chat message _content_ is never persisted to the database. Only session metadata (timestamps, ratings, category) is stored in PostgreSQL.                                                                                                                                               |
+| **Ephemeral Sessions**                  | A chat session is time-limited (max **45 minutes**). All in-flight message data lives in Redis and is purged on session end.                                                                                                                                                            |
+| **No Forced Persistence**               | Users keep a session only if _they_ want one. There is no always-on connection or background sync.                                                                                                                                                                                      |
+| **End-to-End Encryption**               | Messages are encrypted on the client before transit. The backend relays opaque ciphertext -- it cannot read message content. Key exchange happens client-side during session setup (see [Section 7.4](#74-active-chat-session-real-time-messaging) for details).                        |
+| **Role-Based Access Control (RBAC)**    | Every API endpoint is gated by roles (`user`, `volunteer`, `admin`) via the `role` -> `role_permission` -> `permission` chain in the DB. JWT claims carry the role.                                                                                                                     |
+| **Three Distinct Roles**                | **User** = help seeker (anonymous, gets a system-generated nickname). **Volunteer** = verified listener (has a real name, handpicked by admin after verification). **Admin** = platform moderator (separate account, uses web portal). See [Role Rules](#role-rules) below.             |
+| **Anonymous Seekers, Named Volunteers** | Users (seekers) never provide a real name — they receive a system-generated nickname (e.g., "BlueFox42"). Volunteers provide their real name during volunteer registration. Seekers never see volunteer real names during sessions — only the category and session metadata.            |
+| **Ticket-Gated Access**                 | Each user has a daily ticket allowance (5 free tickets per day, resets at midnight **UTC**). A session consumes one ticket only after the grace period (3 minutes) has elapsed.                                                                                                         |
+| **One Session at a Time**               | A seeker can have at most **1 active session** at any time. A volunteer can listen to at most **1 seeker** at any time. This is enforced at both the REST layer (reject `POST /session/connect` if active session exists) and the pool layer (volunteer is removed from pool on match). |
+| **Single Device per Role**              | Each account maintains one active WebSocket connection at a time. If a second device connects, the previous socket is displaced. This simplifies message routing and session state management.                                                                                          |
+
+### Role Rules
+
+| Rule                 | Detail                                                                                                                                                                                                                                                                                                                                                                                                |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **User (Seeker)**    | Registers via the mobile app. Gets the `user` role automatically. `account.name` is NULL; `account.nickname` is system-generated. Can seek help by requesting sessions.                                                                                                                                                                                                                               |
+| **Volunteer**        | A person first registers as a `user`, then applies through the app's **volunteer registration path** providing their real name and verification documents. An admin reviews the application (`volunteer_verification`). Upon approval, the `volunteer` role is **added** to their existing account. The volunteer's real name is stored in `account.name`.                                            |
+| **Volunteer + User** | A volunteer MAY also hold the `user` role — they can seek help too. Both roles coexist on the same account. The JWT carries `roles: ["user", "volunteer"]` and the mobile app lets them switch context.                                                                                                                                                                                               |
+| **Admin**            | Admin accounts are **completely separate** — an admin email CANNOT be shared with any user or volunteer account. Admins are handpicked (seeded in DB for MVP, later created by other admins). Admins use the **web portal** (Next.js dashboard), not the mobile app. The `admin` role CANNOT coexist with `user` or `volunteer` roles on the same account. This is enforced at the application layer. |
 
 ---
 
 ## 2. Technology Stack
 
-| Layer               | Technology                                                   | Why                                                                                                                                                                         |
-| ------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| API Framework       | **NestJS** (TypeScript)                                      | Modular architecture, first-class WebSocket & microservice support, decorator-based guards for RBAC.                                                                        |
-| Database            | **PostgreSQL**                                               | Relational integrity for accounts, roles, sessions, reports. UUID primary keys everywhere.                                                                                  |
-| ORM                 | **Prisma**                                                   | Type-safe database client, declarative schema, migration management, seamless NestJS integration.                                                                           |
-| Validation          | **Zod** + **nestjs-zod**                                     | Shared Zod schemas between mobile and backend. `createZodDto()` generates NestJS-compatible DTOs from Zod schemas. `ZodValidationPipe` applied globally.                    |
-| In-Memory Store     | **Redis**                                                    | Sub-millisecond reads for the volunteer pool, ephemeral message buffer, session state, and pub/sub for multi-instance WebSocket fan-out.                                    |
-| Real-Time Transport | **WebSocket** (via `@nestjs/websockets` + Socket.IO adapter) | Bi-directional, persistent connection for chat messages and WebRTC signaling.                                                                                               |
-| Job Queue           | **BullMQ** (backed by Redis)                                 | Reliable async processing: push-notification dispatch, session timeout enforcement, cleanup jobs. Supports retry with exponential backoff, rate limiting, and delayed jobs. |
-| Push Notifications  | **Expo Push API** + **Firebase Cloud Messaging (FCM)**       | Expo for the managed Expo workflow; FCM as the underlying Android/iOS transport. Device tokens stored in `device_token` table.                                              |
-| Media Relay         | **COTURN** (STUN / TURN)                                     | NAT traversal for WebRTC voice/video when P2P fails. The backend is _never_ in the media path.                                                                              |
-| Admin Dashboard     | **Next.js** (planned, post-MVP)                              | Separate web application for admin moderation. Consumes the same NestJS REST API via `/admin/*` endpoints using the same JWT auth. Not part of the mobile app.              |
+| Layer               | Technology                                                   | Why                                                                                                                                                                                                                                  |
+| ------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| API Framework       | **NestJS** (TypeScript)                                      | Modular architecture, first-class WebSocket & microservice support, decorator-based guards for RBAC.                                                                                                                                 |
+| Database            | **PostgreSQL**                                               | Relational integrity for accounts, roles, sessions, reports. UUID primary keys everywhere.                                                                                                                                           |
+| ORM                 | **Prisma**                                                   | Type-safe database client, declarative schema, migration management, seamless NestJS integration.                                                                                                                                    |
+| Validation          | **class-validator** + **class-transformer**                  | NestJS's built-in validation approach. DTOs are plain classes decorated with validation decorators (e.g., `@IsEmail()`, `@IsString()`, `@MinLength()`). The global `ValidationPipe` auto-validates and transforms incoming requests. |
+| In-Memory Store     | **Redis**                                                    | Sub-millisecond reads for the volunteer pool, ephemeral message buffer, session state, and pub/sub for multi-instance WebSocket fan-out.                                                                                             |
+| Real-Time Transport | **WebSocket** (via `@nestjs/websockets` + Socket.IO adapter) | Bi-directional, persistent connection for chat messages and WebRTC signaling.                                                                                                                                                        |
+| Job Queue           | **BullMQ** (backed by Redis)                                 | Reliable async processing: push-notification dispatch, session timeout enforcement, cleanup jobs. Supports retry with exponential backoff, rate limiting, and delayed jobs.                                                          |
+| Push Notifications  | **Expo Push API** + **Firebase Cloud Messaging (FCM)**       | Expo for the managed Expo workflow; FCM as the underlying Android/iOS transport. Device tokens stored in `device_token` table.                                                                                                       |
+| Media Relay         | **COTURN** (STUN / TURN)                                     | NAT traversal for WebRTC voice/video when P2P fails. The backend is _never_ in the media path.                                                                                                                                       |
+| Admin Dashboard     | **Next.js** (planned, post-MVP)                              | Separate web application for admin moderation. Consumes the same NestJS REST API via `/admin/*` endpoints using the same JWT auth. Not part of the mobile app.                                                                       |
 
 ---
 
@@ -89,7 +99,7 @@ yarn add @prisma/client ioredis
 yarn add @nestjs/websockets @nestjs/platform-socket.io
 
 # Validation
-yarn add zod nestjs-zod
+yarn add class-validator class-transformer
 
 # Auth
 yarn add @nestjs/jwt @nestjs/passport passport passport-jwt argon2
@@ -106,7 +116,7 @@ yarn add @nestjs/throttler
 # Config
 yarn add @nestjs/config
 
-# API Docs (auto-generated from Zod DTOs)
+# API Docs (auto-generated from DTO decorators)
 yarn add @nestjs/swagger
 
 # Dev
@@ -128,7 +138,8 @@ backend/src/
 |   |-- guards/              # AuthGuard, RolesGuard
 |   |-- decorators/          # @Roles(), @CurrentUser()
 |   |-- filters/             # Exception filters
-|   +-- interceptors/
+|   |-- interceptors/
+|   +-- utils/               # Nickname generator, etc.
 |
 |-- prisma/                  # PrismaService, PrismaModule
 |   +-- prisma.service.ts
@@ -140,12 +151,19 @@ backend/src/
 |   |-- auth.module.ts
 |   |-- auth.controller.ts
 |   |-- auth.service.ts
-|   +-- dto/                 # Zod schemas -> createZodDto()
+|   +-- dto/                 # class-validator DTO classes
 |
-|-- volunteer/               # Profile, status, specialisations
+|-- user/                    # Seeker-specific: profile, nickname, session history
+|   |-- user.module.ts
+|   |-- user.controller.ts
+|   |-- user.service.ts
+|   +-- dto/
+|
+|-- volunteer/               # Volunteer registration, profile, status, specialisations
 |   |-- volunteer.module.ts
 |   |-- volunteer.controller.ts
-|   +-- volunteer.service.ts
+|   |-- volunteer.service.ts
+|   +-- dto/
 |
 |-- session/                 # Matching, session lifecycle, tickets
 |   |-- session.module.ts
@@ -170,13 +188,29 @@ backend/src/
 |-- report/                  # Reports, blocks, admin actions
 |   |-- report.module.ts
 |   |-- report.controller.ts
-|   +-- report.service.ts
+|   |-- report.service.ts
+|   +-- dto/
 |
 +-- admin/                   # Admin-only endpoints (serves Next.js dashboard)
     |-- admin.module.ts
     |-- admin.controller.ts
-    +-- admin.service.ts
+    |-- admin.service.ts
+    +-- dto/
 ```
+
+**Module responsibilities by role:**
+
+| Module          |                                    User (Seeker)                                    |                         Volunteer                          |                                           Admin (Web Portal)                                           |
+| --------------- | :---------------------------------------------------------------------------------: | :--------------------------------------------------------: | :----------------------------------------------------------------------------------------------------: |
+| `auth/`         |                       ✅ register (user path), login, refresh                       |                   ✅ same account login                    |                                       ✅ separate account login                                        |
+| `user/`         | ✅ view/update own profile (nickname, DOB, gender, languages), view session history |        ✅ (if also a user — shared account fields)         |                                                   —                                                    |
+| `volunteer/`    |          ✅ apply to become a volunteer (submit name + verification docs)           | ✅ manage volunteer profile, availability, specialisations |                                                   —                                                    |
+| `session/`      |                              ✅ request session, rate                               |                  ✅ accept session, rate                   |                                                   —                                                    |
+| `chat/`         |                              ✅ send/receive messages                               |                  ✅ send/receive messages                  |                                                   —                                                    |
+| `signaling/`    |                                   ✅ WebRTC calls                                   |                      ✅ WebRTC calls                       |                                                   —                                                    |
+| `notification/` |                                   ✅ receive push                                   |                      ✅ receive push                       |                                                   —                                                    |
+| `report/`       |                                ✅ file report, block                                |                   ✅ file report, block                    |                                                   —                                                    |
+| `admin/`        |                                          —                                          |                             —                              | ✅ review reports, ban/warn users, approve/reject volunteer applications, manage roles, view analytics |
 
 ---
 
@@ -234,43 +268,49 @@ backend/src/
 
 ## 6. Database Schema Reference
 
-> Based on the current PostgreSQL schema (see ER diagram). Every PK is `uuid`. Timestamps are `datetime`.
+> Based on the current PostgreSQL schema (see ER diagram). Every PK is `uuid`. Timestamps are `datetime`. The Prisma schema lives at `backend/prisma/schema.prisma`.
 
 ### 6.1 Account & Role Model
 
-A single `account` row represents one person. Roles are assigned via the `account_role` bridge table -- **one account can hold multiple roles** (e.g., both `user` and `volunteer`). This means:
+A single `account` row represents one person.
 
-- A person registers once with one email.
-- They start with the `user` role.
-- If they apply and are approved as a volunteer, the `volunteer` role is **added** to their existing account (a new row in `account_role`).
+- **Users (seekers):** `name` is NULL, `nickname` is a unique system-generated display name (e.g., "BlueFox42").
+- **Volunteers:** `name` is their real name (provided during volunteer application). They may also have a `nickname` if they also hold the `user` role.
+- **Admins:** `name` is their real name. Completely separate account — email cannot overlap with any user/volunteer.
+
+Roles are assigned via the `account_role` bridge table:
+
+- A person registers once with one email → starts with the `user` role.
+- To become a volunteer, they apply through the app providing their real name + verification docs. An admin reviews and approves → `volunteer` role is **added** to the same account.
+- A volunteer MAY also be a seeker (both `user` + `volunteer` roles on one account).
+- Admin accounts are **isolated** — the `admin` role CANNOT coexist with `user` or `volunteer`. This is enforced at the application layer.
 - The JWT issued at login contains `roles: ["user", "volunteer"]` (all assigned roles).
-- The `admin` role is never assignable from the mobile app -- it is managed via database seeding or an admin action.
 
-| Table                                     | Purpose                                                         | Key Relationships                                    |
-| ----------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------- |
-| `account`                                 | Core identity. Email, password hash (argon2id), OAuth, status.  | FK `interface_language_id` -> `language`             |
-| `role` / `permission` / `role_permission` | RBAC definitions.                                               | Many-to-many via `role_permission`                   |
-| `account_role`                            | Assigns roles to accounts. One account can have multiple roles. | FK `account_id` -> `account`, FK `role_id` -> `role` |
-| `account_action`                          | Audit log of admin actions (bans, warnings).                    | FK `account_id`, `admin_id`, `report_id`             |
-| `refresh_token`                           | JWT refresh-token rotation. `family_id` detects token reuse.    | FK `account_id` -> `account`                         |
-| `device_token`                            | Push-notification tokens per device. `fcm_token`, `platform`.   | FK `account_id` -> `account`                         |
+| Table                                     | Purpose                                                                                                | Key Columns                                                                                                                                                                                                                                                         | Key Relationships                                    |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `account`                                 | Core identity. Stores email, password hash, name (nullable), nickname (nullable), DOB, gender, status. | `account_id` (PK), `email`, `password_hash`, `oauth_provider`, `oauth_id`, `name` (NULL for seekers), `nickname` (system-generated for seekers), `date_of_birth`, `gender`, `interface_language_id` (FK), `status` (enum), `created_at`, `updated_at`, `deleted_at` | FK `interface_language_id` -> `language`             |
+| `role` / `permission` / `role_permission` | RBAC definitions. Three seeded roles: `user`, `volunteer`, `admin`.                                    | `role_id` (PK), `name`, `description`; `permission_id` (PK), `name`, `description`                                                                                                                                                                                  | Many-to-many via `role_permission`                   |
+| `account_role`                            | Assigns roles to accounts. One account can have multiple roles (but not `admin` + `user`/`volunteer`). | `account_id` (PK, FK), `role_id` (PK, FK), `assigned_by` (FK, nullable), `assigned_at`                                                                                                                                                                              | FK `account_id` -> `account`, FK `role_id` -> `role` |
+| `account_action`                          | Audit log of admin actions (bans, warnings, temporary suspensions).                                    | `action_id` (PK), `account_id` (FK), `admin_id` (FK), `report_id` (FK, nullable), `action_type`, `reason`, `created_at`, `expires_at` (nullable, for temp bans)                                                                                                     | FK `account_id`, `admin_id`, `report_id`             |
+| `refresh_token`                           | JWT refresh-token rotation. `family_id` detects token reuse.                                           | `token_id` (PK), `account_id` (FK), `token_hash`, `expires_at`, `is_revoked`, `family_id`                                                                                                                                                                           | FK `account_id` -> `account`                         |
+| `device_token`                            | Push-notification tokens per device.                                                                   | `device_id` (PK), `account_id` (FK), `fcm_token`, `platform`, `last_active_at`                                                                                                                                                                                      | FK `account_id` -> `account`                         |
 
 ### 6.2 Other Tables
 
-| Table                                         | Purpose                                                 | Key Relationships                                             |
-| --------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------- |
-| `language` / `account_language`               | Supported languages and user language preferences.      | Many-to-many bridge                                           |
-| `category`                                    | Problem categories (Anxiety, Relationships, etc.).      | Referenced by `user_problem`, `chat_session`                  |
-| `user_problem`                                | Seeker's self-reported problem + feeling level.         | FK `account_id`, `category_id`                                |
-| `volunteer_profile`                           | Volunteer verification & bio info. `is_available` flag. | FK `account_id` -> `account`                                  |
-| `volunteer_experience`                        | Gamification: points, level.                            | FK `account_id` -> `account`                                  |
-| `specialisation` / `volunteer_specialisation` | Volunteer expertise areas.                              | Many-to-many bridge                                           |
-| `volunteer_verification`                      | Document verification workflow for volunteers.          | FK `volunteer_id`, `reviewed_by`                              |
-| `chat_session`                                | Session metadata **only**. No message content.          | FK `seeker_id`, `listener_id`, `problem_id` -> `user_problem` |
-| `report`                                      | Abuse reports tied to a session.                        | FK `session_id`, `reporter_id`, `reported_id`                 |
-| `blocklist`                                   | User-to-user blocks.                                    | FK `blocker_id`, `blocked_id`                                 |
+| Table                                         | Purpose                                                                                                                  | Key Columns                                                                                                                                                                                               | Key Relationships                                          |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `language` / `account_language`               | Supported languages and user language preferences.                                                                       | `language_id` (PK), `code` (2-char ISO), `name`; bridge: `account_id` + `language_id`                                                                                                                     | Many-to-many bridge                                        |
+| `category`                                    | Problem categories (Anxiety, Relationships, etc.).                                                                       | `category_id` (PK), `name`, `description`                                                                                                                                                                 | Referenced by `user_problem`, `chat_session`               |
+| `user_problem`                                | Seeker's self-reported problem + feeling level.                                                                          | `problem_id` (PK), `account_id` (FK), `category_id` (FK), `custom_category_label`, `feeling_level`, `status`, `created_at`                                                                                | FK `account_id`, `category_id`                             |
+| `volunteer_profile`                           | Volunteer verification & bio info. `is_available` flag. Created when a user applies to become a volunteer.               | `account_id` (PK, FK), `institute_email`, `institute_name`, `student_id`, `institute_id_image_url`, `grade`, `about`, `verification_status`, `is_available`                                               | FK `account_id` -> `account`                               |
+| `volunteer_experience`                        | Gamification: points, level.                                                                                             | `account_id` (PK, FK), `points`, `level`, `last_updated`                                                                                                                                                  | FK `account_id` -> `account`                               |
+| `specialisation` / `volunteer_specialisation` | Volunteer expertise areas.                                                                                               | `specialisation_id` (PK), `name`, `description`; bridge: `account_id` + `specialisation_id`                                                                                                               | Many-to-many bridge                                        |
+| `volunteer_verification`                      | Document verification workflow. Admin reviews and approves/rejects. Only after approval is the `volunteer` role granted. | `request_id` (PK), `volunteer_id` (FK), `document_url`, `status`, `admin_notes`, `reviewed_by` (FK), `submitted_at`, `reviewed_at`                                                                        | FK `volunteer_id`, `reviewed_by`                           |
+| `chat_session`                                | Session metadata **only**. No message content.                                                                           | `session_id` (PK), `seeker_id` (FK), `listener_id` (FK), `problem_id` (FK), `category_id` (FK), `started_at`, `ended_at`, `user_rating`, `volunteer_rating`, `starred_by_user`, `status`, `closed_reason` | FK `seeker_id`, `listener_id`, `problem_id`, `category_id` |
+| `report`                                      | Abuse reports tied to a session.                                                                                         | `report_id` (PK), `session_id` (FK), `reporter_id` (FK), `reported_id` (FK), `category`, `description`, `status`, `reported_at`, `resolved_at`                                                            | FK `session_id`, `reporter_id`, `reported_id`              |
+| `blocklist`                                   | User-to-user blocks. Unique constraint on (blocker, blocked).                                                            | `block_id` (PK), `blocker_id` (FK), `blocked_id` (FK), `blocked_at`                                                                                                                                       | FK `blocker_id`, `blocked_id`                              |
 
-> **Note:** Ticket storage (daily allowance tracking) is planned but the table design is not yet finalised. See [Section 8 -- Ticket System](#8-ticket-system) for the logic.
+> **Ticket tracking** uses Redis (see [Section 9 -- Redis Data Structures](#9-redis-data-structures), key `ticket:{accountId}:{date}`). No dedicated PostgreSQL table is needed for the MVP.
 
 ---
 
@@ -278,23 +318,43 @@ A single `account` row represents one person. Roles are assigned via the `accoun
 
 ### 7.1 Authentication & Authorization
 
+There are **two registration paths** from the mobile app and one admin path:
+
+1. **User (seeker) registration** -- provides email, password, date of birth, and optionally gender. A system-generated nickname is assigned. Gets the `user` role.
+2. **Volunteer application** -- an existing user (or new registrant) provides their **real name** plus volunteer verification details (institute info, documents). This creates a `volunteer_profile` and `volunteer_verification` record. The account stays as `user` until an admin approves the verification → `volunteer` role is added.
+3. **Admin account creation** -- admins are seeded in the database (for MVP) or created by other admins via the web portal. Admin accounts use a completely separate email.
+
 ```
 Mobile App                     NestJS                      PostgreSQL
     |                            |                             |
+    |== USER (SEEKER) REGISTRATION ===========================|
+    |                            |                             |
     |-- POST /auth/register ---->|                             |
-    |   {email, password}        |-- hash password (argon2id) -|
+    |   {email, password,        |-- Validate DTO              |
+    |    dateOfBirth, gender?}   |-- hash password (argon2id) -|
+    |                            |-- Generate nickname ---------|  (e.g., "BlueFox42")
     |                            |-- INSERT account ---------->|
+    |                            |   (email, password_hash,    |
+    |                            |    name: NULL,              |
+    |                            |    nickname: "BlueFox42",   |
+    |                            |    date_of_birth, gender,   |
+    |                            |    status: 'active')        |
     |                            |-- INSERT account_role ----->|  (role: "user")
     |                            |-- Generate JWT (access +    |
     |                            |   refresh tokens)           |
     |                            |   claims: {sub, roles[]}    |
     |                            |-- INSERT refresh_token ---->|
     |<-- 201 {accessToken,       |                             |
-    |    refreshToken} ----------|                             |
+    |    refreshToken,           |                             |
+    |    nickname} --------------|                             |
+    |                            |                             |
+    |== LOGIN (all roles use same endpoint) ==================|
     |                            |                             |
     |-- POST /auth/login ------->|                             |
     |   {email, password}        |-- SELECT account ---------->|
     |                            |-- Verify argon2id hash      |
+    |                            |-- Check account.status      |
+    |                            |   (reject if banned/suspended)
     |                            |-- SELECT account_role ----->|  (get ALL roles)
     |                            |-- Generate JWT pair         |
     |                            |   claims: {sub,             |
@@ -303,6 +363,41 @@ Mobile App                     NestJS                      PostgreSQL
     |                            |-- INSERT refresh_token ---->|
     |<-- 200 {accessToken,       |                             |
     |    refreshToken} ----------|                             |
+    |                            |                             |
+    |== VOLUNTEER APPLICATION (from existing user account) ===|
+    |                            |                             |
+    |-- POST /volunteer/apply -->|                             |
+    |   {name, instituteEmail?,  |-- AuthGuard + RolesGuard   |
+    |    instituteName?,         |   (must have "user" role)   |
+    |    studentId?,             |                             |
+    |    instituteIdImage?,      |-- UPDATE account            |
+    |    grade?, about?,         |   SET name = <real name> -->|
+    |    specialisations[]}      |                             |
+    |                            |-- INSERT volunteer_profile ->|
+    |                            |   (verification_status:     |
+    |                            |    'pending')               |
+    |                            |-- INSERT volunteer_         |
+    |                            |   verification ------------>|
+    |                            |   (status: 'pending')       |
+    |                            |-- INSERT volunteer_         |
+    |                            |   specialisation(s) ------->|
+    |<-- 201 {status: "pending"} |                             |
+    |                            |                             |
+    |== ADMIN APPROVES VOLUNTEER (from web portal) ===========|
+    |                            |                             |
+    |   Admin Dashboard -------->|-- PATCH /admin/volunteer/   |
+    |                            |   {id}/approve              |
+    |                            |-- UPDATE volunteer_         |
+    |                            |   verification              |
+    |                            |   SET status = 'approved',  |
+    |                            |   reviewed_by, reviewed_at ->|
+    |                            |-- UPDATE volunteer_profile  |
+    |                            |   SET verification_status   |
+    |                            |   = 'approved' ------------>|
+    |                            |-- INSERT account_role ----->|  (role: "volunteer")
+    |                            |-- Push notification -------->|  (notify volunteer)
+    |                            |                             |
+    |== REFRESH TOKEN =========================================|
     |                            |                             |
     |-- POST /auth/refresh ----->|                             |
     |   {refreshToken}           |-- SELECT refresh_token ---->|
@@ -319,10 +414,13 @@ Mobile App                     NestJS                      PostgreSQL
 
 - **Access token** -- short-lived (e.g., 15 min), carried in `Authorization: Bearer <token>` header.
 - **Refresh token** -- long-lived (e.g., 7 days), stored in `refresh_token` table with `family_id`. If the same `family_id` appears twice (token reuse), all tokens in the family are revoked.
+- **User registration** requires `email`, `password`, `dateOfBirth`, and optionally `gender`. **No real name is collected** — a unique nickname is generated by the server (e.g., "BlueFox42", "SilentOwl7").
+- **Volunteer application** is a separate step after having a user account. The user provides their **real name**, institute info, and verification documents. This creates `volunteer_profile` + `volunteer_verification` records. The `volunteer` role is NOT granted until an admin approves.
+- **Admin email isolation** -- when a user registers, the backend checks that the email doesn't belong to an admin account. When an admin account is created, the backend checks the email doesn't belong to any existing user/volunteer account.
 - **JWT `roles[]` claim** -- contains **all** roles assigned to the account. A person with both `user` and `volunteer` roles gets `roles: ["user", "volunteer"]` in their JWT. The mobile app decides which role to act as; the backend enforces it via guards.
 - **Guards** -- NestJS `AuthGuard` validates JWT; `RolesGuard` checks the `roles[]` claim against the required role for the endpoint.
-- **Validation** -- Request DTOs are defined as Zod schemas and converted to NestJS-compatible classes via `createZodDto()`. The global `ZodValidationPipe` handles validation automatically.
-- **Admin accounts** -- use the same login flow. The `admin` role is assigned via DB seeding or admin action, never from the mobile app. Admin endpoints (`/admin/*`) are protected by `@Roles('admin')`.
+- **Validation** -- Request DTOs are plain TypeScript classes decorated with `class-validator` decorators (e.g., `@IsEmail()`, `@IsString()`, `@MinLength()`). The global `ValidationPipe` (from `@nestjs/common`) handles validation and transformation automatically.
+- **Admin accounts** -- for MVP, seeded directly in the database. Later, existing admins can create new admin accounts via the web portal. Admin endpoints (`/admin/*`) are protected by `@Roles('admin')`.
 
 ---
 
@@ -385,6 +483,7 @@ Seeker App                     NestJS                      PostgreSQL           
     |    idempotencyKey}         |                             |                  |                       |
     |   Header: Bearer <JWT>     |                             |                  |                       |
     |                            |-- AuthGuard + RolesGuard    |                  |                       |
+    |                            |   (must have "user" role)   |                  |                       |
     |                            |                             |                  |                       |
     |                            |-- Check: seeker already     |                  |                       |
     |                            |   has an active session? -->| (or Redis)       |                       |
@@ -424,7 +523,8 @@ Seeker App                     NestJS                      PostgreSQL           
     |                            |                             |                  |                       |
     |                            |-- INSERT chat_session ----->|                  |                       |
     |                            |   (seeker_id, listener_id,  |                  |                       |
-    |                            |    problem_id, started_at,  |                  |                       |
+    |                            |    problem_id, category_id, |                  |                       |
+    |                            |    started_at,              |                  |                       |
     |                            |    status: 'active')        |                  |                       |
     |                            |                             |                  |                       |
     |                            |-- HSET session:{id} --------------------------->|                      |
@@ -781,12 +881,12 @@ Seeker/Volunteer App           NestJS                      PostgreSQL
 
 ## 8. Ticket System
 
-Each user receives **5 free tickets per day** (resets at midnight **UTC**). One ticket is consumed per session -- but only **after the 3-minute grace period** has passed. This gives users flexibility to disconnect from an unsuitable session without losing a ticket.
+Each user (seeker) receives **5 free tickets per day** (resets at midnight **UTC**). One ticket is consumed per session -- but only **after the 3-minute grace period** has passed. This gives users flexibility to disconnect from an unsuitable session without losing a ticket.
 
 ### 8.1 Ticket Lifecycle
 
 ```
-Seeker App                     NestJS                      Storage (TBD)        BullMQ
+Seeker App                     NestJS                      Redis (ticket tracking)  BullMQ
     |                            |                             |                  |
     |-- POST /session/connect -->|                             |                  |
     |                            |-- TicketService:            |                  |
@@ -839,14 +939,12 @@ Seeker App                     NestJS                      Storage (TBD)        
 
 | Rule                   | Detail                                                                                                                                                                                           |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Daily allowance**    | 5 free tickets per user, resets at midnight **UTC**.                                                                                                                                             |
+| **Daily allowance**    | 5 free tickets per user (seeker), resets at midnight **UTC**.                                                                                                                                    |
 | **When checked**       | On `POST /session/connect` -- before matching begins. Both consumed and reserved (active pending) tickets are counted in a single atomic operation.                                              |
 | **When reserved**      | Immediately on `POST /session/connect` if a ticket is available. The check-and-reserve is atomic (single Redis command or DB transaction) to prevent race conditions from simultaneous requests. |
 | **When consumed**      | Only after the 3-minute grace period has elapsed without either party closing the session.                                                                                                       |
 | **Grace period close** | If either the seeker or the volunteer closes the session within 3 minutes, the reserved ticket is released. Session is recorded with `closed_reason: 'cancelled_grace'`.                         |
 | **Volunteer impact**   | Tickets are a seeker-only concept. Volunteers are never charged tickets.                                                                                                                         |
-
-> **Note:** The ticket storage mechanism (dedicated table vs. column on an existing table) is not yet finalised. The logic above applies regardless of the storage approach.
 
 ---
 
@@ -945,16 +1043,17 @@ Seeker App                     NestJS                      Storage (TBD)        
 | **Authentication**            | JWT with short-lived access token (e.g., 15 min) + refresh-token rotation with family-based reuse detection.                                                                                                                                                                                                                                                                                                                 |
 | **WebSocket Auth Lifecycle**  | JWT is verified at the WebSocket handshake. Since sessions can outlast the 15-min access token, the client is responsible for proactively refreshing the token via `POST /auth/refresh` and reconnecting with the new token before (or immediately after) the old one expires. Socket.IO's built-in reconnection handles this transparently if the client refreshes the token in the `reconnect_attempt` event handler.      |
 | **Authorization**             | NestJS Guards: `AuthGuard` (JWT validity) -> `RolesGuard` (role-based endpoint access). A single JWT carries all roles for the account.                                                                                                                                                                                                                                                                                      |
+| **Role Isolation**            | Admin accounts are fully isolated — the `admin` role cannot coexist with `user` or `volunteer` on the same account. Enforced at the application layer during registration and role assignment.                                                                                                                                                                                                                               |
 | **Password Storage**          | **argon2id** (memory-hard, resistant to GPU/ASIC attacks).                                                                                                                                                                                                                                                                                                                                                                   |
 | **Message Privacy**           | Client-side E2E encryption (X25519 key agreement + AES-256-GCM). Protects against passive eavesdropping and data-at-rest exposure. Does not protect against an actively compromised backend (MITM) -- see [Section 7.4](#74-active-chat-session-real-time-messaging) for details on this accepted trade-off.                                                                                                                 |
 | **WebRTC Media**              | DTLS handshake + SRTP encryption. Even TURN relay cannot decrypt.                                                                                                                                                                                                                                                                                                                                                            |
 | **TURN Credentials**          | Time-limited HMAC-SHA1 credentials. Generated per-session, delivered in `session:matched` payload.                                                                                                                                                                                                                                                                                                                           |
 | **Refresh Token Security**    | `family_id` grouping. Reuse of an old token -> entire family revoked (compromise detection).                                                                                                                                                                                                                                                                                                                                 |
-| **Input Validation**          | Zod schemas validated globally via `ZodValidationPipe` (from `nestjs-zod`). Shared between mobile and backend.                                                                                                                                                                                                                                                                                                               |
+| **Input Validation**          | DTO classes decorated with `class-validator` decorators, validated globally via NestJS's built-in `ValidationPipe`. `whitelist: true` strips unknown properties. `forbidNonWhitelisted: true` rejects requests with unexpected fields.                                                                                                                                                                                       |
 | **Rate Limiting (REST)**      | NestJS `ThrottlerGuard` on auth endpoints.                                                                                                                                                                                                                                                                                                                                                                                   |
 | **Rate Limiting (WebSocket)** | Per-socket rate limiter on `message:send` and `typing:start` events (e.g., max 30 messages/min, max 5 typing events/5s). Enforced in the gateway using a simple in-memory counter per socket. Exceeding the limit triggers a warning event; repeated violations disconnect the socket.                                                                                                                                       |
 | **Abuse Prevention**          | `blocklist` table exclusion in matching (bidirectional). `report` workflow with admin review via `account_action`. Ticket system limits daily usage to 5 sessions. Self-match prevention in `MatchingService`. Concurrent session guard (1 active session per seeker). Idempotency keys on `POST /session/connect` to prevent duplicate sessions from network retries. Single device per account (new socket displaces old). |
-| **CORS**                      | Not needed for mobile app (native client). Will be enabled for the admin dashboard domain when the Next.js dashboard is built.                                                                                                                                                                                                                                                                                               |
+| **CORS**                      | Not needed for mobile app (native client). Enabled for the admin dashboard domain (Next.js web portal).                                                                                                                                                                                                                                                                                                                      |
 
 ---
 
@@ -988,24 +1087,26 @@ The `session:cleanup` cron job (see Section 10) acts as a periodic safety net fo
 
 ## 16. Glossary
 
-| Term                     | Meaning                                                                                              |
-| ------------------------ | ---------------------------------------------------------------------------------------------------- |
-| **Seeker**               | A user seeking emotional support (initiates a session).                                              |
-| **Listener / Volunteer** | A verified volunteer who provides support.                                                           |
-| **Session**              | A time-bounded chat (max 45 min) between one seeker and one volunteer.                               |
-| **Ticket**               | A consumable token. Each seeker gets 5 per day (UTC). One is spent per session (after grace period). |
-| **Grace Period**         | The first 3 minutes of a session during which either party can close without consuming a ticket.     |
-| **Pool**                 | The Redis set of currently online, available volunteers.                                             |
-| **SDP**                  | Session Description Protocol -- describes media capabilities for WebRTC.                             |
-| **ICE**                  | Interactive Connectivity Establishment -- discovers the best network path for WebRTC.                |
-| **STUN**                 | Session Traversal Utilities for NAT -- discovers public IP.                                          |
-| **TURN**                 | Traversal Using Relays around NAT -- relays media when direct connection fails.                      |
-| **BullMQ**               | A Node.js job queue backed by Redis, used for async task processing.                                 |
-| **E2EE**                 | End-to-End Encryption -- only sender and receiver can read the content.                              |
-| **RBAC**                 | Role-Based Access Control -- permissions are assigned to roles, roles to users.                      |
-| **JWT**                  | JSON Web Token -- stateless authentication token carrying user claims.                               |
-| **Prisma**               | Type-safe ORM for Node.js/TypeScript, used for all PostgreSQL interactions.                          |
-| **Zod**                  | TypeScript-first schema validation library, shared between mobile and backend.                       |
-| **X25519**               | Elliptic-curve Diffie-Hellman key agreement used for E2E encryption key exchange.                    |
-| **AES-256-GCM**          | Symmetric encryption cipher used for encrypting message content after key agreement.                 |
-| **HSETNX**               | Redis command: set a hash field only if it does not already exist. Used for atomic claims.           |
+| Term                     | Meaning                                                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **User (Seeker)**        | A help seeker — anonymous, identified only by a system-generated nickname (e.g., "BlueFox42"). Initiates sessions.                    |
+| **Listener / Volunteer** | A verified volunteer who provides support. Has a real name. Handpicked by admin after verification.                                   |
+| **Admin**                | Platform moderator. Separate account (cannot share email with users/volunteers). Uses the web portal, not the mobile app.             |
+| **Nickname**             | A unique, system-generated display name assigned to seekers at registration (e.g., "SilentOwl7"). Replaces a real name for anonymity. |
+| **Session**              | A time-bounded chat (max 45 min) between one seeker and one volunteer.                                                                |
+| **Ticket**               | A consumable token. Each seeker gets 5 per day (UTC). One is spent per session (after grace period).                                  |
+| **Grace Period**         | The first 3 minutes of a session during which either party can close without consuming a ticket.                                      |
+| **Pool**                 | The Redis set of currently online, available volunteers.                                                                              |
+| **SDP**                  | Session Description Protocol -- describes media capabilities for WebRTC.                                                              |
+| **ICE**                  | Interactive Connectivity Establishment -- discovers the best network path for WebRTC.                                                 |
+| **STUN**                 | Session Traversal Utilities for NAT -- discovers public IP.                                                                           |
+| **TURN**                 | Traversal Using Relays around NAT -- relays media when direct connection fails.                                                       |
+| **BullMQ**               | A Node.js job queue backed by Redis, used for async task processing.                                                                  |
+| **E2EE**                 | End-to-End Encryption -- only sender and receiver can read the content.                                                               |
+| **RBAC**                 | Role-Based Access Control -- permissions are assigned to roles, roles to users.                                                       |
+| **JWT**                  | JSON Web Token -- stateless authentication token carrying user claims.                                                                |
+| **Prisma**               | Type-safe ORM for Node.js/TypeScript, used for all PostgreSQL interactions.                                                           |
+| **class-validator**      | Decorator-based validation library for TypeScript classes, used with NestJS's `ValidationPipe` for request DTO validation.            |
+| **X25519**               | Elliptic-curve Diffie-Hellman key agreement used for E2E encryption key exchange.                                                     |
+| **AES-256-GCM**          | Symmetric encryption cipher used for encrypting message content after key agreement.                                                  |
+| **HSETNX**               | Redis command: set a hash field only if it does not already exist. Used for atomic claims.                                            |
