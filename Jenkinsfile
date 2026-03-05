@@ -26,6 +26,7 @@ pipeline {
             }
             steps {
                 script {
+                    sh 'git fetch origin main:refs/remotes/origin/main'
                     def changes = sh(script: 'git diff --name-only origin/main...HEAD', returnStdout: true).trim()
                     def changedFiles = changes ? changes.split('\n').toList() : []
 
