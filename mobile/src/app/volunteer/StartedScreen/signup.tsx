@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Button } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { purple } from '@/theme/palettes/purple';
 import { common } from '@/theme/palettes/common';
