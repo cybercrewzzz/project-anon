@@ -1,11 +1,29 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  # Single entry for the whole Yarn Workspaces monorepo
+  # Dependabot will scan all workspace package.json files
+  # and update the single root yarn.lock
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # Group all security fixes into one PR
+      security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      # Group all version updates into one PR
+      version-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+    ignore:
+      # Expo-managed packages — use `npx expo doctor` instead
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "@react-native/*"
