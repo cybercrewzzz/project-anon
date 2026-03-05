@@ -21,35 +21,32 @@ pipeline {
 
     stages {
         stage('Determine Changes') {
-            when {
-                not { branch 'main' }
-            }
             steps {
                 script {
-                    sh 'git fetch origin main:refs/remotes/origin/main'
-                    def changes = sh(script: 'git diff --name-only origin/main...HEAD', returnStdout: true).trim()
-                    def changedFiles = changes ? changes.split('\n').toList() : []
+                    if (env.BRANCH_NAME == 'main') {
+                        env.RUN_MOBILE = 'true'
+                        env.RUN_BACKEND = 'true'
+                        env.RUN_ADMIN = 'true'
+                    } else {
+                        sh 'git fetch origin main:refs/remotes/origin/main'
+                        def changes = sh(script: 'git diff --name-only origin/main...HEAD', returnStdout: true).trim()
+                        def changedFiles = changes ? changes.split('\n').toList() : []
 
-                    env.HAS_MOBILE_CHANGES = changedFiles.any { it.startsWith('mobile/') }.toString()
-                    env.HAS_BACKEND_CHANGES = changedFiles.any { it.startsWith('backend/') }.toString()
-                    env.HAS_OTHER_CHANGES = changedFiles.any { !it.startsWith('mobile/') && !it.startsWith('backend/') }.toString()
-                    env.HAS_CHANGES = (changedFiles.size() > 0).toString()
+                        // Root-level files (yarn.lock, tsconfig.json, etc.) affect all workspaces
+                        def hasRootChanges = changedFiles.any { !it.contains('/') }
+
+                        env.RUN_MOBILE = (hasRootChanges || changedFiles.any { it.startsWith('mobile/') }).toString()
+                        env.RUN_BACKEND = (hasRootChanges || changedFiles.any { it.startsWith('backend/') }).toString()
+                        env.RUN_ADMIN = (hasRootChanges || changedFiles.any { it.startsWith('admin/') }).toString()
+                    }
+
+                    env.HAS_CHANGES = (env.RUN_MOBILE == 'true' || env.RUN_BACKEND == 'true' || env.RUN_ADMIN == 'true').toString()
                 }
             }
         }
 
-        stage("Setup") {
-            when {
-                anyOf {
-                    branch "main"
-                    environment name: 'HAS_OTHER_CHANGES', value: 'true'
-                    environment name: 'HAS_CHANGES', value: 'false'
-                    allOf {
-                        environment name: 'HAS_MOBILE_CHANGES', value: 'true'
-                        environment name: 'HAS_BACKEND_CHANGES', value: 'true'
-                    }
-                }
-            }
+        stage('Setup') {
+            when { environment name: 'HAS_CHANGES', value: 'true' }
             steps {
                 script {
                     withChecks('Setup') {
@@ -58,73 +55,36 @@ pipeline {
                 }
             }
         }
-        stage('Setup Mobile') {
-            when {
-                allOf {
-                    not { branch 'main' }
-                    environment name: 'HAS_MOBILE_CHANGES', value: 'true'
-                    environment name: 'HAS_BACKEND_CHANGES', value: 'false'
-                    environment name: 'HAS_OTHER_CHANGES', value: 'false'
-                }
-            }
-            steps {
-                script {
-                    withChecks('Setup: Mobile') {
-                        sh 'yarn workspaces focus mobile'
-                        env.SETUP = "mobile"
-                    }
-                }
-            }
-        }
-        stage('Setup Backend') {
-            when {
-                allOf {
-                    not { branch 'main' }
-                    environment name: 'HAS_BACKEND_CHANGES', value: 'true'
-                    environment name: 'HAS_MOBILE_CHANGES', value: 'false'
-                    environment name: 'HAS_OTHER_CHANGES', value: 'false'
-                }
-            }
-            steps {
-                script {
-                    withChecks('Setup: Backend') {
-                        sh 'yarn workspaces focus backend'
-                        env.SETUP = "backend"
-                    }
-                }
-            }
-        }
 
         stage('Code Quality') {
+            when { environment name: 'HAS_CHANGES', value: 'true' }
             parallel {
                 stage('Mobile') {
-                    when {
-                        not {
-                            environment name: "SETUP", value: "backend"
-                        }
-                    }
+                    when { environment name: 'RUN_MOBILE', value: 'true' }
                     steps {
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            script {
-                                withChecks('Lint: Mobile') {
-                                    sh 'yarn workspace mobile run format_lint:ci'
-                                }
+                        script {
+                            withChecks('Lint: Mobile') {
+                                sh 'yarn workspace mobile run format_lint:ci'
                             }
                         }
                     }
                 }
                 stage('Backend') {
-                    when {
-                        not {
-                            environment name: "SETUP", value: "mobile"
+                    when { environment name: 'RUN_BACKEND', value: 'true' }
+                    steps {
+                        script {
+                            withChecks('Lint: Backend') {
+                                sh 'yarn workspace backend run format_lint:ci'
+                            }
                         }
                     }
+                }
+                stage('Admin') {
+                    when { environment name: 'RUN_ADMIN', value: 'true' }
                     steps {
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            script {
-                                withChecks('Lint: Backend') {
-                                    sh 'yarn workspace backend run format_lint:ci'
-                                }
+                        script {
+                            withChecks('Lint: Admin') {
+                                sh 'yarn workspace admin run format_lint:ci'
                             }
                         }
                     }
@@ -133,19 +93,12 @@ pipeline {
         }
 
         stage('Build Backend') {
-            when {
-                branch "main"
-                not {
-                    environment name: "SETUP", value: "mobile"
-                }
-            }
+            when { branch 'main' }
             steps {
-                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                    script {
-                        withChecks('Build: Backend') {
-                            // WIP
-                            echo "Build in progress..."
-                        }
+                script {
+                    withChecks('Build: Backend') {
+                        // WIP
+                        echo "Build in progress..."
                     }
                 }
             }
