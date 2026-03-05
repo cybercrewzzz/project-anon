@@ -6,6 +6,7 @@ const UserLayout = () => {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="authScreens" />
+      <Stack.Screen name="categorydropdownfilter" />
       <Stack.Screen
         name="WaitingScreen"
         options={{ presentation: 'transparentModal', animation: 'fade' }}
