@@ -1,4 +1,4 @@
-> ⚠️ **Note: This architecture is subject to change without prior notice and may be outdated as development progresses.**
+> ⚠️ **Note: This architecture is subject to change without prior notice and may be outdated or not relevant as development progresses.**
 
 # 🗄️ Database Architecture & Relations
 
@@ -191,7 +191,7 @@ This document outlines the database tables for our privacy-first emotional suppo
 - `reported_id` (FK → Account)
 - `category` (harassment / spam / etc.)
 - `description`
-- `status` (pending / reviewing / resolved)
+- `status` (pending / reviewing / resolved / dismissed)
 - `reported_at`, `resolved_at`
 
 **1️⃣9️⃣ AccountAction**
