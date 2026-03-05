@@ -2,7 +2,7 @@ import { AppText } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 const issueGroups = [
@@ -26,6 +26,7 @@ const issueGroups = [
 
 export default function VolunteerPeerToPeer() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   return (
     <View style={styles.screen}>
@@ -41,7 +42,7 @@ export default function VolunteerPeerToPeer() {
 
       <View style={styles.sheet}>
         <AppText
-          variant="title2"
+          variant="title3"
           emphasis="emphasized"
           textAlign="center"
           style={styles.sheetTitle}
@@ -50,13 +51,13 @@ export default function VolunteerPeerToPeer() {
         </AppText>
 
         <View style={styles.searchBox}>
-          <AppText
-            variant="callout"
-            color="muted"
-            style={styles.searchPlaceholder}
-          >
-            Search or Select Source
-          </AppText>
+          <TextInput
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search or Select Source"
+            returnKeyType="search"
+          />
           <Ionicons name="search" size={26} style={styles.searchIcon} />
         </View>
 
@@ -67,7 +68,7 @@ export default function VolunteerPeerToPeer() {
         >
           {issueGroups.map(group => (
             <View key={group.title} style={styles.issueCard}>
-              <AppText variant="title3" emphasis="emphasized">
+              <AppText variant="headline" emphasis="emphasized">
                 {group.title}
               </AppText>
 
@@ -75,7 +76,7 @@ export default function VolunteerPeerToPeer() {
                 {group.tags.map(tag => (
                   <Pressable key={`${group.title}-${tag}`} style={styles.tagPill}>
                     <AppText
-                      variant="footnote"
+                      variant="caption1"
                       color="secondary"
                       emphasis="emphasized"
                     >
@@ -89,8 +90,8 @@ export default function VolunteerPeerToPeer() {
 
           <Pressable style={styles.otherCard}>
             <Ionicons name="add" size={36} style={styles.otherIcon} />
-            <AppText variant="title3" emphasis="emphasized">
-              <AppText variant="title3" color="accent" emphasis="emphasized">
+            <AppText variant="headline" emphasis="emphasized">
+              <AppText variant="headline" color="accent" emphasis="emphasized">
                 Other :
               </AppText>{' '}
               Tell Your Problem
@@ -162,8 +163,9 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.spacing.s3,
     paddingVertical: theme.spacing.s2,
   },
-  searchPlaceholder: {
+  searchInput: {
     flex: 1,
+    color: theme.text.primary,
   },
   searchIcon: {
     color: theme.text.muted,
@@ -174,7 +176,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   issueContent: {
     paddingHorizontal: theme.spacing.s4,
     paddingBottom: rt.insets.bottom + theme.spacing.s2,
-    gap: theme.spacing.s3,
+    gap: theme.spacing.s5,
   },
   issueCard: {
     backgroundColor: theme.surface.primary,
