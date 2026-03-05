@@ -38,7 +38,7 @@ export default function VolunteerPeerToPeer() {
         </View>
       </View>
 
-      <View style={styles.overlay} />
+      <View style={styles.overlay} pointerEvents="none" />
 
       <View style={styles.sheet}>
         <AppText
