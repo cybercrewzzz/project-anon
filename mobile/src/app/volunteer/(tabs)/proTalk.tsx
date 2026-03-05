@@ -28,7 +28,6 @@ const ProTalk = () => {
         title="SignUpNLogin"
         onPress={() => router.navigate('/volunteer/SignupNLoginV/signupNlogin')}
       />
-
     </View>
   );
 };

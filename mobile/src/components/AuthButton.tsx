@@ -36,9 +36,8 @@ export const AuthButton = ({
 }: AuthButtonProps) => {
   const { theme } = useUnistyles();
 
-  const backgroundColor =
-    color;
-    //?? (variant === 'primary' ? theme.action.primary : theme.action.secondary);
+  const backgroundColor = color;
+  //?? (variant === 'primary' ? theme.action.primary : theme.action.secondary);
 
   return (
     <Pressable
