@@ -9,7 +9,91 @@
 * 🟢 You can import this file directly.
 */
 
+export const AccountStatus = {
+  active: 'active',
+  suspended: 'suspended',
+  banned: 'banned',
+  deleted: 'deleted'
+} as const
+
+export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const Gender = {
+  male: 'male',
+  female: 'female',
+  other: 'other',
+  prefer_not_to_say: 'prefer_not_to_say'
+} as const
+
+export type Gender = (typeof Gender)[keyof typeof Gender]
+
+
+export const VerificationStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected'
+} as const
+
+export type VerificationStatus = (typeof VerificationStatus)[keyof typeof VerificationStatus]
+
+
+export const UserProblemStatus = {
+  waiting: 'waiting',
+  matched: 'matched',
+  expired: 'expired'
+} as const
+
+export type UserProblemStatus = (typeof UserProblemStatus)[keyof typeof UserProblemStatus]
+
+
+export const SessionStatus = {
+  active: 'active',
+  completed: 'completed',
+  cancelled_grace: 'cancelled_grace',
+  cancelled_timeout: 'cancelled_timeout',
+  cancelled_disconnect: 'cancelled_disconnect',
+  cancelled_admin: 'cancelled_admin'
+} as const
+
+export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus]
+
+
+export const ReportStatus = {
+  pending: 'pending',
+  reviewing: 'reviewing',
+  resolved: 'resolved',
+  dismissed: 'dismissed'
+} as const
+
+export type ReportStatus = (typeof ReportStatus)[keyof typeof ReportStatus]
+
+
+export const ActionType = {
+  warning: 'warning',
+  mute: 'mute',
+  suspend: 'suspend',
+  ban: 'ban'
+} as const
+
+export type ActionType = (typeof ActionType)[keyof typeof ActionType]
+
+
+export const ReportCategory = {
+  harassment: 'harassment',
+  spam: 'spam',
+  inappropriate_content: 'inappropriate_content',
+  impersonation: 'impersonation',
+  other: 'other'
+} as const
+
+export type ReportCategory = (typeof ReportCategory)[keyof typeof ReportCategory]
+
+
+export const Platform = {
+  ios: 'ios',
+  android: 'android',
+  web: 'web'
+} as const
+
+export type Platform = (typeof Platform)[keyof typeof Platform]

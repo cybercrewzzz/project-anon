@@ -29,8 +29,8 @@ export * from "./enums.js"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more Accounts
+ * const accounts = await prisma.account.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -40,12 +40,102 @@ export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts exten
 export { Prisma }
 
 /**
- * Model User
+ * Model Account
  * 
  */
-export type User = Prisma.UserModel
+export type Account = Prisma.AccountModel
 /**
- * Model Post
+ * Model Role
  * 
  */
-export type Post = Prisma.PostModel
+export type Role = Prisma.RoleModel
+/**
+ * Model Permission
+ * 
+ */
+export type Permission = Prisma.PermissionModel
+/**
+ * Model RolePermission
+ * 
+ */
+export type RolePermission = Prisma.RolePermissionModel
+/**
+ * Model AccountRole
+ * 
+ */
+export type AccountRole = Prisma.AccountRoleModel
+/**
+ * Model AccountAction
+ * 
+ */
+export type AccountAction = Prisma.AccountActionModel
+/**
+ * Model RefreshToken
+ * 
+ */
+export type RefreshToken = Prisma.RefreshTokenModel
+/**
+ * Model DeviceToken
+ * 
+ */
+export type DeviceToken = Prisma.DeviceTokenModel
+/**
+ * Model Language
+ * 
+ */
+export type Language = Prisma.LanguageModel
+/**
+ * Model AccountLanguage
+ * 
+ */
+export type AccountLanguage = Prisma.AccountLanguageModel
+/**
+ * Model Category
+ * 
+ */
+export type Category = Prisma.CategoryModel
+/**
+ * Model UserProblem
+ * 
+ */
+export type UserProblem = Prisma.UserProblemModel
+/**
+ * Model VolunteerProfile
+ * 
+ */
+export type VolunteerProfile = Prisma.VolunteerProfileModel
+/**
+ * Model VolunteerExperience
+ * 
+ */
+export type VolunteerExperience = Prisma.VolunteerExperienceModel
+/**
+ * Model Specialisation
+ * 
+ */
+export type Specialisation = Prisma.SpecialisationModel
+/**
+ * Model VolunteerSpecialisation
+ * 
+ */
+export type VolunteerSpecialisation = Prisma.VolunteerSpecialisationModel
+/**
+ * Model VolunteerVerification
+ * 
+ */
+export type VolunteerVerification = Prisma.VolunteerVerificationModel
+/**
+ * Model ChatSession
+ * 
+ */
+export type ChatSession = Prisma.ChatSessionModel
+/**
+ * Model Report
+ * 
+ */
+export type Report = Prisma.ReportModel
+/**
+ * Model Blocklist
+ * 
+ */
+export type Blocklist = Prisma.BlocklistModel

@@ -51,8 +51,26 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  User: 'User',
-  Post: 'Post'
+  Account: 'Account',
+  Role: 'Role',
+  Permission: 'Permission',
+  RolePermission: 'RolePermission',
+  AccountRole: 'AccountRole',
+  AccountAction: 'AccountAction',
+  RefreshToken: 'RefreshToken',
+  DeviceToken: 'DeviceToken',
+  Language: 'Language',
+  AccountLanguage: 'AccountLanguage',
+  Category: 'Category',
+  UserProblem: 'UserProblem',
+  VolunteerProfile: 'VolunteerProfile',
+  VolunteerExperience: 'VolunteerExperience',
+  Specialisation: 'Specialisation',
+  VolunteerSpecialisation: 'VolunteerSpecialisation',
+  VolunteerVerification: 'VolunteerVerification',
+  ChatSession: 'ChatSession',
+  Report: 'Report',
+  Blocklist: 'Blocklist'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -71,24 +89,235 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const UserScalarFieldEnum = {
-  id: 'id',
+export const AccountScalarFieldEnum = {
+  accountId: 'accountId',
   email: 'email',
+  passwordHash: 'passwordHash',
+  oauthProvider: 'oauthProvider',
+  oauthId: 'oauthId',
+  name: 'name',
+  nickname: 'nickname',
+  dateOfBirth: 'dateOfBirth',
+  gender: 'gender',
+  interfaceLanguageId: 'interfaceLanguageId',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
+
+
+export const RoleScalarFieldEnum = {
+  roleId: 'roleId',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
+
+
+export const PermissionScalarFieldEnum = {
+  permissionId: 'permissionId',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
+
+
+export const RolePermissionScalarFieldEnum = {
+  roleId: 'roleId',
+  permissionId: 'permissionId'
+} as const
+
+export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum]
+
+
+export const AccountRoleScalarFieldEnum = {
+  accountId: 'accountId',
+  roleId: 'roleId',
+  assignedBy: 'assignedBy',
+  assignedAt: 'assignedAt'
+} as const
+
+export type AccountRoleScalarFieldEnum = (typeof AccountRoleScalarFieldEnum)[keyof typeof AccountRoleScalarFieldEnum]
+
+
+export const AccountActionScalarFieldEnum = {
+  actionId: 'actionId',
+  accountId: 'accountId',
+  adminId: 'adminId',
+  reportId: 'reportId',
+  actionType: 'actionType',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt'
+} as const
+
+export type AccountActionScalarFieldEnum = (typeof AccountActionScalarFieldEnum)[keyof typeof AccountActionScalarFieldEnum]
+
+
+export const RefreshTokenScalarFieldEnum = {
+  tokenId: 'tokenId',
+  accountId: 'accountId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  isRevoked: 'isRevoked',
+  familyId: 'familyId'
+} as const
+
+export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
+
+
+export const DeviceTokenScalarFieldEnum = {
+  deviceId: 'deviceId',
+  accountId: 'accountId',
+  fcmToken: 'fcmToken',
+  platform: 'platform',
+  lastActiveAt: 'lastActiveAt'
+} as const
+
+export type DeviceTokenScalarFieldEnum = (typeof DeviceTokenScalarFieldEnum)[keyof typeof DeviceTokenScalarFieldEnum]
+
+
+export const LanguageScalarFieldEnum = {
+  languageId: 'languageId',
+  code: 'code',
   name: 'name'
 } as const
 
-export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+export type LanguageScalarFieldEnum = (typeof LanguageScalarFieldEnum)[keyof typeof LanguageScalarFieldEnum]
 
 
-export const PostScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  content: 'content',
-  published: 'published',
-  authorId: 'authorId'
+export const AccountLanguageScalarFieldEnum = {
+  accountId: 'accountId',
+  languageId: 'languageId'
 } as const
 
-export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
+export type AccountLanguageScalarFieldEnum = (typeof AccountLanguageScalarFieldEnum)[keyof typeof AccountLanguageScalarFieldEnum]
+
+
+export const CategoryScalarFieldEnum = {
+  categoryId: 'categoryId',
+  name: 'name',
+  description: 'description'
+} as const
+
+export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
+
+
+export const UserProblemScalarFieldEnum = {
+  problemId: 'problemId',
+  accountId: 'accountId',
+  categoryId: 'categoryId',
+  customCategoryLabel: 'customCategoryLabel',
+  feelingLevel: 'feelingLevel',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type UserProblemScalarFieldEnum = (typeof UserProblemScalarFieldEnum)[keyof typeof UserProblemScalarFieldEnum]
+
+
+export const VolunteerProfileScalarFieldEnum = {
+  accountId: 'accountId',
+  instituteEmail: 'instituteEmail',
+  instituteName: 'instituteName',
+  studentId: 'studentId',
+  instituteIdImageUrl: 'instituteIdImageUrl',
+  grade: 'grade',
+  about: 'about',
+  verificationStatus: 'verificationStatus',
+  isAvailable: 'isAvailable'
+} as const
+
+export type VolunteerProfileScalarFieldEnum = (typeof VolunteerProfileScalarFieldEnum)[keyof typeof VolunteerProfileScalarFieldEnum]
+
+
+export const VolunteerExperienceScalarFieldEnum = {
+  accountId: 'accountId',
+  points: 'points',
+  level: 'level',
+  lastUpdated: 'lastUpdated'
+} as const
+
+export type VolunteerExperienceScalarFieldEnum = (typeof VolunteerExperienceScalarFieldEnum)[keyof typeof VolunteerExperienceScalarFieldEnum]
+
+
+export const SpecialisationScalarFieldEnum = {
+  specialisationId: 'specialisationId',
+  name: 'name',
+  description: 'description'
+} as const
+
+export type SpecialisationScalarFieldEnum = (typeof SpecialisationScalarFieldEnum)[keyof typeof SpecialisationScalarFieldEnum]
+
+
+export const VolunteerSpecialisationScalarFieldEnum = {
+  accountId: 'accountId',
+  specialisationId: 'specialisationId'
+} as const
+
+export type VolunteerSpecialisationScalarFieldEnum = (typeof VolunteerSpecialisationScalarFieldEnum)[keyof typeof VolunteerSpecialisationScalarFieldEnum]
+
+
+export const VolunteerVerificationScalarFieldEnum = {
+  requestId: 'requestId',
+  volunteerId: 'volunteerId',
+  documentUrl: 'documentUrl',
+  status: 'status',
+  adminNotes: 'adminNotes',
+  reviewedBy: 'reviewedBy',
+  submittedAt: 'submittedAt',
+  reviewedAt: 'reviewedAt'
+} as const
+
+export type VolunteerVerificationScalarFieldEnum = (typeof VolunteerVerificationScalarFieldEnum)[keyof typeof VolunteerVerificationScalarFieldEnum]
+
+
+export const ChatSessionScalarFieldEnum = {
+  sessionId: 'sessionId',
+  seekerId: 'seekerId',
+  listenerId: 'listenerId',
+  problemId: 'problemId',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  userRating: 'userRating',
+  volunteerRating: 'volunteerRating',
+  starredByUser: 'starredByUser',
+  status: 'status',
+  closedReason: 'closedReason'
+} as const
+
+export type ChatSessionScalarFieldEnum = (typeof ChatSessionScalarFieldEnum)[keyof typeof ChatSessionScalarFieldEnum]
+
+
+export const ReportScalarFieldEnum = {
+  reportId: 'reportId',
+  sessionId: 'sessionId',
+  reporterId: 'reporterId',
+  reportedId: 'reportedId',
+  category: 'category',
+  description: 'description',
+  status: 'status',
+  reportedAt: 'reportedAt',
+  resolvedAt: 'resolvedAt'
+} as const
+
+export type ReportScalarFieldEnum = (typeof ReportScalarFieldEnum)[keyof typeof ReportScalarFieldEnum]
+
+
+export const BlocklistScalarFieldEnum = {
+  blockerId: 'blockerId',
+  blockedId: 'blockedId',
+  blockedAt: 'blockedAt'
+} as const
+
+export type BlocklistScalarFieldEnum = (typeof BlocklistScalarFieldEnum)[keyof typeof BlocklistScalarFieldEnum]
 
 
 export const SortOrder = {
