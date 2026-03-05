@@ -39,7 +39,7 @@ export default function CategoryDropdownFilter() {
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(item => item !== tag) : [...prev, tag]
+      prev.includes(tag) ? prev.filter(item => item !== tag) : [...prev, tag],
     );
   };
 
@@ -77,7 +77,11 @@ export default function CategoryDropdownFilter() {
         </View>
 
         <View style={styles.filterCard}>
-          <AppText variant="title3" emphasis="emphasized" style={styles.filterTitle}>
+          <AppText
+            variant="title3"
+            emphasis="emphasized"
+            style={styles.filterTitle}
+          >
             What best describes this feeling?
           </AppText>
 
@@ -94,7 +98,9 @@ export default function CategoryDropdownFilter() {
                   <AppText
                     variant="caption1"
                     emphasis="emphasized"
-                    style={selected ? styles.tagTextSelected : styles.tagTextDefault}
+                    style={
+                      selected ? styles.tagTextSelected : styles.tagTextDefault
+                    }
                   >
                     {tag}
                   </AppText>
