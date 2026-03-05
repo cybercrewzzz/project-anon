@@ -67,7 +67,7 @@
 | API Framework       | **NestJS** (TypeScript)                                      | Modular architecture, first-class WebSocket & microservice support, decorator-based guards for RBAC.                                                                        |
 | Database            | **PostgreSQL**                                               | Relational integrity for accounts, roles, sessions, reports. UUID primary keys everywhere.                                                                                  |
 | ORM                 | **Prisma**                                                   | Type-safe database client, declarative schema, migration management, seamless NestJS integration.                                                                           |
-| Validation          | **Zod** + **nestjs-zod**                                     | Shared Zod schemas between mobile and backend. `createZodDto()` generates NestJS-compatible DTOs from Zod schemas. `ZodValidationPipe` applied globally.                    |
+| Validation          | **class-validator** + **class-transformer**                  | NestJS's built-in validation approach. DTOs are plain classes decorated with validation decorators (e.g., `@IsEmail()`, `@IsString()`, `@MinLength()`). The global `ValidationPipe` auto-validates and transforms incoming requests. |
 | In-Memory Store     | **Redis**                                                    | Sub-millisecond reads for the volunteer pool, ephemeral message buffer, session state, and pub/sub for multi-instance WebSocket fan-out.                                    |
 | Real-Time Transport | **WebSocket** (via `@nestjs/websockets` + Socket.IO adapter) | Bi-directional, persistent connection for chat messages and WebRTC signaling.                                                                                               |
 | Job Queue           | **BullMQ** (backed by Redis)                                 | Reliable async processing: push-notification dispatch, session timeout enforcement, cleanup jobs. Supports retry with exponential backoff, rate limiting, and delayed jobs. |
@@ -89,7 +89,7 @@ yarn add @prisma/client ioredis
 yarn add @nestjs/websockets @nestjs/platform-socket.io
 
 # Validation
-yarn add zod nestjs-zod
+yarn add class-validator class-transformer
 
 # Auth
 yarn add @nestjs/jwt @nestjs/passport passport passport-jwt argon2
@@ -106,7 +106,7 @@ yarn add @nestjs/throttler
 # Config
 yarn add @nestjs/config
 
-# API Docs (auto-generated from Zod DTOs)
+# API Docs (auto-generated from DTO decorators)
 yarn add @nestjs/swagger
 
 # Dev
@@ -140,7 +140,7 @@ backend/src/
 |   |-- auth.module.ts
 |   |-- auth.controller.ts
 |   |-- auth.service.ts
-|   +-- dto/                 # Zod schemas -> createZodDto()
+|   +-- dto/                 # class-validator DTO classes
 |
 |-- volunteer/               # Profile, status, specialisations
 |   |-- volunteer.module.ts
@@ -321,7 +321,7 @@ Mobile App                     NestJS                      PostgreSQL
 - **Refresh token** -- long-lived (e.g., 7 days), stored in `refresh_token` table with `family_id`. If the same `family_id` appears twice (token reuse), all tokens in the family are revoked.
 - **JWT `roles[]` claim** -- contains **all** roles assigned to the account. A person with both `user` and `volunteer` roles gets `roles: ["user", "volunteer"]` in their JWT. The mobile app decides which role to act as; the backend enforces it via guards.
 - **Guards** -- NestJS `AuthGuard` validates JWT; `RolesGuard` checks the `roles[]` claim against the required role for the endpoint.
-- **Validation** -- Request DTOs are defined as Zod schemas and converted to NestJS-compatible classes via `createZodDto()`. The global `ZodValidationPipe` handles validation automatically.
+- **Validation** -- Request DTOs are plain TypeScript classes decorated with `class-validator` decorators (e.g., `@IsEmail()`, `@IsString()`, `@MinLength()`). The global `ValidationPipe` (from `@nestjs/common`) handles validation and transformation automatically.
 - **Admin accounts** -- use the same login flow. The `admin` role is assigned via DB seeding or admin action, never from the mobile app. Admin endpoints (`/admin/*`) are protected by `@Roles('admin')`.
 
 ---
@@ -950,7 +950,7 @@ Seeker App                     NestJS                      Storage (TBD)        
 | **WebRTC Media**              | DTLS handshake + SRTP encryption. Even TURN relay cannot decrypt.                                                                                                                                                                                                                                                                                                                                                            |
 | **TURN Credentials**          | Time-limited HMAC-SHA1 credentials. Generated per-session, delivered in `session:matched` payload.                                                                                                                                                                                                                                                                                                                           |
 | **Refresh Token Security**    | `family_id` grouping. Reuse of an old token -> entire family revoked (compromise detection).                                                                                                                                                                                                                                                                                                                                 |
-| **Input Validation**          | Zod schemas validated globally via `ZodValidationPipe` (from `nestjs-zod`). Shared between mobile and backend.                                                                                                                                                                                                                                                                                                               |
+| **Input Validation**          | DTO classes decorated with `class-validator` decorators, validated globally via NestJS's built-in `ValidationPipe`. `whitelist: true` strips unknown properties. `forbidNonWhitelisted: true` rejects requests with unexpected fields.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | **Rate Limiting (REST)**      | NestJS `ThrottlerGuard` on auth endpoints.                                                                                                                                                                                                                                                                                                                                                                                   |
 | **Rate Limiting (WebSocket)** | Per-socket rate limiter on `message:send` and `typing:start` events (e.g., max 30 messages/min, max 5 typing events/5s). Enforced in the gateway using a simple in-memory counter per socket. Exceeding the limit triggers a warning event; repeated violations disconnect the socket.                                                                                                                                       |
 | **Abuse Prevention**          | `blocklist` table exclusion in matching (bidirectional). `report` workflow with admin review via `account_action`. Ticket system limits daily usage to 5 sessions. Self-match prevention in `MatchingService`. Concurrent session guard (1 active session per seeker). Idempotency keys on `POST /session/connect` to prevent duplicate sessions from network retries. Single device per account (new socket displaces old). |
@@ -1005,7 +1005,7 @@ The `session:cleanup` cron job (see Section 10) acts as a periodic safety net fo
 | **RBAC**                 | Role-Based Access Control -- permissions are assigned to roles, roles to users.                      |
 | **JWT**                  | JSON Web Token -- stateless authentication token carrying user claims.                               |
 | **Prisma**               | Type-safe ORM for Node.js/TypeScript, used for all PostgreSQL interactions.                          |
-| **Zod**                  | TypeScript-first schema validation library, shared between mobile and backend.                       |
+| **class-validator**      | Decorator-based validation library for TypeScript classes, used with NestJS's `ValidationPipe` for request DTO validation. |
 | **X25519**               | Elliptic-curve Diffie-Hellman key agreement used for E2E encryption key exchange.                    |
 | **AES-256-GCM**          | Symmetric encryption cipher used for encrypting message content after key agreement.                 |
 | **HSETNX**               | Redis command: set a hash field only if it does not already exist. Used for atomic claims.           |
