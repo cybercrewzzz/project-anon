@@ -10,6 +10,18 @@ const ProTalk = () => {
         title="TnS Agreee"
         onPress={() => router.push('/user/TnS agree/TnS')}
       />
+      <Button
+        title="Special Notice"
+        onPress={() => router.push('/user/Special Notice/specialnotice')}
+      />
+      <Button
+        title="Peer to Peer"
+        onPress={() => router.push('/user/PeertoPeer/peertopeer')}
+      />
+      <Button
+        title="To User Profile"
+        onPress={() => router.push('/user/userProfile/UserProfile')}
+      />
     </View>
   );
 };
