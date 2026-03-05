@@ -1,13 +1,10 @@
 import { AppText } from '@/components/AppText';
 import { common } from '@/theme/palettes/common';
-import { purple } from '@/theme/palettes/purple';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
-
-const emojis = ['😖', '😔', '😐', '😊', '😇'];
 
 const feelingTags = [
   'Anxious',
@@ -30,7 +27,6 @@ const feelingTags = [
 
 export default function CategoryDropdownFilter() {
   const router = useRouter();
-  const [selectedEmoji, setSelectedEmoji] = useState<number | null>(null);
   const [categoryText, setCategoryText] = useState('Family stress');
   const [selectedTags, setSelectedTags] = useState<string[]>([
     'Anxious',
@@ -49,49 +45,13 @@ export default function CategoryDropdownFilter() {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <View style={styles.header}>
+      <View style={styles.baseLayer}>
+        <View style={styles.headerRow}>
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={common.black} />
           </Pressable>
-          <AppText variant="title3" emphasis="emphasized">
-            Peer to Peer
-          </AppText>
-          <View style={styles.headerSpacer} />
         </View>
-
-        <View style={styles.badgeRow}>
-          <View style={styles.starBadge}>
-            <AppText style={styles.starBadgeText}>⭐ 185</AppText>
-          </View>
-          <View style={styles.ticketBadge}>
-            <AppText style={styles.ticketBadgeText}>🎫 5</AppText>
-          </View>
-        </View>
-
-        <View style={styles.card}>
-          <AppText variant="body" emphasis="emphasized" color="accent">
-            How are you feeling Right Now?
-          </AppText>
-          <View style={styles.emojiRow}>
-            {emojis.map((emoji, index) => (
-              <Pressable
-                key={emoji}
-                style={[
-                  styles.emojiBtn,
-                  selectedEmoji === index && styles.emojiBtnSelected,
-                ]}
-                onPress={() => setSelectedEmoji(index)}
-              >
-                <AppText style={styles.emoji}>{emoji}</AppText>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      </ScrollView>
+      </View>
 
       <View style={styles.overlay} />
 
@@ -159,83 +119,23 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
     backgroundColor: theme.background.default,
     paddingTop: rt.insets.top,
+    position: 'relative',
   },
-  scrollContent: {
+  baseLayer: {
     paddingHorizontal: theme.spacing.s4,
-    paddingBottom: theme.spacing.s7,
+    gap: theme.spacing.s2,
   },
-  header: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: theme.spacing.s4,
-    marginBottom: theme.spacing.s2,
+    justifyContent: 'flex-start',
+    paddingTop: theme.spacing.s2,
   },
   backButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  headerSpacer: {
-    width: 40,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    gap: theme.spacing.s3,
-    marginBottom: theme.spacing.s4,
-  },
-  starBadge: {
-    backgroundColor: purple[500],
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s4,
-    borderRadius: theme.radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  starBadgeText: {
-    color: common.white,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  ticketBadge: {
-    borderWidth: 1.5,
-    borderColor: common.gray[300],
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s4,
-    borderRadius: theme.radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.surface.primary,
-  },
-  ticketBadgeText: {
-    color: common.gray[700],
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  card: {
-    backgroundColor: theme.background.secondary,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.s4,
-    marginBottom: theme.spacing.s4,
-    gap: theme.spacing.s4,
-  },
-  emojiRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  emojiBtn: {
-    padding: theme.spacing.s4,
-    borderRadius: theme.radius.full,
-  },
-  emojiBtnSelected: {
-    backgroundColor: theme.border.default,
-  },
-  emoji: {
-    fontSize: 30,
   },
   overlay: {
     position: 'absolute',
@@ -260,7 +160,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: rt.insets.bottom + theme.spacing.s4,
   },
   sheetTitle: {
-    marginBottom: theme.spacing.s4,
+    marginBottom: theme.spacing.s3,
   },
   categoryInputRow: {
     backgroundColor: theme.surface.primary,
@@ -270,7 +170,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.spacing.s3,
     paddingVertical: theme.spacing.s2,
     gap: theme.spacing.s2,
-    marginBottom: theme.spacing.s5,
+    marginBottom: theme.spacing.s4,
   },
   categoryInput: {
     flex: 1,
