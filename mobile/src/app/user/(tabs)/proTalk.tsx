@@ -1,5 +1,5 @@
 import { View, Text, Button } from 'react-native';
-import React from 'react';
+//import React from 'react';
 import { router } from 'expo-router';
 
 const ProTalk = () => {
@@ -22,6 +22,11 @@ const ProTalk = () => {
         title="To User Profile"
         onPress={() => router.push('/user/userProfile/UserProfile')}
       />
+      <Button
+        title="Create New Password"
+        onPress={() => router.push('/user/CreateNewPassword/createNewPassword')}
+      />
+
     </View>
   );
 };
