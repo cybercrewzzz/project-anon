@@ -74,7 +74,10 @@ export default function VolunteerPeerToPeer() {
 
               <View style={styles.tagRow}>
                 {group.tags.map(tag => (
-                  <Pressable key={`${group.title}-${tag}`} style={styles.tagPill}>
+                  <Pressable
+                    key={`${group.title}-${tag}`}
+                    style={styles.tagPill}
+                  >
                     <AppText
                       variant="caption1"
                       color="secondary"
