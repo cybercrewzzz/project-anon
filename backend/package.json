@@ -6,6 +6,13 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "db:start": "docker compose --env-file .env.local -f docker-compose.dev.yaml up -d",
+    "db:stop": "docker compose --env-file .env.local -f docker-compose.dev.yaml down",
+    "db:wipe": "docker compose --env-file .env.local -f docker-compose.dev.yaml down -v",
+    "db:logs": "docker compose --env-file .env.local -f docker-compose.dev.yaml logs -f",
+    "db:push": "yarn prisma db push",
+    "db:seed": "yarn prisma db seed",
+    "dev": "yarn db:start && yarn prisma generate && yarn prisma db push && nest start --watch",
     "build": "nest build",
     "format": "prettier -w .",
     "format:check": "prettier -c .",
