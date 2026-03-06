@@ -1,7 +1,6 @@
 import { AppText } from '@/components/AppText';
 import { common } from '@/theme/palettes/common';
 import { purple } from '@/theme/palettes/purple';
-import { typography } from '@/theme/tokens/typography';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -21,6 +20,8 @@ export default function PeerToPeer() {
   const [selectedEmoji, setSelectedEmoji] = useState<number | null>(null);
   const [sameGender, setSameGender] = useState(false);
   const [volunteerOnly, setVolunteerOnly] = useState(true);
+  const [starActive, setStarActive] = useState(false);
+  const [ticketActive, setTicketActive] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -39,15 +40,44 @@ export default function PeerToPeer() {
           <View style={styles.headerSpacer} />
         </View>
 
-        {/* Badge Row */}
         <View style={styles.badgeRow}>
-          <Pressable style={styles.starBadge}>
-            <AppText style={styles.starBadgeText}>⭐ 185</AppText>
-          </Pressable>
-          <Pressable style={styles.ticketBadge}>
-            <AppText style={styles.ticketBadgeText}>🎫 5</AppText>
-          </Pressable>
-        </View>
+
+  <Pressable
+    onPress={() => setStarActive(!starActive)}
+    style={[
+      styles.starBadge,
+      { backgroundColor: starActive ? common.white : purple[500] },
+    ]}
+  >
+    <AppText
+      style={[
+        styles.starBadgeText,
+        { color: starActive ? purple[500] : common.white },
+      ]}
+    >
+      ⭐ 185
+    </AppText>
+  </Pressable>
+
+  <Pressable
+    onPress={() => setTicketActive(!ticketActive)}
+    style={[
+      styles.ticketBadge,
+      { backgroundColor: ticketActive ? purple[500] : common.white },
+    ]}
+  >
+    <AppText
+      style={[
+        styles.ticketBadgeText,
+        { color: ticketActive ? common.white : common.gray[700] },
+      ]}
+    >
+      🎫 5
+    </AppText>
+  </Pressable>
+
+</View>
+
 
         {/* Mood Card */}
         <View style={styles.card}>
