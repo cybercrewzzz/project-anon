@@ -1,0 +1,57 @@
+{
+  "volunteerProfiles": [
+    {
+      "accountId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "John Doe",
+      "instituteEmail": "john@university.edu",
+      "instituteName": "State University",
+      "studentId": "STU-12345",
+      "instituteIdImageUrl": "https://storage.example.com/ids/john.jpg",
+      "grade": "3rd Year",
+      "about": "Passionate about mental health and helping others through difficult times.",
+      "verificationStatus": "approved",
+      "isAvailable": false,
+      "specialisations": [
+        {
+          "specialisationId": "s1a2b3c4-d5e6-7890-abcd-ef1234567891",
+          "name": "Anxiety",
+          "description": "Helping with anxiety and panic disorders"
+        },
+        {
+          "specialisationId": "s2b3c4d5-e6f7-8901-bcde-f12345678902",
+          "name": "Academic Stress",
+          "description": "Supporting students through academic pressure"
+        }
+      ],
+      "experience": {
+        "points": 150,
+        "level": 3,
+        "lastUpdated": "2025-03-01T10:00:00.000Z"
+      }
+    },
+    {
+      "accountId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "Jane Smith",
+      "instituteEmail": "jane@college.edu",
+      "instituteName": "City College",
+      "studentId": "STU-67890",
+      "instituteIdImageUrl": "https://storage.example.com/ids/jane.jpg",
+      "grade": "2nd Year",
+      "about": "Trained in peer counseling with a focus on relationship issues.",
+      "verificationStatus": "approved",
+      "isAvailable": true,
+      "specialisations": [
+        {
+          "specialisationId": "s3c4d5e6-f7a8-9012-cdef-123456789013",
+          "name": "Relationship Issues",
+          "description": "Guidance on personal and social relationships"
+        }
+      ],
+      "experience": {
+        "points": 80,
+        "level": 2,
+        "lastUpdated": "2025-02-20T14:30:00.000Z"
+      }
+    }
+  ]
+}
