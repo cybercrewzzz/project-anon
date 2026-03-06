@@ -1,9 +1,10 @@
 import { AppText } from '@/components/AppText';
 import { common } from '@/theme/palettes/common';
 import { purple } from '@/theme/palettes/purple';
+import { typography } from '@/theme/tokens/typography';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, Switch, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -133,8 +134,9 @@ export default function PeerToPeer() {
                   style={[
                     styles.onlineDot,
                     {
-                      backgroundColor:
-                        user.online ? common.green[500] : common.gray[300],
+                      backgroundColor: user.online
+                        ? common.green[500]
+                        : common.gray[300],
                     },
                   ]}
                 />
@@ -174,7 +176,8 @@ export default function PeerToPeer() {
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
-    backgroundColor: theme.background.default,
+    // Light lavender page background matching design
+    backgroundColor: theme.background.secondary,
     paddingTop: rt.insets.top,
   },
 
@@ -183,7 +186,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: theme.spacing.s7,
   },
 
-  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -201,7 +203,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     width: 40,
   },
 
-  // Badges
   badgeRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -230,6 +231,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderRadius: theme.radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+    // White pill on the lavender background
+    backgroundColor: theme.background.default,
   },
   ticketBadgeText: {
     color: common.gray[700],
@@ -237,35 +240,41 @@ const styles = StyleSheet.create((theme, rt) => ({
     fontSize: 14,
   },
 
-  // Card
+
   card: {
-    backgroundColor: theme.background.secondary,
+    backgroundColor: theme.background.default,
     borderRadius: theme.radius.lg,
     padding: theme.spacing.s4,
     marginBottom: theme.spacing.s4,
     gap: theme.spacing.s4,
+   
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2, // Android
   },
 
-  // Emoji mood
   emojiRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    
   },
   emojiBtn: {
-    padding: theme.spacing.s4,
+    padding: theme.spacing.s3,
     borderRadius: theme.radius.full,
   },
   emojiBtnSelected: {
     backgroundColor: theme.border.default,
   },
   emoji: {
-    fontSize: 30,
+    fontSize: 20,
   },
 
-  // Dropdown
   dropdown: {
-    backgroundColor: theme.background.default,
+    // Soft lavender tray inside the white card
+    backgroundColor: theme.background.secondary,
     padding: theme.spacing.s4,
     borderRadius: theme.radius.sm,
     flexDirection: 'row',
@@ -273,7 +282,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
   },
 
-  // Switches
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -285,7 +293,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: theme.spacing.s3,
   },
 
-  // Connect button
   connectBtn: {
     backgroundColor: theme.action.primary,
     paddingVertical: theme.spacing.s4,
@@ -293,11 +300,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
   },
 
-  // User rows in connection history
+  // Soft lavender rows inside the white card
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.background.default,
+    backgroundColor: theme.background.secondary,
     borderRadius: theme.radius.sm,
     padding: theme.spacing.s3,
     gap: theme.spacing.s3,
@@ -318,7 +325,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: theme.background.default,
+    borderColor: theme.background.secondary,
     position: 'absolute',
     bottom: 0,
     right: 0,
