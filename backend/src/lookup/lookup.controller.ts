@@ -13,4 +13,10 @@ export class LookupController {
   getSpecialisations() {
     return this.lookupService.getSpecialisations();
   }
+
+  // GET /categories
+  @Get('categories')
+  getCategories() {
+    return this.lookupService.getCategories();
+  }
 }

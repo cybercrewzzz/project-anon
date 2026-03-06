@@ -53,7 +53,7 @@ export class VolunteerService {
 
   // GET /volunteer/profile
 
-  async getProfile(accountId: string) {
+  getProfile(accountId: string) {
     // Find the profile — throws 404 automatically if not found
     const profile = this.findProfileOrFail(accountId);
 
@@ -63,7 +63,7 @@ export class VolunteerService {
 
   // PATCH /volunteer/profile
 
-  async updateProfile(accountId: string, dto: UpdateProfileDTO) {
+  updateProfile(accountId: string, dto: UpdateProfileDTO) {
     // Find the profile — throws 404 if not found
     const profile = this.findProfileOrFail(accountId);
 
@@ -73,12 +73,10 @@ export class VolunteerService {
     }
 
     if (dto.specialisationIds !== undefined) {
-      const allSpecialisation = volunteerProfiles.flatMap(
-        (p) => p.specialisations,
-      );
-
       profile.specialisations = dto.specialisationIds
-        .map((id) => allSpecialisation.find((s) => s.specialisationId === id))
+        .map((id) =>
+          masterSpecialisations.find((s) => s.specialisationId === id),
+        )
         .filter(Boolean) as typeof profile.specialisations;
     }
     return this.formatProfile(profile);
@@ -86,7 +84,7 @@ export class VolunteerService {
 
   // PATCH /volunteer/status
 
-  async updateStatus(accountId: string, dto: UpdateStatusDTO) {
+  updateStatus(accountId: string, dto: UpdateStatusDTO) {
     const profile = this.findProfileOrFail(accountId);
     profile.isAvailable = dto.available;
     return {
@@ -96,7 +94,7 @@ export class VolunteerService {
 
   // POST /volunteer/apply
 
-  async applyAsVolunteer(accountId: string, dto: ApplyVolunteerDTO) {
+  applyAsVolunteer(accountId: string, dto: ApplyVolunteerDTO) {
     const alreadyAVolunteer = volunteerProfiles.find(
       (p) => p.accountId === accountId,
     );

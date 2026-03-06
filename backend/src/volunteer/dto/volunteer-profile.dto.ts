@@ -14,7 +14,7 @@ import { Type } from 'class-transformer';
 class SpecialisationDTO {
   // specialisation.specialisation_id
   @IsUUID()
-  specialisation: string;
+  specialisationId: string;
 
   // specialisation.name
   @IsString()
@@ -75,8 +75,8 @@ export class VolunteerProfileDTO {
   about: string | null;
 
   // volunteer_profile.verification_status
-  @IsEnum(['pending', 'verified', 'rejected'])
-  verificationStatus: 'pending' | 'verified' | 'rejected';
+  @IsEnum(['pending', 'approved', 'rejected'])
+  verificationStatus: 'pending' | 'approved' | 'rejected';
 
   // volunteer_profile.is_available
   @IsBoolean()
