@@ -23,7 +23,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "lint:ci": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "format_lint:ci": "yarn lint:ci & yarn format:ci",
+    "format_lint:ci": "yarn format:ci && yarn lint:ci",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
