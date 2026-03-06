@@ -46,6 +46,12 @@ const ProTalk = () => {
             router.navigate('/user/categorydropdown1/categorydrop1')
           }
         />
+        <Button
+          title="Category Dropdown Other"
+          onPress={() =>
+            router.navigate('/user/categorydropdownother/categorydropother')
+          }
+        />
       </View>
     </SafeAreaView>
   );
