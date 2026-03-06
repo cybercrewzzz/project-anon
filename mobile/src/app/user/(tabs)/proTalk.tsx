@@ -32,6 +32,10 @@ const ProTalk = () => {
           router.navigate('/user/p2p-p2v-withCategory/P2P-P2V-withCategory')
         }
       />
+      <Button
+        title="Category Dropdown 1"
+        onPress={() => router.navigate('/user/categorydropdown1/categorydrop1')}
+      />
     </View>
   );
 };
