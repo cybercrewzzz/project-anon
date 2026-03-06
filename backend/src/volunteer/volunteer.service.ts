@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 
 import mockData from './mock-volunteer-data.json';
+import { UpdateStatusDTO } from './dto/update-status.dto';
 
 const volunteerProfiles = mockData.volunteerProfiles;
 
@@ -69,10 +70,20 @@ export class VolunteerService {
         (p) => p.specialisations,
       );
 
-      profile.specialisations = dto.specificationIds
+      profile.specialisations = dto.specialisationIds
         .map((id) => allSpecialisation.find((s) => s.specialisationId === id))
         .filter(Boolean) as typeof profile.specialisations;
     }
     return this.formatProfile(profile);
+  }
+
+  // PATCH /volunteer/status
+
+  async updateStatus(accountId: string, dto: UpdateStatusDTO) {
+    const profile = this.findProfileOrFail(accountId);
+    profile.isAvailable = dto.available;
+    return {
+      isAvailable: profile.isAvailable,
+    };
   }
 }

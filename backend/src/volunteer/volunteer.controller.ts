@@ -5,6 +5,7 @@ import { VolunteerService } from './volunteer.service';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
+import { UpdateStatusDTO } from './dto/update-status.dto';
 
 @Controller('volunteer')
 @UseGuards(AuthGuard, RolesGuard)
@@ -20,6 +21,7 @@ export class VolunteerController {
   }
 
   // PATCH /volunteer/profile
+
   @Patch('profile')
   @Roles('volunteer')
   async updateProfile(
@@ -30,5 +32,16 @@ export class VolunteerController {
     @Body() dto: UpdateProfileDTO,
   ) {
     return this.volunteerService.updateProfile(user.sub, dto);
+  }
+
+  // PATCH /volunteer/status
+
+  @Patch('status')
+  @Roles('volunteer')
+  async updateStatus(
+    @CurrentUser() user: { sub: string },
+    @Body() dto: UpdateStatusDTO,
+  ) {
+    return this.volunteerService.updateStatus(user.sub, dto);
   }
 }
