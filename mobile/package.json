@@ -12,7 +12,7 @@
     "format": "prettier -w .",
     "format:check": "prettier -c .",
     "format:ci": "prettier --end-of-line lf -c .",
-    "format_lint:ci": "yarn lint:ci & yarn format:ci",
+    "format_lint:ci": "yarn format:ci && yarn lint:ci",
     "eas-build-pre-install": "corepack enable && yarn set version 4"
   },
   "dependencies": {

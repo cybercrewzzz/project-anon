@@ -51,6 +51,7 @@ pipeline {
                 script {
                     withChecks('Setup') {
                         sh 'yarn install --immutable'
+                        // sh 'yarn workspace backend prisma generate'
                     }
                 }
             }
