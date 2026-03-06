@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { createHash } from 'crypto';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
@@ -7,6 +8,22 @@ const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
+
+/**
+ * Generate a deterministic UUID from a descriptive seed name.
+ * Ensures the seed script is fully idempotent on re-runs.
+ */
+function seedUuid(name: string): string {
+  const hash = createHash('sha256').update(`seed:${name}`).digest('hex');
+  return [
+    hash.slice(0, 8),
+    hash.slice(8, 12),
+    '4' + hash.slice(13, 16),
+    ((parseInt(hash.slice(16, 17), 16) & 0x3) | 0x8).toString(16) +
+      hash.slice(17, 20),
+    hash.slice(20, 32),
+  ].join('-');
+}
 
 async function main() {
   // ─── Languages ──────────────────────────────────────────────────────────────
@@ -486,8 +503,11 @@ async function main() {
   }
 
   // ─── Volunteer Verifications ────────────────────────────────────────────────
-  await prisma.volunteerVerification.create({
-    data: {
+  await prisma.volunteerVerification.upsert({
+    where: { requestId: seedUuid('verification-volunteer1') },
+    update: {},
+    create: {
+      requestId: seedUuid('verification-volunteer1'),
       volunteerId: volunteer1.accountId,
       documentUrl: 'https://storage.example.com/docs/alice_student_id.pdf',
       status: 'approved',
@@ -497,8 +517,11 @@ async function main() {
     },
   });
 
-  await prisma.volunteerVerification.create({
-    data: {
+  await prisma.volunteerVerification.upsert({
+    where: { requestId: seedUuid('verification-volunteer2') },
+    update: {},
+    create: {
+      requestId: seedUuid('verification-volunteer2'),
       volunteerId: volunteer2.accountId,
       documentUrl: 'https://storage.example.com/docs/bob_student_id.pdf',
       status: 'approved',
@@ -509,8 +532,11 @@ async function main() {
   });
 
   // ─── User Problems ─────────────────────────────────────────────────────────
-  const problem1 = await prisma.userProblem.create({
-    data: {
+  const problem1 = await prisma.userProblem.upsert({
+    where: { problemId: seedUuid('problem-seeker1-anxiety') },
+    update: {},
+    create: {
+      problemId: seedUuid('problem-seeker1-anxiety'),
       accountId: seeker1.accountId,
       categoryId: categories[0].categoryId, // Anxiety
       feelingLevel: 7,
@@ -518,8 +544,11 @@ async function main() {
     },
   });
 
-  const problem2 = await prisma.userProblem.create({
-    data: {
+  const problem2 = await prisma.userProblem.upsert({
+    where: { problemId: seedUuid('problem-seeker2-academic-stress') },
+    update: {},
+    create: {
+      problemId: seedUuid('problem-seeker2-academic-stress'),
       accountId: seeker2.accountId,
       categoryId: categories[3].categoryId, // Academic Stress
       customCategoryLabel: 'Final exam pressure',
@@ -528,8 +557,11 @@ async function main() {
     },
   });
 
-  await prisma.userProblem.create({
-    data: {
+  await prisma.userProblem.upsert({
+    where: { problemId: seedUuid('problem-seeker1-loneliness') },
+    update: {},
+    create: {
+      problemId: seedUuid('problem-seeker1-loneliness'),
       accountId: seeker1.accountId,
       categoryId: categories[4].categoryId, // Loneliness
       feelingLevel: 5,
@@ -538,8 +570,11 @@ async function main() {
   });
 
   // ─── Chat Sessions ─────────────────────────────────────────────────────────
-  const session1 = await prisma.chatSession.create({
-    data: {
+  const session1 = await prisma.chatSession.upsert({
+    where: { sessionId: seedUuid('session-seeker1-volunteer1') },
+    update: {},
+    create: {
+      sessionId: seedUuid('session-seeker1-volunteer1'),
       seekerId: seeker1.accountId,
       listenerId: volunteer1.accountId,
       problemId: problem1.problemId,
@@ -551,8 +586,11 @@ async function main() {
     },
   });
 
-  await prisma.chatSession.create({
-    data: {
+  await prisma.chatSession.upsert({
+    where: { sessionId: seedUuid('session-seeker2-volunteer2') },
+    update: {},
+    create: {
+      sessionId: seedUuid('session-seeker2-volunteer2'),
       seekerId: seeker2.accountId,
       listenerId: volunteer2.accountId,
       problemId: problem2.problemId,
@@ -561,8 +599,11 @@ async function main() {
   });
 
   // ─── Reports ────────────────────────────────────────────────────────────────
-  const report = await prisma.report.create({
-    data: {
+  const report = await prisma.report.upsert({
+    where: { reportId: seedUuid('report-session1') },
+    update: {},
+    create: {
+      reportId: seedUuid('report-session1'),
       sessionId: session1.sessionId,
       reporterId: seeker1.accountId,
       reportedId: volunteer1.accountId,
@@ -574,8 +615,11 @@ async function main() {
   });
 
   // ─── Account Actions ────────────────────────────────────────────────────────
-  await prisma.accountAction.create({
-    data: {
+  await prisma.accountAction.upsert({
+    where: { actionId: seedUuid('action-report1-warning') },
+    update: {},
+    create: {
+      actionId: seedUuid('action-report1-warning'),
       accountId: volunteer1.accountId,
       adminId: adminAccount.accountId,
       reportId: report.reportId,
@@ -600,16 +644,22 @@ async function main() {
   });
 
   // ─── Device Tokens ─────────────────────────────────────────────────────────
-  await prisma.deviceToken.create({
-    data: {
+  await prisma.deviceToken.upsert({
+    where: { deviceId: seedUuid('device-seeker1-ios') },
+    update: {},
+    create: {
+      deviceId: seedUuid('device-seeker1-ios'),
       accountId: seeker1.accountId,
       fcmToken: 'fake-fcm-token-seeker1-ios',
       platform: 'ios',
     },
   });
 
-  await prisma.deviceToken.create({
-    data: {
+  await prisma.deviceToken.upsert({
+    where: { deviceId: seedUuid('device-volunteer1-android') },
+    update: {},
+    create: {
+      deviceId: seedUuid('device-volunteer1-android'),
       accountId: volunteer1.accountId,
       fcmToken: 'fake-fcm-token-volunteer1-android',
       platform: 'android',
