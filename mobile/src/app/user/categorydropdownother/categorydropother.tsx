@@ -27,7 +27,7 @@ const feelingTags = [
 
 export default function CategoryDropOther() {
   const router = useRouter();
-  const [categoryText, setCategoryText] = useState('Family stress');
+  const [categoryText, setCategoryText] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([
     'Anxious',
     'Angry',
@@ -71,8 +71,10 @@ export default function CategoryDropOther() {
             style={styles.categoryInput}
             value={categoryText}
             onChangeText={setCategoryText}
-            placeholder="Family stress"
+            placeholder="Tell us about your issues"
             placeholderTextColor={common.gray[400]}
+            multiline
+            numberOfLines={5}
           />
         </View>
 
@@ -172,15 +174,19 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.md,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: theme.spacing.s3,
     paddingVertical: theme.spacing.s2,
     gap: theme.spacing.s2,
     marginBottom: theme.spacing.s4,
+    minHeight: 144,
   },
   categoryInput: {
     flex: 1,
     color: theme.text.primary,
+    minHeight: 120,
+    lineHeight: 22,
+    textAlignVertical: 'top',
   },
   filterCard: {
     backgroundColor: theme.surface.primary,
@@ -205,10 +211,10 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: theme.surface.primary,
     borderWidth: 1,
     borderColor: common.gray[300],
-    minWidth: '47%',
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s4,
-    minHeight: 38,
+    minWidth: '45%',
+    paddingVertical: 3,
+    paddingHorizontal: theme.spacing.s2,
+    minHeight: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
