@@ -1,6 +1,7 @@
-import { View, Text, Button } from 'react-native';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import React from 'react';
 import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ProTalk = () => {
   return (
@@ -38,8 +39,21 @@ const ProTalk = () => {
           router.push('/user/categorydropdownfilter/categorydropdownfilter')
         }
       />
+        <Button
+          title="Category Dropdown 1"
+          onPress={() => router.navigate('/user/categorydropdown1/categorydrop1')}
+        />
     </View>
   );
 };
 
 export default ProTalk;
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+  },
+});
