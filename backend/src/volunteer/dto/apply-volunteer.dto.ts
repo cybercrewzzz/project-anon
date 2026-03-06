@@ -8,7 +8,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class AppVolunteerDTO {
+export class ApplyVolunteerDTO {
   // account.name — stored on the account row
   @IsString()
   @MaxLength(100)
