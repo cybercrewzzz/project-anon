@@ -22,6 +22,16 @@ const ProTalk = () => {
         title="To User Profile"
         onPress={() => router.push('/user/userProfile/UserProfile')}
       />
+      <Button
+        title="To Waiting Screen"
+        onPress={() => router.push('/user/WaitingScreen/waitingScreen')}
+      />
+      <Button
+        title="To P2P-P2V-withCategory"
+        onPress={() =>
+          router.navigate('/user/p2p-p2v-withCategory/P2P-P2V-withCategory')
+        }
+      />
     </View>
   );
 };
