@@ -90,5 +90,43 @@
       "name": "Career Anxiety",
       "description": "Guidance on career stress and uncertainty"
     }
+  ],
+
+  "categories": [
+    {
+      "categoryId": "c1a2b3c4-d5e6-7890-abcd-ef1234567891",
+      "name": "Academic Stress",
+      "description": "Stress related to studies, exams, and academic performance"
+    },
+    {
+      "categoryId": "c2b3c4d5-e6f7-8901-bcde-f12345678902",
+      "name": "Relationship Issues",
+      "description": "Personal, romantic, or social relationship difficulties"
+    },
+    {
+      "categoryId": "c3c4d5e6-f7a8-9012-cdef-123456789013",
+      "name": "Anxiety",
+      "description": "General anxiety, worry, or feelings of nervousness"
+    },
+    {
+      "categoryId": "c4d5e6f7-a8b9-0123-defa-234567890124",
+      "name": "Grief & Loss",
+      "description": "Coping with loss of a loved one or significant life change"
+    },
+    {
+      "categoryId": "c5e6f7a8-b9c0-1234-efab-345678901235",
+      "name": "Career & Future",
+      "description": "Uncertainty about career path, job stress, or future plans"
+    },
+    {
+      "categoryId": "c6f7a8b9-c0d1-2345-fabc-456789012346",
+      "name": "Family Problems",
+      "description": "Difficulties with family dynamics or home environment"
+    },
+    {
+      "categoryId": "c7a8b9c0-d1e2-3456-abcd-567890123457",
+      "name": "Loneliness",
+      "description": "Feelings of isolation or lack of social connection"
+    }
   ]
 }
