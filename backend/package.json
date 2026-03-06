@@ -12,6 +12,7 @@
     "db:logs": "docker compose --env-file .env.local -f docker-compose.dev.yaml logs -f",
     "db:push": "yarn prisma db push",
     "db:seed": "yarn prisma db seed",
+    "db:studio": "yarn prisma studio",
     "dev": "yarn db:start && yarn prisma generate && yarn prisma db push && nest start --watch",
     "build": "nest build",
     "format": "prettier -w .",
@@ -65,6 +66,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
