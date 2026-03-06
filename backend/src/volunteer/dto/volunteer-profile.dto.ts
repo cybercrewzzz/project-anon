@@ -13,7 +13,7 @@ import { Type } from 'class-transformer';
 
 class SpecialisationDTO {
   // specialisation.specialisation_id
-  @IsUUID
+  @IsUUID()
   specialisation: string;
 
   // specialisation.name
