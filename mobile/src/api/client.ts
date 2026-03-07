@@ -1,12 +1,8 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import {
-  getAccessToken,
-  getRefreshToken,
-  setTokens,
-  clearTokens,
-} from './tokenStorage';
+import { setTokens as persistTokens, clearTokens } from './tokenStorage';
 import type { TokenPair } from './types';
+import { useAuth } from '@/store/useAuth';
 
 export const apiClient = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -16,8 +12,8 @@ export const apiClient = axios.create({
 
 // --- Request interceptor: attach Bearer token ---
 
-apiClient.interceptors.request.use(async config => {
-  const token = await getAccessToken();
+apiClient.interceptors.request.use(config => {
+  const token = useAuth.getState().accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -61,6 +57,7 @@ apiClient.interceptors.response.use(
       return new Promise<string>((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       }).then(newToken => {
+        originalRequest._retry = true;
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(originalRequest);
       });
@@ -71,7 +68,7 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const refreshToken = await getRefreshToken();
+      const refreshToken = useAuth.getState().refreshToken;
       if (!refreshToken) throw new Error('No refresh token');
 
       // Use plain axios to avoid interceptor recursion
@@ -80,10 +77,7 @@ apiClient.interceptors.response.use(
         { refreshToken },
       );
 
-      await setTokens(data.accessToken, data.refreshToken);
-
-      // Update auth store in-memory state (dynamic import to avoid circular dep)
-      const { useAuth } = await import('@/store/useAuth');
+      await persistTokens(data.accessToken, data.refreshToken);
       useAuth.getState().setTokens(data.accessToken, data.refreshToken);
 
       processQueue(null, data.accessToken);
@@ -92,10 +86,8 @@ apiClient.interceptors.response.use(
       return apiClient(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
-      await clearTokens();
-
-      const { useAuth } = await import('@/store/useAuth');
       useAuth.getState().reset();
+      await clearTokens().catch(() => {});
 
       return Promise.reject(refreshError);
     } finally {

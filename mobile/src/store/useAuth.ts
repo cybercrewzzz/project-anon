@@ -3,7 +3,7 @@ import type { Account } from '@/api/types';
 import {
   getAccessToken,
   getRefreshToken,
-  setTokens,
+  setTokens as persistTokens,
   clearTokens,
 } from '@/api/tokenStorage';
 
@@ -46,7 +46,7 @@ export const useAuth = create<AuthState>()(set => ({
   ...initialState,
 
   signIn: async (accessToken, refreshToken, account) => {
-    await setTokens(accessToken, refreshToken);
+    await persistTokens(accessToken, refreshToken);
     set({ accessToken, refreshToken, account, isAuthenticated: true });
   },
 
@@ -64,10 +64,8 @@ export const useAuth = create<AuthState>()(set => ({
   },
 
   hydrate: async () => {
-    const [accessToken, refreshToken] = await Promise.all([
-      getAccessToken(),
-      getRefreshToken(),
-    ]);
+    const accessToken = await getAccessToken();
+    const refreshToken = await getRefreshToken();
 
     if (accessToken && refreshToken) {
       set({
