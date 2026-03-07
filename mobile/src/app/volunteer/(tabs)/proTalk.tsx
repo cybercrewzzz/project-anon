@@ -35,7 +35,7 @@ const ProTalk = () => {
           onPress={() => router.push('/volunteer/PeertoPeer/peertopeer')}
         />
         <Button
-          title="SignUpNLogin"
+          text="SignUpNLogin"
           onPress={() =>
             router.navigate('/volunteer/SignupNLoginV/signupNlogin')
           }

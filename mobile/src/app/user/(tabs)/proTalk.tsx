@@ -45,6 +45,12 @@ const ProTalk = () => {
           }
         />
         <Button
+          title="To Category Dropdown Filter"
+          onPress={() =>
+            router.push('/user/categorydropdownfilter/categorydropdownfilter')
+          }
+        />
+        <Button
           title="Category Dropdown 1"
           onPress={() =>
             router.navigate('/user/categorydropdown1/categorydrop1')
