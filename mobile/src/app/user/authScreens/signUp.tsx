@@ -2,10 +2,14 @@ import { View, Pressable } from 'react-native';
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
+import { SmallButton } from '@/components/SmallButton';
 import InputForm from '@/components/inputForm';
 import OAuthSignIn from '@/components/oAuthSignIn';
 import Button from '@/components/button';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { FullWidthButton } from '@/components/FullWidthButton';
+
+const AGE_RANGES = ['16 -20', '21 -26', '27+'] as const;
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -14,6 +18,7 @@ const SignUp = () => {
     password: '',
     confirmPassword: '',
   });
+  const [selectedAge, setSelectedAge] = useState<string>('21 -26');
   const [receiveUpdates, setReceiveUpdates] = useState(false);
 
   const updateField = (field: keyof typeof form) => (text: string) => {
@@ -28,7 +33,7 @@ const SignUp = () => {
     >
       <View style={styles.header}>
         <AppText variant="largeTitle" emphasis="emphasized">
-          Anora App
+          Project Anon
         </AppText>
         <AppText variant="title1" emphasis="emphasized" color="accent">
           Sign Up
@@ -43,6 +48,24 @@ const SignUp = () => {
           onChangeText={updateField('name')}
           value={form.name}
         />
+
+        <View style={styles.ageSection}>
+          <AppText variant="callout" emphasis="emphasized" color="accent">
+            Age
+          </AppText>
+          <View style={styles.ageOptions}>
+            {AGE_RANGES.map(range => (
+              <SmallButton
+                key={range}
+                selected={selectedAge === range}
+                onPress={() => setSelectedAge(range)}
+              >
+                {range}
+              </SmallButton>
+            ))}
+          </View>
+        </View>
+
         <InputForm
           placeholder="Email"
           placeholderColor="subtle2"
@@ -85,8 +108,13 @@ const SignUp = () => {
         </AppText>
       </Pressable>
 
-      <Button text="Create Account" />
-      <OAuthSignIn />
+          <FullWidthButton>
+            <AppText variant="headline" color= 'secondary'>
+              Sign Up
+            </AppText>
+          </FullWidthButton>
+
+
     </KeyboardAwareScrollView>
   );
 };
@@ -116,6 +144,14 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginVertical: theme.spacing.s5,
     gap: theme.spacing.s5,
     alignSelf: 'stretch',
+  },
+  ageSection: {
+    gap: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s3,
+  },
+  ageOptions: {
+    flexDirection: 'row',
+    gap: theme.spacing.s3,
   },
   checkboxRow: {
     flexDirection: 'row',
