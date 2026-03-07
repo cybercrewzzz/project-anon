@@ -34,6 +34,12 @@ const ProTalk = () => {
           text="Open Peer to Peer"
           onPress={() => router.push('/volunteer/PeertoPeer/peertopeer')}
         />
+        <Button
+          title="SignUpNLogin"
+          onPress={() =>
+            router.navigate('/volunteer/SignupNLoginV/signupNlogin')
+          }
+        />
       </View>
     </View>
   );
