@@ -41,7 +41,6 @@ const SignIn = () => {
           }
           value={credentials.password}
           secureTextEntry={true}
-          hideEye={true}
         />
         <AppText variant="footnote" color="accent">
           Forgot your password?

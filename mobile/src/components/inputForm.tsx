@@ -12,7 +12,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AppText, AppTextProps } from './AppText';
 import { StyleSheet } from 'react-native-unistyles';
 import { typography } from '@/theme/tokens/typography';
-import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 
 interface InputFormProps extends TextInputProps {
   placeholder: string;
@@ -25,8 +25,6 @@ interface InputFormProps extends TextInputProps {
   outputVariant?: AppTextProps['variant'];
   outputColor?: AppTextProps['color'];
   outputEmphasis?: AppTextProps['emphasis'];
-  /** When true, shows an eye icon to toggle password visibility */
-  hideEye?: boolean;
 }
 
 const InputForm = ({
@@ -44,7 +42,6 @@ const InputForm = ({
   outputVariant = 'callout',
   outputColor = 'subtle2',
   outputEmphasis = 'emphasized',
-  hideEye = false,
   secureTextEntry,
   ...props
 }: InputFormProps) => {
@@ -53,6 +50,7 @@ const InputForm = ({
 
   const hasValue = value !== undefined && value.length > 0;
   const isActive = isFocused || hasValue;
+  const showEyeToggle = !!secureTextEntry;
 
   // Animated value for floating label
   const animatedValue = useRef(new Animated.Value(isActive ? 1 : 0)).current;
@@ -76,9 +74,7 @@ const InputForm = ({
     outputRange: [15, 11],
   });
 
-  const effectiveSecureTextEntry = hideEye
-    ? !isPasswordVisible
-    : secureTextEntry;
+  const effectiveSecureTextEntry = showEyeToggle ? !isPasswordVisible : false;
 
   const displayLabel = label || placeholder;
 
@@ -117,7 +113,7 @@ const InputForm = ({
           onBlur?.(e);
         }}
         style={[
-          styles.textInput(hideEye),
+          styles.textInput(showEyeToggle),
           typography[outputVariant][outputEmphasis],
           styles.outputColor(outputColor),
           isActive && styles.textInputActive,
@@ -126,16 +122,20 @@ const InputForm = ({
       />
 
       {/* Eye Icon for password toggle */}
-      {hideEye && (
+      {showEyeToggle && (
         <Pressable
           onPress={() => setIsPasswordVisible(prev => !prev)}
           style={styles.eyeButton}
           hitSlop={8}
         >
-          <Ionicons
-            name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
-            size={20}
+          <Image
+            source={
+              isPasswordVisible
+                ? require('@/assets/icons/eye-openOPT.svg')
+                : require('@/assets/icons/eye-closedOPT.svg')
+            }
             style={styles.eyeIcon}
+            contentFit="contain"
           />
         </Pressable>
       )}
@@ -188,6 +188,8 @@ const styles = StyleSheet.create(theme => ({
     alignItems: 'center' as const,
   },
   eyeIcon: {
-    color: theme.text.subtle2,
+    width: 20,
+    height: 20,
+    tintColor: theme.text.subtle2,
   },
 }));

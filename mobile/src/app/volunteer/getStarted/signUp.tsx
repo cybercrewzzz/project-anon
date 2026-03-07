@@ -60,7 +60,6 @@ const SignUp = () => {
           onChangeText={updateField('password')}
           value={form.password}
           secureTextEntry={true}
-          hideEye={true}
         />
         <InputForm
           placeholder="Confirm Password"
@@ -69,7 +68,6 @@ const SignUp = () => {
           onChangeText={updateField('confirmPassword')}
           value={form.confirmPassword}
           secureTextEntry={true}
-          hideEye={true}
         />
       </View>
 
