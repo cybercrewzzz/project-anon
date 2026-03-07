@@ -8027,6 +8027,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:~55.0.8":
+  version: 55.0.8
+  resolution: "expo-blur@npm:55.0.8"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/dff8e76ffe4bd4ac5975063a7eae590857f788afe405155d40b907e56f9804b86bd974c908858244235197e218341d96e5d44a06fa58b048ee82a3beccf31a41
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:~55.0.7":
   version: 55.0.7
   resolution: "expo-constants@npm:55.0.7"
@@ -11940,6 +11951,7 @@ __metadata:
     eslint-config-prettier: "npm:^10.1.8"
     expo: "npm:^55.0.0"
     expo-asset: "npm:~55.0.8"
+    expo-blur: "npm:~55.0.8"
     expo-constants: "npm:~55.0.7"
     expo-dev-client: "npm:~55.0.11"
     expo-font: "npm:~55.0.4"
