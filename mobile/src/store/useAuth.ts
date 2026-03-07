@@ -64,18 +64,21 @@ export const useAuth = create<AuthState>()(set => ({
   },
 
   hydrate: async () => {
-    const accessToken = await getAccessToken();
-    const refreshToken = await getRefreshToken();
+    try {
+      const accessToken = await getAccessToken();
+      const refreshToken = await getRefreshToken();
 
-    if (accessToken && refreshToken) {
-      set({
-        accessToken,
-        refreshToken,
-        isAuthenticated: true,
-        isHydrated: true,
-      });
-    } else {
-      set({ ...initialState, isHydrated: true });
+      if (accessToken && refreshToken) {
+        set({
+          accessToken,
+          refreshToken,
+          isAuthenticated: true,
+        });
+      }
+    } catch {
+      await clearTokens().catch(() => {});
+    } finally {
+      set({ isHydrated: true });
     }
   },
 }));

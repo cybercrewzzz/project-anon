@@ -4,8 +4,16 @@ import { setTokens as persistTokens, clearTokens } from './tokenStorage';
 import type { TokenPair } from './types';
 import { useAuth } from '@/store/useAuth';
 
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+if (!BASE_URL) {
+  throw new Error(
+    'EXPO_PUBLIC_API_URL is not set. Add it to mobile/.env (e.g. http://localhost:3000/api/v1)',
+  );
+}
+
 export const apiClient = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   timeout: 15_000,
 });
@@ -73,7 +81,7 @@ apiClient.interceptors.response.use(
 
       // Use plain axios to avoid interceptor recursion
       const { data } = await axios.post<TokenPair>(
-        `${process.env.EXPO_PUBLIC_API_URL}/auth/refresh`,
+        `${BASE_URL}/auth/refresh`,
         { refreshToken },
       );
 
