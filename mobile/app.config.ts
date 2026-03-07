@@ -18,7 +18,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       supportsTablet: true,
     },
     android: {
-      edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package:
         appEnv === 'development' ? 'com.cybercrewz.projectanon.development'
@@ -90,6 +89,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       'expo-web-browser',
+      'expo-secure-store',
+      'expo-sqlite',
+      'expo-asset',
+      'expo-image',
     ],
     experiments: {
       typedRoutes: true,
