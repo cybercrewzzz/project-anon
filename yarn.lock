@@ -8687,7 +8687,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo@npm:^55.0.0":
+"expo@npm:~55.0.0":
   version: 55.0.5
   resolution: "expo@npm:55.0.5"
   dependencies:
@@ -12218,7 +12218,7 @@ __metadata:
     eslint: "npm:^9.25.0"
     eslint-config-expo: "npm:~55.0.0"
     eslint-config-prettier: "npm:^10.1.8"
-    expo: "npm:^55.0.0"
+    expo: "npm:~55.0.0"
     expo-asset: "npm:~55.0.8"
     expo-blur: "npm:~55.0.8"
     expo-constants: "npm:~55.0.7"
