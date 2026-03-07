@@ -23,6 +23,10 @@ const ProTalk = () => {
         onPress={() => router.push('/user/userProfile/UserProfile')}
       />
       <Button
+        title="SignupNLogin"
+        onPress={() => router.push('/user/SignupNLogin/signupNlogin')}
+      />
+      <Button
         title="Create New Password"
         onPress={() => router.push('/user/createNewPassword/CreateNewPassword')}
       />
