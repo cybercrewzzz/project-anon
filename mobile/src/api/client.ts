@@ -80,10 +80,9 @@ apiClient.interceptors.response.use(
       if (!refreshToken) throw new Error('No refresh token');
 
       // Use plain axios to avoid interceptor recursion
-      const { data } = await axios.post<TokenPair>(
-        `${BASE_URL}/auth/refresh`,
-        { refreshToken },
-      );
+      const { data } = await axios.post<TokenPair>(`${BASE_URL}/auth/refresh`, {
+        refreshToken,
+      });
 
       await persistTokens(data.accessToken, data.refreshToken);
       useAuth.getState().setTokens(data.accessToken, data.refreshToken);
