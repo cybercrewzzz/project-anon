@@ -6,7 +6,7 @@ import { FullWidthButton } from '@/components/FullWidthButton';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-const styles = StyleSheet.create((theme: any, rt: any) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
     backgroundColor: theme.surface.primary,
