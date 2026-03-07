@@ -31,6 +31,12 @@ const ProTalk = () => {
           title="P2P AND"
           onPress={() => router.navigate('/volunteer/P2p-And/p2p-and')}
         />
+        <Button
+          title="SignUpNLogin"
+          onPress={() =>
+            router.navigate('/volunteer/SignupNLoginV/signupNlogin')
+          }
+        />
       </View>
     </SafeAreaView>
   );
