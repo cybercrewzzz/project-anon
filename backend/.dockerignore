@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+.env*
+.git
+.gitignore
+.vscode
+.idea
+*.log
+README.md
+API_ENDPOINTS.md
+DB_SCHEMA.md

@@ -35,9 +35,9 @@ const ProTalk = () => {
           onPress={() => router.push('/volunteer/PeertoPeer/peertopeer')}
         />
         <Button
-          text="To Category Dropdown Filter"
+          text="SignUpNLogin"
           onPress={() =>
-            router.push('/user/categorydropdownfilter/categorydropdownfilter')
+            router.navigate('/volunteer/SignupNLoginV/signupNlogin')
           }
         />
       </View>
