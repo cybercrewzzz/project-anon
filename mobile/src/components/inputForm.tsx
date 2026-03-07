@@ -63,10 +63,9 @@ const InputForm = ({
     }).start();
   }, [isActive, animatedValue]);
 
-  // Interpolations for the floating label
   const labelTranslateY = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -12],
+    outputRange: [15, 4],
   });
 
   const labelFontSize = animatedValue.interpolate({
@@ -163,7 +162,7 @@ const styles = StyleSheet.create(theme => ({
   floatingLabel: {
     position: 'absolute' as const,
     left: theme.spacing.s4,
-    top: '50%' as unknown as number,
+    top: 0,
     color: theme.text.subtle2,
     fontWeight: '600' as const,
   },
