@@ -25,6 +25,16 @@ const ProTalk = () => {
           onPress={() => router.push('/user/userProfile/UserProfile')}
         />
         <Button
+          title="SignupNLogin"
+          onPress={() => router.push('/user/SignupNLogin/signupNlogin')}
+        />
+        <Button
+          title="Create New Password"
+          onPress={() =>
+            router.push('/user/createNewPassword/CreateNewPassword')
+          }
+        />
+        <Button
           title="To Waiting Screen"
           onPress={() => router.push('/user/WaitingScreen/waitingScreen')}
         />
@@ -45,6 +55,10 @@ const ProTalk = () => {
           onPress={() =>
             router.navigate('/user/categorydropdown1/categorydrop1')
           }
+        />
+        <Button
+          title="To reset password"
+          onPress={() => router.navigate('/user/resetPassword/ResetPassword')}
         />
       </View>
     </SafeAreaView>
