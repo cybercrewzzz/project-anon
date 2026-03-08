@@ -57,6 +57,12 @@ const ProTalk = () => {
           }
         />
         <Button
+          title="Category Dropdown Other"
+          onPress={() =>
+            router.navigate('/user/categorydropdownother/categorydropother')
+          }
+        />
+        <Button
           title="To reset password"
           onPress={() => router.navigate('/user/resetPassword/ResetPassword')}
         />
