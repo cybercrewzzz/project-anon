@@ -17,6 +17,10 @@ const Groups = () => {
         text="Sign In"
         onPress={() => router.navigate('/user/authScreens/signIn')}
       />
+      <Button
+        text="Chat Session"
+        onPress={() => router.navigate('/user/session/[chat]')}
+      />
     </View>
   );
 };

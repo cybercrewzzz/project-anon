@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Slot, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { View } from 'react-native';
@@ -37,10 +37,7 @@ export default function Layout() {
     <QueryClientProvider client={queryClient}>
       <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
         <KeyboardProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="user" />
-            <Stack.Screen name="volunteer" />
-          </Stack>
+          <Slot />
         </KeyboardProvider>
         <StatusBar />
       </View>
