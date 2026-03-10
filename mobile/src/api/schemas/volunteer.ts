@@ -3,9 +3,9 @@ import { z } from 'zod';
 // ── GET /volunteer/profile & PATCH /volunteer/profile ──
 
 export const VolunteerProfileSchema = z.object({
-  accountId: z.string().uuid(),
+  accountId: z.uuid(),
   name: z.string(),
-  instituteEmail: z.string().email().nullable(),
+  instituteEmail: z.email().nullable(),
   instituteName: z.string().nullable(),
   grade: z.string().nullable(),
   about: z.string().nullable(),
@@ -13,7 +13,7 @@ export const VolunteerProfileSchema = z.object({
   isAvailable: z.boolean(),
   specialisations: z.array(
     z.object({
-      specialisationId: z.string().uuid(),
+      specialisationId: z.uuid(),
       name: z.string(),
     }),
   ),

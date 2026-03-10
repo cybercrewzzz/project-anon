@@ -4,12 +4,12 @@ import { AccountRoleSchema, LanguageSchema } from './common';
 // ── GET /user/profile & PATCH /user/profile ──
 
 export const UserProfileSchema = z.object({
-  accountId: z.string().uuid(),
-  email: z.string().email(),
+  accountId: z.uuid(),
+  email: z.email(),
   nickname: z.string(),
   dateOfBirth: z.string(),
   gender: z.string(),
-  interfaceLanguageId: z.string().uuid().nullable(),
+  interfaceLanguageId: z.uuid().nullable(),
   languages: z.array(LanguageSchema),
   roles: z.array(AccountRoleSchema),
 });
@@ -18,7 +18,7 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 // ── GET /user/sessions (individual item) ──
 
 export const UserSessionSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.uuid(),
   category: z.string(),
   startedAt: z.string(),
   endedAt: z.string().nullable(),

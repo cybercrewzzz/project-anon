@@ -4,8 +4,8 @@ import { AccountRoleSchema } from './common';
 // ── Account (embedded in auth responses) ──
 
 export const AccountSchema = z.object({
-  accountId: z.string().uuid(),
-  email: z.string().email(),
+  accountId: z.uuid(),
+  email: z.email(),
   nickname: z.string(),
   name: z.string().nullable().optional(),
   roles: z.array(AccountRoleSchema),

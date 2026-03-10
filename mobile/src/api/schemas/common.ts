@@ -6,21 +6,21 @@ export const AccountRoleSchema = z.enum(['user', 'volunteer', 'admin']);
 export type AccountRole = z.infer<typeof AccountRoleSchema>;
 
 export const LanguageSchema = z.object({
-  languageId: z.string().uuid(),
+  languageId: z.uuid(),
   code: z.string(),
   name: z.string(),
 });
 export type Language = z.infer<typeof LanguageSchema>;
 
 export const CategorySchema = z.object({
-  categoryId: z.string().uuid(),
+  categoryId: z.uuid(),
   name: z.string(),
   description: z.string().nullable(),
 });
 export type Category = z.infer<typeof CategorySchema>;
 
 export const SpecialisationSchema = z.object({
-  specialisationId: z.string().uuid(),
+  specialisationId: z.uuid(),
   name: z.string(),
   description: z.string().nullable(),
 });
@@ -40,7 +40,7 @@ export function paginatedSchema<T extends z.ZodType>(itemSchema: T) {
 // ── Block ──
 
 export const BlockEntrySchema = z.object({
-  blockedId: z.string().uuid(),
+  blockedId: z.uuid(),
   blockedAt: z.string(),
 });
 export type BlockEntry = z.infer<typeof BlockEntrySchema>;
