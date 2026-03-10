@@ -11,20 +11,42 @@ import { Socket } from 'socket.io';
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
-    const { userId, sessionId } = client.handshake.query;
+    const { userId } = client.handshake.query;
 
-    if (userId && sessionId) {
-      await client.join(sessionId as string);
-      console.log(`[Connected] ${userId} Joined session: ${sessionId}`);
-    } else {
-      console.log(`[Rejected] Connection missing userId or sessionId`);
+    if (!userId) {
+      console.log('[Rejected] Connection missing userId');
       client.disconnect();
+      return;
     }
+
+    console.log(`[Connected] ${userId}`);
   }
 
   handleDisconnect(client: Socket) {
     const { userId } = client.handshake.query;
     console.log(`[Disconnected] ${userId} left.`);
+  }
+
+  @SubscribeMessage('room:join')
+  async handleRoomJoin(
+    @MessageBody() payload: { sessionId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    await client.join(payload.sessionId);
+    const { userId } = client.handshake.query;
+    console.log(`[Room] ${userId} joined session: ${payload.sessionId}`);
+    return { sessionId: payload.sessionId, status: 'joined' };
+  }
+
+  @SubscribeMessage('room:leave')
+  async handleRoomLeave(
+    @MessageBody() payload: { sessionId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    await client.leave(payload.sessionId);
+    const { userId } = client.handshake.query;
+    console.log(`[Room] ${userId} left session: ${payload.sessionId}`);
+    return { sessionId: payload.sessionId, status: 'left' };
   }
 
   @SubscribeMessage('message:send')
