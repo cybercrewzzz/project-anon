@@ -60,6 +60,10 @@ const ProTalk = () => {
           title="To reset password"
           onPress={() => router.navigate('/user/resetPassword/ResetPassword')}
         />
+        <Button
+          title="To p2p-voice"
+          onPress={() => router.navigate('/user/p2p-voice/P2P-voice')}
+        />
       </View>
     </SafeAreaView>
   );
