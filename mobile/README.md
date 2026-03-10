@@ -133,13 +133,13 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 
 Available schemas (see `src/api/schemas/`):
 
-| File             | Schemas                                                       |
-| ---------------- | ------------------------------------------------------------- |
-| `common.ts`      | `CategorySchema`, `LanguageSchema`, `SpecialisationSchema`, `BlockEntrySchema`, `TicketsRemainingSchema`, `paginatedSchema()` |
-| `auth.ts`        | `AccountSchema`, `AuthResponseSchema`, `TokenPairSchema`      |
-| `user.ts`        | `UserProfileSchema`, `UserSessionSchema`                      |
-| `volunteer.ts`   | `VolunteerProfileSchema`, `VolunteerApplyResponseSchema`, `VolunteerStatusResponseSchema` |
-| `session.ts`     | `SessionConnectMatchSchema`, `SessionConnectWaitingSchema`, `SessionAcceptSchema`, `SessionDetailSchema` |
+| File           | Schemas                                                                                                                       |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `common.ts`    | `CategorySchema`, `LanguageSchema`, `SpecialisationSchema`, `BlockEntrySchema`, `TicketsRemainingSchema`, `paginatedSchema()` |
+| `auth.ts`      | `AccountSchema`, `AuthResponseSchema`, `TokenPairSchema`                                                                      |
+| `user.ts`      | `UserProfileSchema`, `UserSessionSchema`                                                                                      |
+| `volunteer.ts` | `VolunteerProfileSchema`, `VolunteerApplyResponseSchema`, `VolunteerStatusResponseSchema`                                     |
+| `session.ts`   | `SessionConnectMatchSchema`, `SessionConnectWaitingSchema`, `SessionAcceptSchema`, `SessionDetailSchema`                      |
 
 If the backend adds a new endpoint, add the schema to the appropriate file (or create a new one) and re-export from `index.ts`.
 
@@ -232,13 +232,13 @@ Use it everywhere instead of raw string arrays:
 
 ```ts
 // Instead of: queryKey: ['user', 'profile']
-queryKey: queryKeys.user.profile()
+queryKey: queryKeys.user.profile();
 
 // Instead of: queryKey: ['user', 'sessions', { page: 1 }]
-queryKey: queryKeys.user.sessions({ page: 1 })
+queryKey: queryKeys.user.sessions({ page: 1 });
 
 // Invalidate all user-related queries at once:
-queryClient.invalidateQueries({ queryKey: queryKeys.user.all })
+queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
 ```
 
 #### 4. Use `useQuery` — for GET requests (fetching data)
@@ -439,6 +439,7 @@ onError: error => {
 ```
 
 What `parseApiError` handles:
+
 - **Backend error** (e.g. `{ statusCode: 409, message: "Email already taken" }`) → extracts fields
 - **Network error** (no internet, timeout) → returns `statusCode: 0` with a friendly message
 - **Already an `ApiError`** → returns as-is
@@ -448,39 +449,39 @@ What `parseApiError` handles:
 
 This matches the backend endpoints from [README_API_ENDPOINTS.md](../backend/README_API_ENDPOINTS.md):
 
-| Action   | Backend Endpoint     | What to do on mobile                                              |
-| -------- | -------------------- | ----------------------------------------------------------------- |
-| Register | `POST /auth/register`| Call API → `useAuth.signIn(accessToken, refreshToken, account)`   |
-| Login    | `POST /auth/login`   | Call API → `useAuth.signIn(accessToken, refreshToken, account)`   |
-| Logout   | `POST /auth/logout`  | Call API with `{ refreshToken }` → `useAuth.signOut()`            |
-| Refresh  | `POST /auth/refresh` | **Automatic** — the axios interceptor handles this on 401         |
+| Action   | Backend Endpoint      | What to do on mobile                                            |
+| -------- | --------------------- | --------------------------------------------------------------- |
+| Register | `POST /auth/register` | Call API → `useAuth.signIn(accessToken, refreshToken, account)` |
+| Login    | `POST /auth/login`    | Call API → `useAuth.signIn(accessToken, refreshToken, account)` |
+| Logout   | `POST /auth/logout`   | Call API with `{ refreshToken }` → `useAuth.signOut()`          |
+| Refresh  | `POST /auth/refresh`  | **Automatic** — the axios interceptor handles this on 401       |
 
 ### Shared Types
 
 Available in `src/api/types.ts`:
 
-| Type                   | Description                                       |
-| ---------------------- | ------------------------------------------------- |
+| Type                   | Description                                        |
+| ---------------------- | -------------------------------------------------- |
 | `Account`              | Account object (id, email, nickname, name?, roles) |
-| `AuthResponse`         | Login/register response (tokens + account)        |
-| `TokenPair`            | Access + refresh token pair                       |
-| `PaginatedResponse<T>` | Paginated list wrapper (data, total, page, limit) |
-| `ApiErrorResponse`     | Backend error envelope shape                      |
-| `AccountRole`          | `'user' \| 'volunteer' \| 'admin'`                |
+| `AuthResponse`         | Login/register response (tokens + account)         |
+| `TokenPair`            | Access + refresh token pair                        |
+| `PaginatedResponse<T>` | Paginated list wrapper (data, total, page, limit)  |
+| `ApiErrorResponse`     | Backend error envelope shape                       |
+| `AccountRole`          | `'user' \| 'volunteer' \| 'admin'`                 |
 
 ---
 
 ## Key Libraries
 
-| Library            | Purpose                          | Where it's used                  |
-| ------------------ | -------------------------------- | -------------------------------- |
-| `@tanstack/react-query` | Server state (fetch, cache, sync) | All API data fetching       |
-| `axios`            | HTTP client                      | `src/api/client.ts`              |
-| `zustand`          | Client state management          | `src/store/` (auth, role)        |
-| `zod`              | Runtime schema validation        | Validate API responses           |
-| `expo-router`      | File-based routing               | `src/app/` directory             |
-| `expo-secure-store`| Encrypted token storage          | `src/api/tokenStorage.ts`        |
-| `react-native-unistyles` | Theming and styling        | `src/theme/`                     |
+| Library                  | Purpose                           | Where it's used           |
+| ------------------------ | --------------------------------- | ------------------------- |
+| `@tanstack/react-query`  | Server state (fetch, cache, sync) | All API data fetching     |
+| `axios`                  | HTTP client                       | `src/api/client.ts`       |
+| `zustand`                | Client state management           | `src/store/` (auth, role) |
+| `zod`                    | Runtime schema validation         | Validate API responses    |
+| `expo-router`            | File-based routing                | `src/app/` directory      |
+| `expo-secure-store`      | Encrypted token storage           | `src/api/tokenStorage.ts` |
+| `react-native-unistyles` | Theming and styling               | `src/theme/`              |
 
 ---
 
