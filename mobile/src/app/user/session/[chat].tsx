@@ -1,4 +1,4 @@
-import { View, ActivityIndicator, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { AppText } from '@/components/AppText';
@@ -9,6 +9,9 @@ import { Image } from 'expo-image';
 import InputForm from '@/components/inputForm';
 import { useAuth } from '@/store/useAuth';
 import { getSocket, joinRoom, leaveRoom } from '@/api/socket';
+import * as Crypto from 'expo-crypto';
+import TimerBar from '@/components/timerBar';
+import ChatScreenHeader from '@/components/chatScreenHeader';
 
 interface Message {
   id: string;
@@ -64,7 +67,7 @@ export default function Chat() {
   const sendMessage = () => {
     if (messageContent.trim() === '' || !chatId || !userId) return;
 
-    const clientMsgId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const clientMsgId = Crypto.randomUUID();
     const timestamp = Date.now();
 
     getSocket()?.emit('message:send', {
@@ -94,65 +97,8 @@ export default function Chat() {
   return (
     <>
       <View style={styles.screen}>
-        <View style={styles.timerContainer}>
-          <AppText variant="footnote" emphasis="emphasized">
-            09:34
-          </AppText>
-          <View style={styles.timerBar}>
-            <View style={styles.timeConsumed} />
-          </View>
-          <Image
-            source={require('@/assets/icons/endSession.svg')}
-            style={styles.endSession}
-            contentFit="contain"
-          />
-        </View>
-        <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Image
-              source={require('@/assets/images/profilePicture.webp')}
-              style={styles.profilePicture}
-            />
-          </View>
-          <View style={styles.headerDetails}>
-            <View style={styles.nameContainer}>
-              <AppText variant="callout" emphasis="emphasized">
-                Nickname
-              </AppText>
-              <Image
-                source={require('@/assets/icons/saveVolunteer.svg')}
-                style={styles.saveVolunteer}
-              />
-            </View>
-            <View style={styles.tagContainer}>
-              <View style={styles.roleTag}>
-                <AppText
-                  variant="caption2"
-                  emphasis="emphasized"
-                  color="secondary"
-                >
-                  Volunteer
-                </AppText>
-              </View>
-              <View style={styles.ratingTag}>
-                <Image
-                  source={require('@/assets/icons/ratingStar.svg')}
-                  style={styles.ratingImage}
-                  contentFit="contain"
-                />
-                <AppText variant="caption2" emphasis="emphasized">
-                  4.5
-                </AppText>
-              </View>
-            </View>
-          </View>
-          <View>
-            <Image
-              source={require('@/assets/icons/call.svg')}
-              style={styles.call}
-            />
-          </View>
-        </View>
+        <TimerBar />
+        <ChatScreenHeader />
         <LegendList
           style={styles.legendList}
           data={messages}
@@ -210,94 +156,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingLeft: rt.insets.left + theme.spacing.s4,
     paddingRight: rt.insets.right + theme.spacing.s4,
     backgroundColor: theme.background.default,
-  },
-  timerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: theme.spacing.s4,
-    marginHorizontal: theme.spacing.s4,
-    marginBottom: theme.spacing.s3,
-  },
-  timerBar: {
-    flex: 1,
-    backgroundColor: '#E5E7EB',
-    height: theme.spacing.s3,
-    borderRadius: theme.radius.full,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  timeConsumed: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: '#F39C12',
-    width: '31%',
-    borderRadius: theme.radius.full,
-  },
-  endSession: {
-    width: 20,
-    height: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: theme.spacing.s5,
-    backgroundColor: '#EEF2FF',
-    padding: theme.spacing.s3,
-    borderRadius: theme.radius.full,
-  },
-  avatar: {
-    borderRadius: theme.radius.full,
-    overflow: 'hidden',
-  },
-  profilePicture: {
-    width: 50,
-    height: 50,
-  },
-  headerDetails: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: theme.spacing.s3,
-  },
-  nameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s3,
-  },
-  saveVolunteer: {
-    width: 18,
-    height: 18,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    alignItems: 'center',
-  },
-  roleTag: {
-    backgroundColor: '#5039F6',
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s1 + theme.spacing.s3,
-    borderRadius: theme.radius.full,
-  },
-  ratingTag: {
-    backgroundColor: '#ffffff',
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s1 + theme.spacing.s3,
-    borderRadius: theme.radius.full,
-    gap: theme.spacing.s3,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingImage: {
-    width: 12,
-    height: 12,
-  },
-  call: {
-    width: 50,
-    height: 50,
   },
   legendList: {
     flex: 1,
