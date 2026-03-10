@@ -10,7 +10,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - dev-db-data:/var/lib/postgresql/data
+      - dev-db-data:/var/lib/postgresql
 
 volumes:
   dev-db-data:
