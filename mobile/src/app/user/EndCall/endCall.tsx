@@ -6,26 +6,20 @@ import { AppText } from '@/components/AppText';
 export default function EndCallConfirmScreen() {
   return (
     <View style={styles.container}>
-      
       {/* Dark overlay */}
       <View style={styles.overlay} />
 
       {/* Bottom Modal */}
       <View style={styles.modalContainer}>
-        
         <View style={styles.handle} />
 
-        <AppText
-          style={styles.title}
-          textAlign="center"
-        >
+        <AppText style={styles.title} textAlign="center">
           Are you sure you want to end the call?
         </AppText>
 
         <View style={styles.divider} />
 
         <View style={styles.buttonRow}>
-          
           <Pressable style={styles.button}>
             <AppText style={styles.buttonText}>Yes</AppText>
           </Pressable>
@@ -33,14 +27,13 @@ export default function EndCallConfirmScreen() {
           <Pressable style={styles.button}>
             <AppText style={styles.buttonText}>No</AppText>
           </Pressable>
-
         </View>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create(theme => ({
   container: {
     flex: 1,
     justifyContent: 'flex-end',
