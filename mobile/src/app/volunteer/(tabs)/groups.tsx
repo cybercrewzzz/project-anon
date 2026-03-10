@@ -22,6 +22,10 @@ const Groups = () => {
             router.navigate('/volunteer/getStarted/selectLanguage')
           }
         />
+        <Button
+          text="Chat Session"
+          onPress={() => router.navigate('/user/session/[chat]')}
+        />
       </View>
     </SafeAreaView>
   );

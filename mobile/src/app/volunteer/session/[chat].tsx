@@ -20,6 +20,8 @@ interface Message {
   timestamp: number;
 }
 
+const SESSION_TIME_SECONDS = 1800;
+
 export default function Chat() {
   const { chat: chatId } = useLocalSearchParams() as {
     chat?: SessionDetail['sessionId'];
@@ -30,6 +32,7 @@ export default function Chat() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageContent, setMessageContent] = useState('');
+  const [timeConsumed, setTimeConsumed] = useState(0);
 
   useEffect(() => {
     if (!chatId) return;
@@ -90,6 +93,20 @@ export default function Chat() {
     setMessageContent('');
   };
 
+  useEffect(() => {
+    const timerInterval = setInterval(() => {
+      setTimeConsumed(prevTime => {
+        if (prevTime >= SESSION_TIME_SECONDS) {
+          clearInterval(timerInterval);
+          return SESSION_TIME_SECONDS;
+        }
+        return prevTime + 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerInterval);
+  }, []);
+
   if (!chatId) {
     return <AppText>We couldn&apos;t find this chat room 🥲</AppText>;
   }
@@ -97,12 +114,15 @@ export default function Chat() {
   return (
     <>
       <View style={styles.screen}>
-        <TimerBar />
+        <TimerBar
+          sessionTime={SESSION_TIME_SECONDS}
+          timeConsumed={timeConsumed}
+        />
         <ChatScreenHeader
-          name="Nickname"
-          profilePicture={require('@/assets/images/profilePicture.webp')}
-          rating="4.5"
-          roleTag="Volunteer"
+          name="RecAnonUser"
+          profilePicture={require('@/assets/images/profilePictureUser.webp')}
+          rating="4.7"
+          roleTag="Rated"
         />
         <LegendList
           style={styles.legendList}

@@ -2,15 +2,25 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from './AppText';
 import { Image } from 'expo-image';
+import formatTime from '@/utils/formatTime';
 
-export default function TimerBar() {
+interface TimerBarProps {
+  sessionTime: number;
+  timeConsumed: number;
+}
+
+export default function TimerBar({ sessionTime, timeConsumed }: TimerBarProps) {
+  const safeSessionTime = sessionTime > 0 ? sessionTime : 1;
+  const rawPercentage = (timeConsumed / safeSessionTime) * 100;
+  const percentage = Math.min(Math.max(rawPercentage, 0), 100);
+
   return (
     <View style={styles.timerContainer}>
       <AppText variant="footnote" emphasis="emphasized">
-        09:34
+        {formatTime(timeConsumed)}
       </AppText>
       <View style={styles.timerBar}>
-        <View style={styles.timeConsumed} />
+        <View style={styles.timeConsumed(percentage)} />
       </View>
       <Image
         source={require('@/assets/icons/endSession.svg')}
@@ -38,15 +48,15 @@ const styles = StyleSheet.create(theme => ({
     position: 'relative',
     overflow: 'hidden',
   },
-  timeConsumed: {
+  timeConsumed: (percentage: number) => ({
     position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,
     backgroundColor: '#F39C12',
-    width: '31%',
+    width: `${percentage}%`,
     borderRadius: theme.radius.full,
-  },
+  }),
   endSession: {
     width: 20,
     height: 20,

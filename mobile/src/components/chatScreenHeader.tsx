@@ -1,21 +1,30 @@
-import { Image } from 'expo-image';
+import { Image, ImageSource } from 'expo-image';
 import { View } from 'react-native';
 import { AppText } from './AppText';
 import { StyleSheet } from 'react-native-unistyles';
 
-export default function ChatScreenHeader() {
+interface ChatScreenHeaderProps {
+  profilePicture: ImageSource;
+  name: string;
+  roleTag: string;
+  rating: string;
+}
+
+export default function ChatScreenHeader({
+  name,
+  profilePicture,
+  roleTag,
+  rating,
+}: ChatScreenHeaderProps) {
   return (
     <View style={styles.header}>
       <View style={styles.avatar}>
-        <Image
-          source={require('@/assets/images/profilePicture.webp')}
-          style={styles.profilePicture}
-        />
+        <Image source={profilePicture} style={styles.profilePicture} />
       </View>
       <View style={styles.headerDetails}>
         <View style={styles.nameContainer}>
           <AppText variant="callout" emphasis="emphasized">
-            Nickname
+            {name}
           </AppText>
           <Image
             source={require('@/assets/icons/saveVolunteer.svg')}
@@ -25,7 +34,7 @@ export default function ChatScreenHeader() {
         <View style={styles.tagContainer}>
           <View style={styles.roleTag}>
             <AppText variant="caption2" emphasis="emphasized" color="secondary">
-              Volunteer
+              {roleTag}
             </AppText>
           </View>
           <View style={styles.ratingTag}>
@@ -35,7 +44,7 @@ export default function ChatScreenHeader() {
               contentFit="contain"
             />
             <AppText variant="caption2" emphasis="emphasized">
-              4.5
+              {rating}
             </AppText>
           </View>
         </View>
