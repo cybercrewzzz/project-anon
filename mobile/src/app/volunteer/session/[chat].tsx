@@ -32,7 +32,6 @@ export default function Chat() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageContent, setMessageContent] = useState('');
-  const [timeConsumed, setTimeConsumed] = useState(0);
 
   useEffect(() => {
     if (!chatId) return;
@@ -92,6 +91,9 @@ export default function Chat() {
 
     setMessageContent('');
   };
+
+  //   Timer Handler
+  const [timeConsumed, setTimeConsumed] = useState(0);
 
   useEffect(() => {
     const timerInterval = setInterval(() => {

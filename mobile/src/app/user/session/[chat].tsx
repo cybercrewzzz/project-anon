@@ -20,6 +20,8 @@ interface Message {
   timestamp: number;
 }
 
+const SESSION_TIME_SECONDS = 1800;
+
 export default function Chat() {
   const { chat: chatId } = useLocalSearchParams() as {
     chat?: SessionDetail['sessionId'];
@@ -90,6 +92,23 @@ export default function Chat() {
     setMessageContent('');
   };
 
+  //   Timer Handler
+  const [timeConsumed, setTimeConsumed] = useState(0);
+
+  useEffect(() => {
+    const timerInterval = setInterval(() => {
+      setTimeConsumed(prevTime => {
+        if (prevTime >= SESSION_TIME_SECONDS) {
+          clearInterval(timerInterval);
+          return SESSION_TIME_SECONDS;
+        }
+        return prevTime + 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerInterval);
+  }, []);
+
   if (!chatId) {
     return <AppText>We couldn&apos;t find this chat room 🥲</AppText>;
   }
@@ -97,7 +116,10 @@ export default function Chat() {
   return (
     <>
       <View style={styles.screen}>
-        <TimerBar />
+        <TimerBar
+          sessionTime={SESSION_TIME_SECONDS}
+          timeConsumed={timeConsumed}
+        />
         <ChatScreenHeader
           name="Nickname"
           profilePicture={require('@/assets/images/profilePicture.webp')}
