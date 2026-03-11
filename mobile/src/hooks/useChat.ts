@@ -82,7 +82,10 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       if (pendingDecryptRef.current.length > 0) {
         const decrypted: Message[] = [];
         for (const msg of pendingDecryptRef.current) {
-          const content = decrypt(msg.encryptedPayload, sharedSecretRef.current);
+          const content = decrypt(
+            msg.encryptedPayload,
+            sharedSecretRef.current,
+          );
           if (content) {
             decrypted.push({
               id: msg.clientMsgId,
@@ -104,14 +107,20 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       senderId: string;
       msgIndex: number;
     }) => {
-      lastMsgIndexRef.current = Math.max(lastMsgIndexRef.current, payload.msgIndex);
+      lastMsgIndexRef.current = Math.max(
+        lastMsgIndexRef.current,
+        payload.msgIndex,
+      );
 
       if (!sharedSecretRef.current) {
         pendingDecryptRef.current.push(payload);
         return;
       }
 
-      const content = decrypt(payload.encryptedPayload, sharedSecretRef.current);
+      const content = decrypt(
+        payload.encryptedPayload,
+        sharedSecretRef.current,
+      );
       if (content === null) {
         console.warn('Failed to decrypt message:', payload.clientMsgId);
         return;
