@@ -47,6 +47,7 @@ const InputForm = ({
     <View style={[styles.inputBox(formColor), contentContainerStyle]}>
       <TextInput
         {...props}
+        value={value}
         onFocus={e => {
           setIsFocused(true);
           onFocus?.(e);

@@ -1,7 +1,7 @@
 import { Image, ImageSource } from 'expo-image';
 import { View } from 'react-native';
-import { AppText } from './AppText';
 import { StyleSheet } from 'react-native-unistyles';
+import { AppText } from '../AppText';
 
 interface ChatScreenHeaderProps {
   profilePicture: ImageSource;
@@ -68,6 +68,7 @@ const styles = StyleSheet.create(theme => ({
     backgroundColor: '#EEF2FF',
     padding: theme.spacing.s3,
     borderRadius: theme.radius.full,
+    marginHorizontal: theme.spacing.s4,
   },
   avatar: {
     borderRadius: theme.radius.full,

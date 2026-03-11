@@ -10,8 +10,12 @@ import InputForm from '@/components/inputForm';
 import { useAuth } from '@/store/useAuth';
 import { getSocket, joinRoom, leaveRoom } from '@/api/socket';
 import * as Crypto from 'expo-crypto';
-import TimerBar from '@/components/timerBar';
-import ChatScreenHeader from '@/components/chatScreenHeader';
+import TimerBar from '@/components/chat/timerBar';
+import ChatScreenHeader from '@/components/chat/chatScreenHeader';
+import OutgoingMessage from '@/components/chat/outgoingMessage';
+import IncomingMessage from '@/components/chat/incomingMessage';
+
+const SESSION_TIME_SECONDS = 1800;
 
 interface Message {
   id: string;
@@ -20,15 +24,14 @@ interface Message {
   timestamp: number;
 }
 
-const SESSION_TIME_SECONDS = 1800;
-
 export default function Chat() {
   const { chat: chatId } = useLocalSearchParams() as {
     chat?: SessionDetail['sessionId'];
   };
 
   const account = useAuth(state => state.account);
-  const userId = account?.accountId;
+  const userId = account?.accountId || 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
+  console.log('Mock user: f3430b6a-7fde-4777-868b-fb6fffb813ac');
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageContent, setMessageContent] = useState('');
@@ -127,22 +130,25 @@ export default function Chat() {
           roleTag="Volunteer"
         />
         <LegendList
-          style={styles.legendList}
           data={messages}
           renderItem={({ item }) => {
             const isSender = item.senderId === userId;
-            return (
-              <View
-                style={[styles.userMessage, isSender && styles.senderMessage]}
-              >
-                <AppText>{item.content}</AppText>
-              </View>
-            );
+            return isSender ?
+                <OutgoingMessage
+                  content={item.content}
+                  timestamp={item.timestamp}
+                />
+              : <IncomingMessage
+                  content={item.content}
+                  timestamp={item.timestamp}
+                />;
           }}
           keyExtractor={item => item?.id ?? 'unknown'}
           contentContainerStyle={styles.contentContainer}
           recycleItems={true}
-          initialScrollIndex={messages.length - 1}
+          initialScrollIndex={
+            messages.length > 0 ? messages.length - 1 : undefined
+          }
           alignItemsAtEnd
           maintainScrollAtEnd
           maintainScrollAtEndThreshold={0.5}
@@ -156,6 +162,7 @@ export default function Chat() {
             value={messageContent}
             onChangeText={setMessageContent}
             multiline
+            numberOfLines={5}
             placeholderColor="primary"
           />
           <Pressable onPress={sendMessage} disabled={messageContent === ''}>
@@ -180,23 +187,13 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
     paddingTop: rt.insets.top + theme.spacing.s4,
     paddingBottom: rt.insets.bottom,
-    paddingLeft: rt.insets.left + theme.spacing.s4,
-    paddingRight: rt.insets.right + theme.spacing.s4,
+    paddingLeft: rt.insets.left,
+    paddingRight: rt.insets.right,
     backgroundColor: theme.background.default,
   },
-  legendList: {
-    flex: 1,
-  },
   contentContainer: {
-    padding: theme.spacing.s3,
-  },
-  userMessage: {
-    padding: theme.spacing.s3,
-    borderRadius: theme.spacing.s3,
-    flexDirection: 'row',
-  },
-  senderMessage: {
-    alignSelf: 'flex-end',
+    paddingVertical: theme.spacing.s3,
+    marginHorizontal: theme.spacing.s3 + theme.spacing.s2,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -205,6 +202,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: '#EEF2FF',
     padding: theme.spacing.s3,
     borderRadius: theme.radius.full,
+    marginHorizontal: theme.spacing.s4,
   },
   inputForm: {
     flex: 1,

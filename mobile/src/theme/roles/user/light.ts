@@ -100,6 +100,7 @@ export const userLightTheme = {
     primary: common.black,
     secondary: common.white,
     muted: common.gray[400],
+    gray: common.gray[600],
     accent: purple[500],
     subtle1: purple[600],
     subtle2: purple[400],

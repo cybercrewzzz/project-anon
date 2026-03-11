@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
-import { AppText } from './AppText';
+import { AppText } from '../AppText';
 import { Image } from 'expo-image';
 import formatTime from '@/utils/formatTime';
 
@@ -37,7 +37,7 @@ const styles = StyleSheet.create(theme => ({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: theme.spacing.s4,
-    marginHorizontal: theme.spacing.s4,
+    marginHorizontal: theme.spacing.s6,
     marginBottom: theme.spacing.s3,
   },
   timerBar: {
