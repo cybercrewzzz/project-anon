@@ -5,6 +5,7 @@ import {
   encodeUTF8,
   decodeUTF8,
 } from 'tweetnacl-util';
+import { getRandomBytes } from 'expo-crypto';
 
 export interface KeyPair {
   publicKey: Uint8Array;
@@ -14,9 +15,15 @@ export interface KeyPair {
 /**
  * Generate an X25519 key pair for Diffie-Hellman key exchange.
  * Each chat session should generate a fresh ephemeral key pair.
+ *
+ * Uses expo-crypto for randomness instead of nacl.box.keyPair() directly,
+ * because tweetnacl's internal PRNG (randombytes) is not available in the
+ * React Native/Hermes environment. nacl.box.keyPair.fromSecretKey() is
+ * deterministic given the secret key, so no PRNG is needed after this point.
  */
 export function generateKeyPair(): KeyPair {
-  return nacl.box.keyPair();
+  const secretKey = getRandomBytes(32);
+  return nacl.box.keyPair.fromSecretKey(secretKey);
 }
 
 /**
@@ -36,7 +43,7 @@ export function deriveSharedSecret(
  * Returns a base64 string: base64( nonce[24] || ciphertext )
  */
 export function encrypt(plaintext: string, sharedSecret: Uint8Array): string {
-  const nonce = nacl.randomBytes(nacl.secretbox.nonceLength);
+  const nonce = getRandomBytes(nacl.secretbox.nonceLength);
   const messageBytes = decodeUTF8(plaintext);
   const ciphertext = nacl.secretbox(messageBytes, nonce, sharedSecret);
 
