@@ -13,6 +13,7 @@ import ChatScreenHeader from '@/components/chat/chatScreenHeader';
 import OutgoingMessage from '@/components/chat/outgoingMessage';
 import IncomingMessage from '@/components/chat/incomingMessage';
 import { useChat } from '@/hooks/useChat';
+import * as Crypto from 'expo-crypto';
 
 const SESSION_TIME_SECONDS = 1800;
 
@@ -23,7 +24,8 @@ export default function Chat() {
 
   const account = useAuth(state => state.account);
   // TODO: Remove mock ID when auth is implemented.
-  const userId = account?.accountId || 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
+  // const userId = account?.accountId || 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
+  const [userId] = useState(() => Crypto.randomUUID());
 
   const { messages, sendMessage, isEncryptionReady } = useChat({
     sessionId: chatId,
