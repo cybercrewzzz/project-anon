@@ -8,21 +8,13 @@ import { StyleSheet } from 'react-native-unistyles';
 import { Image } from 'expo-image';
 import InputForm from '@/components/inputForm';
 import { useAuth } from '@/store/useAuth';
-import { getSocket, joinRoom, leaveRoom } from '@/api/socket';
-import * as Crypto from 'expo-crypto';
 import TimerBar from '@/components/chat/timerBar';
 import ChatScreenHeader from '@/components/chat/chatScreenHeader';
 import OutgoingMessage from '@/components/chat/outgoingMessage';
 import IncomingMessage from '@/components/chat/incomingMessage';
+import { useChat } from '@/hooks/useChat';
 
 const SESSION_TIME_SECONDS = 1800;
-
-interface Message {
-  id: string;
-  content: string;
-  senderId: string;
-  timestamp: number;
-}
 
 export default function Chat() {
   const { chat: chatId } = useLocalSearchParams() as {
@@ -30,72 +22,23 @@ export default function Chat() {
   };
 
   const account = useAuth(state => state.account);
+  // TODO: Remove mock ID when auth is implemented.
   const userId = account?.accountId || '3e4ece8c-6115-4cae-87b8-20561283973f';
-  console.log('Mock volunteer: 3e4ece8c-6115-4cae-87b8-20561283973f');
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { messages, sendMessage, isEncryptionReady } = useChat({
+    sessionId: chatId,
+    userId,
+  });
+
   const [messageContent, setMessageContent] = useState('');
 
-  useEffect(() => {
-    if (!chatId) return;
-
-    const socket = getSocket();
-    if (!socket) return;
-
-    joinRoom(chatId);
-
-    const onReceive = (payload: {
-      encryptedPayload: string;
-      clientMsgId: string;
-      timestamp: number;
-      senderId: string;
-    }) => {
-      setMessages(prev => [
-        ...prev,
-        {
-          id: payload.clientMsgId,
-          content: payload.encryptedPayload,
-          senderId: payload.senderId,
-          timestamp: payload.timestamp,
-        },
-      ]);
-    };
-
-    socket.on('message:receive', onReceive);
-
-    return () => {
-      socket.off('message:receive', onReceive);
-      leaveRoom(chatId);
-    };
-  }, [chatId]);
-
-  const sendMessage = () => {
-    if (messageContent.trim() === '' || !chatId || !userId) return;
-
-    const clientMsgId = Crypto.randomUUID();
-    const timestamp = Date.now();
-
-    getSocket()?.emit('message:send', {
-      sessionId: chatId,
-      encryptedPayload: messageContent,
-      clientMsgId,
-      timestamp,
-    });
-
-    setMessages(prev => [
-      ...prev,
-      {
-        id: clientMsgId,
-        content: messageContent,
-        senderId: userId,
-        timestamp,
-      },
-    ]);
-
+  const handleSend = () => {
+    if (messageContent.trim() === '') return;
+    sendMessage(messageContent);
     setMessageContent('');
   };
 
-  //   Timer Handler
+  // Timer Handler
   const [timeConsumed, setTimeConsumed] = useState(0);
 
   useEffect(() => {
@@ -157,7 +100,11 @@ export default function Chat() {
         />
         <View style={styles.inputContainer}>
           <InputForm
-            placeholder="Type your message..."
+            placeholder={
+              isEncryptionReady ?
+                'Type your message...'
+              : 'Establishing secure connection...'
+            }
             contentContainerStyle={styles.inputForm}
             value={messageContent}
             onChangeText={setMessageContent}
@@ -165,7 +112,10 @@ export default function Chat() {
             numberOfLines={5}
             placeholderColor="primary"
           />
-          <Pressable onPress={sendMessage} disabled={messageContent === ''}>
+          <Pressable
+            onPress={handleSend}
+            disabled={messageContent === '' || !isEncryptionReady}
+          >
             <Image
               source={require('@/assets/icons/userSend.svg')}
               style={styles.sendButton}
