@@ -72,10 +72,18 @@ export function decrypt(
   return encodeUTF8(plaintext);
 }
 
-export function publicKeyToBase64(key: Uint8Array): string {
-  return encodeBase64(key);
+/**
+ * Restore a key pair from a previously saved secret key (base64).
+ * Use this after loading the secret key from expo-secure-store.
+ */
+export function keyPairFromSecretKey(secretKeyB64: string): KeyPair {
+  return nacl.box.keyPair.fromSecretKey(base64ToBytes(secretKeyB64));
 }
 
-export function publicKeyFromBase64(b64: string): Uint8Array {
+export function bytesToBase64(bytes: Uint8Array): string {
+  return encodeBase64(bytes);
+}
+
+export function base64ToBytes(b64: string): Uint8Array {
   return decodeBase64(b64);
 }

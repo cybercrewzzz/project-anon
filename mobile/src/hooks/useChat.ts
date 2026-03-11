@@ -1,13 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import * as Crypto from 'expo-crypto';
+import * as SecureStore from 'expo-secure-store';
 import { getSocket, joinRoom, leaveRoom } from '@/api/socket';
 import {
   generateKeyPair,
+  keyPairFromSecretKey,
   deriveSharedSecret,
   encrypt,
   decrypt,
-  publicKeyToBase64,
-  publicKeyFromBase64,
+  bytesToBase64,
+  base64ToBytes,
   type KeyPair,
 } from '@/utils/crypto';
 
@@ -37,17 +39,19 @@ interface UseChatReturn {
   isEncryptionReady: boolean;
 }
 
+// Secret key is stored under this key prefix in expo-secure-store.
+// This allows restoring the key after a hard app kill so the 24h Redis
+// message buffer can still be decrypted on restart.
+// The key is deleted when the user intentionally leaves the chat screen.
+const SK_STORE_KEY = (sessionId: string) => `chat_sk_${sessionId}`;
+
 export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isEncryptionReady, setIsEncryptionReady] = useState(false);
 
-  // Ephemeral keys stored in refs (not state) — no re-render needed,
-  // lost on unmount which is correct for forward secrecy.
   const keyPairRef = useRef<KeyPair | null>(null);
   const sharedSecretRef = useRef<Uint8Array | null>(null);
   const lastMsgIndexRef = useRef<number>(-1);
-
-  // Queue for messages received before key exchange completes
   const pendingDecryptRef = useRef<PendingMessage[]>([]);
 
   useEffect(() => {
@@ -56,28 +60,18 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
     const socket = getSocket();
     if (!socket) return;
 
-    // 1. Generate ephemeral key pair
-    keyPairRef.current = generateKeyPair();
+    // ── Event handlers (registered immediately so no events are dropped
+    //   during the async SecureStore read below) ──────────────────────
 
-    // 2. Join the room
-    joinRoom(sessionId);
-
-    // 3. Send our public key to the room
-    socket.emit('key:exchange', {
-      sessionId,
-      publicKey: publicKeyToBase64(keyPairRef.current.publicKey),
-    });
-
-    // 4. Listen for peer's public key
     const onKeyExchange = (payload: {
       sessionId: string;
       userId: string;
       publicKey: string;
     }) => {
       if (payload.userId === userId) return;
-      if (!keyPairRef.current) return;
+      if (!keyPairRef.current) return; // init hasn't finished yet (extremely unlikely but safe)
 
-      const peerPublicKey = publicKeyFromBase64(payload.publicKey);
+      const peerPublicKey = base64ToBytes(payload.publicKey);
       sharedSecretRef.current = deriveSharedSecret(
         keyPairRef.current.secretKey,
         peerPublicKey,
@@ -88,10 +82,7 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       if (pendingDecryptRef.current.length > 0) {
         const decrypted: Message[] = [];
         for (const msg of pendingDecryptRef.current) {
-          const content = decrypt(
-            msg.encryptedPayload,
-            sharedSecretRef.current,
-          );
+          const content = decrypt(msg.encryptedPayload, sharedSecretRef.current);
           if (content) {
             decrypted.push({
               id: msg.clientMsgId,
@@ -101,14 +92,11 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
             });
           }
         }
-        if (decrypted.length > 0) {
-          setMessages(prev => [...prev, ...decrypted]);
-        }
+        if (decrypted.length > 0) setMessages(prev => [...prev, ...decrypted]);
         pendingDecryptRef.current = [];
       }
     };
 
-    // 5. Listen for incoming messages
     const onMessageReceive = (payload: {
       encryptedPayload: string;
       clientMsgId: string;
@@ -116,21 +104,14 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       senderId: string;
       msgIndex: number;
     }) => {
-      lastMsgIndexRef.current = Math.max(
-        lastMsgIndexRef.current,
-        payload.msgIndex,
-      );
+      lastMsgIndexRef.current = Math.max(lastMsgIndexRef.current, payload.msgIndex);
 
       if (!sharedSecretRef.current) {
-        // Key exchange not complete yet — queue for later decryption
         pendingDecryptRef.current.push(payload);
         return;
       }
 
-      const content = decrypt(
-        payload.encryptedPayload,
-        sharedSecretRef.current,
-      );
+      const content = decrypt(payload.encryptedPayload, sharedSecretRef.current);
       if (content === null) {
         console.warn('Failed to decrypt message:', payload.clientMsgId);
         return;
@@ -147,26 +128,20 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       ]);
     };
 
-    // 6. Handle socket reconnection
     const onReconnect = () => {
       joinRoom(sessionId);
 
-      // Re-send our public key (in case Redis lost it or expired)
       if (keyPairRef.current) {
         socket.emit('key:exchange', {
           sessionId,
-          publicKey: publicKeyToBase64(keyPairRef.current.publicKey),
+          publicKey: bytesToBase64(keyPairRef.current.publicKey),
         });
       }
 
-      // Request missed messages
       if (lastMsgIndexRef.current >= 0) {
         socket.emit(
           'message:sync',
-          {
-            sessionId,
-            lastMsgIndex: lastMsgIndexRef.current + 1,
-          },
+          { sessionId, lastMsgIndex: lastMsgIndexRef.current + 1 },
           (response: { messages: Record<string, unknown>[] }) => {
             if (!sharedSecretRef.current || !response?.messages) return;
 
@@ -213,20 +188,61 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
     socket.on('message:receive', onMessageReceive);
     socket.io.on('reconnect', onReconnect);
 
+    // ── Async init: get or generate key pair, then join room ─────────
+    // Handlers are already registered above so no events are missed
+    // during the SecureStore read (~5ms, well under any network RTT).
+
+    let cancelled = false;
+
+    const init = async () => {
+      const stored = await SecureStore.getItemAsync(SK_STORE_KEY(sessionId));
+      if (cancelled) return;
+
+      if (stored) {
+        // Restore the key pair from the previous session mount.
+        // This lets us decrypt the Redis message buffer after a hard app kill.
+        keyPairRef.current = keyPairFromSecretKey(stored);
+      } else {
+        keyPairRef.current = generateKeyPair();
+        await SecureStore.setItemAsync(
+          SK_STORE_KEY(sessionId),
+          bytesToBase64(keyPairRef.current.secretKey),
+        );
+      }
+
+      if (cancelled) return;
+
+      // Join room (server will emit any stored peer keys back to us)
+      joinRoom(sessionId);
+
+      // Send our public key — same key whether new or restored
+      socket.emit('key:exchange', {
+        sessionId,
+        publicKey: bytesToBase64(keyPairRef.current.publicKey),
+      });
+    };
+
+    void init();
+
     return () => {
+      cancelled = true;
       socket.off('key:exchange', onKeyExchange);
       socket.off('message:receive', onMessageReceive);
       socket.io.off('reconnect', onReconnect);
       leaveRoom(sessionId);
 
-      // Clear ephemeral keys
+      // Delete the stored key — the user intentionally left the chat screen.
+      // A hard app kill never reaches here, so the key persists in SecureStore
+      // and is available on the next launch for crash recovery.
+      void SecureStore.deleteItemAsync(SK_STORE_KEY(sessionId));
+
       keyPairRef.current = null;
       sharedSecretRef.current = null;
       pendingDecryptRef.current = [];
     };
   }, [sessionId, userId]);
 
-  // ── Send Message ────────────────────────────────────────────────
+  // ── Send Message ──────────────────────────────────────────────────
 
   const sendMessage = useCallback(
     (content: string) => {
@@ -242,12 +258,7 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
 
       socket.emit(
         'message:send',
-        {
-          sessionId,
-          encryptedPayload,
-          clientMsgId,
-          timestamp,
-        },
+        { sessionId, encryptedPayload, clientMsgId, timestamp },
         (ack: { msgIndex: number }) => {
           if (typeof ack?.msgIndex === 'number') {
             lastMsgIndexRef.current = Math.max(
@@ -258,7 +269,6 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
         },
       );
 
-      // Optimistically add plaintext to local messages (we are the sender)
       setMessages(prev => [
         ...prev,
         { id: clientMsgId, content, senderId: userId, timestamp },
