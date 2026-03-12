@@ -51,7 +51,11 @@ describe('AdminController', () => {
 
   describe('findAllReports', () => {
     it('passes status and parsed pagination to service', () => {
-      void controller.findAllReports({ status: ReportStatus.pending, page: 2, limit: 15 });
+      void controller.findAllReports({
+        status: ReportStatus.pending,
+        page: 2,
+        limit: 15,
+      });
       expect(service.findAllReports).toHaveBeenCalledWith(
         ReportStatus.pending,
         2,
