@@ -217,15 +217,6 @@ export class AdminService {
       throw new NotFoundException('Volunteer role not found in database');
     }
 
-    const existingAccountRole = await this.prisma.accountRole.findUnique({
-      where: {
-        accountId_roleId: {
-          accountId: verification.volunteerId,
-          roleId: volunteerRole.roleId,
-        },
-      },
-    });
-
     await this.prisma.$transaction([
       this.prisma.volunteerVerification.update({
         where: { requestId },
@@ -239,17 +230,16 @@ export class AdminService {
         where: { accountId: verification.volunteerId },
         data: { verificationStatus: 'approved' },
       }),
-      ...(existingAccountRole
-        ? []
-        : [
-            this.prisma.accountRole.create({
-              data: {
-                accountId: verification.volunteerId,
-                roleId: volunteerRole.roleId,
-                assignedBy: adminId,
-              },
-            }),
-          ]),
+      this.prisma.accountRole.createMany({
+        data: [
+          {
+            accountId: verification.volunteerId,
+            roleId: volunteerRole.roleId,
+            assignedBy: adminId,
+          },
+        ],
+        skipDuplicates: true,
+      }),
     ]);
 
     return {

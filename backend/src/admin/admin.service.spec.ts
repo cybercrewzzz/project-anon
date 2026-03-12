@@ -33,6 +33,7 @@ const createMockPrisma = () => ({
     count: jest.fn(),
     findUnique: jest.fn(),
     create: jest.fn(),
+    createMany: jest.fn(),
   },
   volunteerProfile: {
     count: jest.fn(),
@@ -325,7 +326,6 @@ describe('AdminService', () => {
         roleId: 'role1',
         name: 'volunteer',
       });
-      db.accountRole.findUnique.mockResolvedValue(null);
       db.$transaction.mockResolvedValue([]);
 
       const result = await service.approveVolunteerApplication(
@@ -339,7 +339,7 @@ describe('AdminService', () => {
       });
     });
 
-    it('approves and skips account role creation when it already exists', async () => {
+    it('approves using createMany skipDuplicates when role already exists', async () => {
       db.volunteerVerification.findUnique.mockResolvedValue({
         requestId,
         status: VerificationStatus.pending,
@@ -348,10 +348,6 @@ describe('AdminService', () => {
       db.role.findUnique.mockResolvedValue({
         roleId: 'role1',
         name: 'volunteer',
-      });
-      db.accountRole.findUnique.mockResolvedValue({
-        accountId: 'v1',
-        roleId: 'role1',
       });
       db.$transaction.mockResolvedValue([]);
 
