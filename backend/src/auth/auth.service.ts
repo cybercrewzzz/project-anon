@@ -60,7 +60,7 @@ export class AuthService {
         data: {
           email: dto.email,
           passwordHash,
-          name: dto.name || 'No Name',
+          name: null,
           nickname,
           ageRange: dto.ageRange as AgeRange,
           status: 'active',
@@ -193,7 +193,10 @@ export class AuthService {
     }
 
     // Verify password
-    const passwordValid = await argon2.verify(account.passwordHash, dto.password);
+    const passwordValid = await argon2.verify(
+      account.passwordHash,
+      dto.password,
+    );
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -335,13 +338,13 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.configService.getOrThrow<string>('JWT_SECRET'),
-        expiresIn:
-          (this.configService.get<string>('JWT_ACCESS_EXPIRY') || '15m') as any,
+        expiresIn: (this.configService.get<string>('JWT_ACCESS_EXPIRY') ||
+          '15m') as any,
       }),
       this.jwtService.signAsync(payload, {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn:
-          (this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d') as any,
+        expiresIn: (this.configService.get<string>('JWT_REFRESH_EXPIRY') ||
+          '7d') as any,
       }),
     ]);
 

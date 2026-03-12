@@ -1,10 +1,4 @@
-import {
-  IsEmail,
-  IsString,
-  MinLength,
-  IsOptional,
-  IsEnum,
-} from 'class-validator';
+import { IsEmail, IsString, MinLength, IsEnum } from 'class-validator';
 
 export enum AgeRangeEnum {
   RANGE_16_20 = 'range_16_20',
@@ -13,10 +7,6 @@ export enum AgeRangeEnum {
 }
 
 export class RegisterDto {
-  @IsOptional()
-  @IsString()
-  name?: string;
-
   @IsEmail()
   email!: string;
 
