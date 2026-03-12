@@ -64,7 +64,7 @@ pipeline {
                     when { environment name: 'RUN_MOBILE', value: 'true' }
                     steps {
                         script {
-                            withChecks('Lint: Mobile') {
+                            withChecks('Format $ Lint: Mobile') {
                                 sh 'yarn workspace mobile run format_lint:ci'
                             }
                         }
@@ -74,8 +74,18 @@ pipeline {
                     when { environment name: 'RUN_BACKEND', value: 'true' }
                     steps {
                         script {
-                            withChecks('Lint: Backend') {
+                            withChecks('Format & Lint: Backend') {
                                 sh 'yarn workspace backend run format_lint:ci'
+                            }
+                        }
+                    }
+                }
+                stage("Backend Test") {
+                    when { environment name: 'RUN_BACKEND', value: 'true' }
+                    steps {
+                        script {
+                            withChecks('Test: Backend') {
+                                sh 'yarn workspace backend run test'
                             }
                         }
                     }
