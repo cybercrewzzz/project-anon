@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
+  AccountStatus,
   ActionType,
   ReportStatus,
+  SessionStatus,
   VerificationStatus,
 } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,6 +11,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
+
+  // ── Reports ─────────────────────────────────────────────────────
 
   async findAllReports(status?: ReportStatus, page = 1, limit = 20) {
     const where = status ? { status } : {};
@@ -29,7 +33,7 @@ export class AdminService {
 
   async findReport(reportId: string) {
     const report = await this.prisma.report.findUnique({
-      where: { reportId: reportId },
+      where: { reportId },
       include: {
         session: {
           select: {
@@ -89,7 +93,7 @@ export class AdminService {
       throw new NotFoundException(`Report with ID ${reportId} not found`);
     }
 
-    const statusMap: Partial<Record<ActionType, 'suspended' | 'banned'>> = {
+    const statusMap: Partial<Record<ActionType, AccountStatus>> = {
       suspend: 'suspended',
       ban: 'banned',
     };
@@ -139,7 +143,9 @@ export class AdminService {
     return { reportStatus: 'dismissed' as const };
   }
 
-  async volunteerApplications(
+  // ── Volunteer Applications ──────────────────────────────────────
+
+  async getVolunteerApplications(
     status?: VerificationStatus,
     page = 1,
     limit = 20,
@@ -153,10 +159,358 @@ export class AdminService {
         skip,
         take: limit,
         orderBy: { submittedAt: 'desc' },
+        include: {
+          volunteer: {
+            select: {
+              name: true,
+              volunteerProfile: { select: { instituteName: true } },
+            },
+          },
+        },
       }),
       this.prisma.volunteerVerification.count({ where }),
     ]);
 
     return { data, total, page, limit };
+  }
+
+  async approveVolunteerApplication(requestId: string, adminId: string) {
+    const verification = await this.prisma.volunteerVerification.findUnique({
+      where: { requestId },
+    });
+
+    if (!verification) {
+      throw new NotFoundException(
+        `Verification request ${requestId} not found`,
+      );
+    }
+
+    const volunteerRole = await this.prisma.role.findUnique({
+      where: { name: 'volunteer' },
+    });
+
+    if (!volunteerRole) {
+      throw new NotFoundException('Volunteer role not found in database');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.volunteerVerification.update({
+        where: { requestId },
+        data: {
+          status: 'approved',
+          reviewedBy: adminId,
+          reviewedAt: new Date(),
+        },
+      }),
+      this.prisma.volunteerProfile.update({
+        where: { accountId: verification.volunteerId },
+        data: { verificationStatus: 'approved' },
+      }),
+      this.prisma.accountRole.create({
+        data: {
+          accountId: verification.volunteerId,
+          roleId: volunteerRole.roleId,
+          assignedBy: adminId,
+        },
+      }),
+    ]);
+
+    return {
+      message: 'Volunteer approved',
+      volunteerId: verification.volunteerId,
+    };
+  }
+
+  async rejectVolunteerApplication(
+    requestId: string,
+    adminId: string,
+    adminNotes: string,
+  ) {
+    const verification = await this.prisma.volunteerVerification.findUnique({
+      where: { requestId },
+    });
+
+    if (!verification) {
+      throw new NotFoundException(
+        `Verification request ${requestId} not found`,
+      );
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.volunteerVerification.update({
+        where: { requestId },
+        data: {
+          status: 'rejected',
+          adminNotes,
+          reviewedBy: adminId,
+          reviewedAt: new Date(),
+        },
+      }),
+      this.prisma.volunteerProfile.update({
+        where: { accountId: verification.volunteerId },
+        data: { verificationStatus: 'rejected' },
+      }),
+    ]);
+
+    return { message: 'Application rejected' };
+  }
+
+  // ── Accounts ────────────────────────────────────────────────────
+
+  async findAllAccounts(
+    search?: string,
+    role?: string,
+    status?: AccountStatus,
+    page = 1,
+    limit = 20,
+  ) {
+    const skip = (page - 1) * limit;
+
+    const where: Record<string, unknown> = {};
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { nickname: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (role) {
+      where.accountRoles = {
+        some: { role: { name: role } },
+      };
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.account.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          accountId: true,
+          email: true,
+          name: true,
+          nickname: true,
+          status: true,
+          createdAt: true,
+          accountRoles: {
+            select: { role: { select: { name: true } } },
+          },
+        },
+      }),
+      this.prisma.account.count({ where }),
+    ]);
+
+    const mapped = data.map((a) => ({
+      ...a,
+      roles: a.accountRoles.map((ar) => ar.role.name),
+      accountRoles: undefined,
+    }));
+
+    return { data: mapped, total, page, limit };
+  }
+
+  async findAccount(accountId: string) {
+    const account = await this.prisma.account.findUnique({
+      where: { accountId },
+      select: {
+        accountId: true,
+        email: true,
+        name: true,
+        nickname: true,
+        dateOfBirth: true,
+        gender: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        accountRoles: {
+          select: { role: { select: { name: true } } },
+        },
+        actionsReceived: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: {
+            actionId: true,
+            actionType: true,
+            reason: true,
+            createdAt: true,
+            expiresAt: true,
+            admin: { select: { accountId: true, email: true } },
+          },
+        },
+        reportsReceived: {
+          orderBy: { reportedAt: 'desc' },
+          take: 10,
+          select: {
+            reportId: true,
+            category: true,
+            status: true,
+            reportedAt: true,
+          },
+        },
+        reportsFiled: {
+          orderBy: { reportedAt: 'desc' },
+          take: 10,
+          select: {
+            reportId: true,
+            category: true,
+            status: true,
+            reportedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!account) {
+      throw new NotFoundException(`Account ${accountId} not found`);
+    }
+
+    return {
+      ...account,
+      roles: account.accountRoles.map((ar) => ar.role.name),
+      accountRoles: undefined,
+    };
+  }
+
+  async takeAccountAction(
+    accountId: string,
+    adminId: string,
+    actionType: ActionType,
+    reason: string,
+    expiresAt?: string,
+  ) {
+    const account = await this.prisma.account.findUnique({
+      where: { accountId },
+    });
+
+    if (!account) {
+      throw new NotFoundException(`Account ${accountId} not found`);
+    }
+
+    const statusMap: Partial<Record<ActionType, AccountStatus>> = {
+      suspend: 'suspended',
+      ban: 'banned',
+    };
+
+    const [action] = await this.prisma.$transaction([
+      this.prisma.accountAction.create({
+        data: {
+          accountId,
+          adminId,
+          actionType,
+          reason,
+          expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+        },
+      }),
+      ...(statusMap[actionType]
+        ? [
+            this.prisma.account.update({
+              where: { accountId },
+              data: { status: statusMap[actionType] },
+            }),
+          ]
+        : []),
+    ]);
+
+    return { actionId: action.actionId };
+  }
+
+  // ── Sessions ────────────────────────────────────────────────────
+
+  async findAllSessions(
+    status?: SessionStatus,
+    seekerId?: string,
+    listenerId?: string,
+    page = 1,
+    limit = 20,
+  ) {
+    const skip = (page - 1) * limit;
+
+    const where: Record<string, unknown> = {};
+    if (status) where.status = status;
+    if (seekerId) where.seekerId = seekerId;
+    if (listenerId) where.listenerId = listenerId;
+
+    const [data, total] = await Promise.all([
+      this.prisma.chatSession.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { startedAt: 'desc' },
+        select: {
+          sessionId: true,
+          seekerId: true,
+          listenerId: true,
+          status: true,
+          startedAt: true,
+          endedAt: true,
+          closedReason: true,
+          userRating: true,
+          volunteerRating: true,
+          problem: {
+            select: {
+              category: { select: { name: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.chatSession.count({ where }),
+    ]);
+
+    const mapped = data.map((s) => ({
+      ...s,
+      category: s.problem.category.name,
+      problem: undefined,
+    }));
+
+    return { data: mapped, total, page, limit };
+  }
+
+  // ── Dashboard Stats ─────────────────────────────────────────────
+
+  async getDashboardStats() {
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+
+    const [
+      totalAccounts,
+      totalVolunteers,
+      activeVolunteers,
+      sessionsToday,
+      pendingReports,
+      pendingApplications,
+    ] = await Promise.all([
+      this.prisma.account.count(),
+      this.prisma.accountRole.count({
+        where: { role: { name: 'volunteer' } },
+      }),
+      this.prisma.volunteerProfile.count({
+        where: { isAvailable: true, verificationStatus: 'approved' },
+      }),
+      this.prisma.chatSession.count({
+        where: { startedAt: { gte: todayStart } },
+      }),
+      this.prisma.report.count({
+        where: { status: 'pending' },
+      }),
+      this.prisma.volunteerVerification.count({
+        where: { status: 'pending' },
+      }),
+    ]);
+
+    return {
+      totalAccounts,
+      totalVolunteers,
+      activeVolunteers,
+      sessionsToday,
+      pendingReports,
+      pendingApplications,
+    };
   }
 }
