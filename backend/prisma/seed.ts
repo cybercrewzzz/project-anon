@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
+import * as argon2 from 'argon2';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -26,6 +27,11 @@ function seedUuid(name: string): string {
 }
 
 async function main() {
+  // Generate a real argon2id hash for all seeded accounts
+  // Test password: Password123!
+  const testPasswordHash = await argon2.hash('Password123!', {
+    type: argon2.argon2id,
+  });
   // ─── Languages ──────────────────────────────────────────────────────────────
   const english = await prisma.language.upsert({
     where: { code: 'en' },
@@ -243,7 +249,7 @@ async function main() {
     update: {},
     create: {
       email: 'admin@example.com',
-      passwordHash: '$2b$10$placeholder_admin_hash',
+      passwordHash: testPasswordHash,
       name: 'Admin User',
       nickname: 'admin',
       dateOfBirth: new Date('1990-01-15'),
@@ -258,7 +264,7 @@ async function main() {
     update: {},
     create: {
       email: 'volunteer1@example.com',
-      passwordHash: '$2b$10$placeholder_volunteer1_hash',
+      passwordHash: testPasswordHash,
       name: 'Alice Volunteer',
       nickname: 'alice_v',
       dateOfBirth: new Date('1998-05-20'),
@@ -273,7 +279,7 @@ async function main() {
     update: {},
     create: {
       email: 'volunteer2@example.com',
-      passwordHash: '$2b$10$placeholder_volunteer2_hash',
+      passwordHash: testPasswordHash,
       name: 'Bob Volunteer',
       nickname: 'bob_v',
       dateOfBirth: new Date('1997-08-10'),
@@ -288,7 +294,7 @@ async function main() {
     update: {},
     create: {
       email: 'seeker1@example.com',
-      passwordHash: '$2b$10$placeholder_seeker1_hash',
+      passwordHash: testPasswordHash,
       name: 'Charlie Seeker',
       nickname: 'charlie_s',
       dateOfBirth: new Date('2000-03-25'),
@@ -303,7 +309,7 @@ async function main() {
     update: {},
     create: {
       email: 'seeker2@example.com',
-      passwordHash: '$2b$10$placeholder_seeker2_hash',
+      passwordHash: testPasswordHash,
       name: 'Dana Seeker',
       nickname: 'dana_s',
       dateOfBirth: new Date('2001-11-05'),
