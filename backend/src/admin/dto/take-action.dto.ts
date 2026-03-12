@@ -6,7 +6,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { ActionType } from 'src/generated/prisma/client';
+import { ActionType } from '../../generated/prisma/client';
 
 export class TakeActionDto {
   @IsEnum(ActionType, { message: 'actionType must be a valid ActionType' })

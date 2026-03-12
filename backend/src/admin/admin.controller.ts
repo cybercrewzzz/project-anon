@@ -12,12 +12,10 @@ import {
 import { AdminService } from './admin.service';
 import { TakeActionDto } from './dto/take-action.dto';
 import { RejectApplicationDto } from './dto/reject-application.dto';
-import {
-  AccountStatus,
-  ReportStatus,
-  SessionStatus,
-  VerificationStatus,
-} from 'src/generated/prisma/client';
+import { FindReportsQueryDto } from './dto/find-reports-query.dto';
+import { FindVolunteerApplicationsQueryDto } from './dto/find-volunteer-applications-query.dto';
+import { FindAccountsQueryDto } from './dto/find-accounts-query.dto';
+import { FindSessionsQueryDto } from './dto/find-sessions-query.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -29,15 +27,11 @@ export class AdminController {
   // ── Reports ─────────────────────────────────────────────────────
 
   @Get('reports')
-  findAllReports(
-    @Query('status') status?: ReportStatus,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  findAllReports(@Query() query: FindReportsQueryDto) {
     return this.adminService.findAllReports(
-      status,
-      page ? parseInt(page, 10) : undefined,
-      limit ? parseInt(limit, 10) : undefined,
+      query.status,
+      query.page,
+      query.limit,
     );
   }
 
@@ -69,15 +63,11 @@ export class AdminController {
   // ── Volunteer Applications ──────────────────────────────────────
 
   @Get('volunteer-applications')
-  getVolunteerApplications(
-    @Query('status') status?: VerificationStatus,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  getVolunteerApplications(@Query() query: FindVolunteerApplicationsQueryDto) {
     return this.adminService.getVolunteerApplications(
-      status,
-      page ? parseInt(page, 10) : undefined,
-      limit ? parseInt(limit, 10) : undefined,
+      query.status,
+      query.page,
+      query.limit,
     );
   }
 
@@ -108,19 +98,13 @@ export class AdminController {
   // ── Accounts ────────────────────────────────────────────────────
 
   @Get('accounts')
-  findAllAccounts(
-    @Query('search') search?: string,
-    @Query('role') role?: string,
-    @Query('status') status?: AccountStatus,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  findAllAccounts(@Query() query: FindAccountsQueryDto) {
     return this.adminService.findAllAccounts(
-      search,
-      role,
-      status,
-      page ? parseInt(page, 10) : undefined,
-      limit ? parseInt(limit, 10) : undefined,
+      query.search,
+      query.role,
+      query.status,
+      query.page,
+      query.limit,
     );
   }
 
@@ -146,19 +130,13 @@ export class AdminController {
   // ── Sessions ────────────────────────────────────────────────────
 
   @Get('sessions')
-  findAllSessions(
-    @Query('status') status?: SessionStatus,
-    @Query('seekerId') seekerId?: string,
-    @Query('listenerId') listenerId?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  findAllSessions(@Query() query: FindSessionsQueryDto) {
     return this.adminService.findAllSessions(
-      status,
-      seekerId,
-      listenerId,
-      page ? parseInt(page, 10) : undefined,
-      limit ? parseInt(limit, 10) : undefined,
+      query.status,
+      query.seekerId,
+      query.listenerId,
+      query.page,
+      query.limit,
     );
   }
 

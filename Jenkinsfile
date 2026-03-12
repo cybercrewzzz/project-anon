@@ -64,7 +64,7 @@ pipeline {
                     when { environment name: 'RUN_MOBILE', value: 'true' }
                     steps {
                         script {
-                            withChecks('Format $ Lint: Mobile') {
+                            withChecks('Format & Lint: Mobile') {
                                 sh 'yarn workspace mobile run format_lint:ci'
                             }
                         }

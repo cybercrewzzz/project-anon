@@ -51,7 +51,7 @@ describe('AdminController', () => {
 
   describe('findAllReports', () => {
     it('passes status and parsed pagination to service', () => {
-      void controller.findAllReports(ReportStatus.pending, '2', '15');
+      void controller.findAllReports({ status: ReportStatus.pending, page: 2, limit: 15 });
       expect(service.findAllReports).toHaveBeenCalledWith(
         ReportStatus.pending,
         2,
@@ -60,7 +60,7 @@ describe('AdminController', () => {
     });
 
     it('passes undefined when query params are omitted', () => {
-      void controller.findAllReports();
+      void controller.findAllReports({});
       expect(service.findAllReports).toHaveBeenCalledWith(
         undefined,
         undefined,
@@ -121,11 +121,11 @@ describe('AdminController', () => {
 
   describe('getVolunteerApplications', () => {
     it('passes status and parsed pagination to service', () => {
-      void controller.getVolunteerApplications(
-        VerificationStatus.pending,
-        '1',
-        '20',
-      );
+      void controller.getVolunteerApplications({
+        status: VerificationStatus.pending,
+        page: 1,
+        limit: 20,
+      });
       expect(service.getVolunteerApplications).toHaveBeenCalledWith(
         VerificationStatus.pending,
         1,
@@ -134,7 +134,7 @@ describe('AdminController', () => {
     });
 
     it('passes undefined when query params are omitted', () => {
-      void controller.getVolunteerApplications();
+      void controller.getVolunteerApplications({});
       expect(service.getVolunteerApplications).toHaveBeenCalledWith(
         undefined,
         undefined,
@@ -170,13 +170,13 @@ describe('AdminController', () => {
 
   describe('findAllAccounts', () => {
     it('passes all filters and parsed pagination to service', () => {
-      void controller.findAllAccounts(
-        'john',
-        'volunteer',
-        AccountStatus.active,
-        '3',
-        '25',
-      );
+      void controller.findAllAccounts({
+        search: 'john',
+        role: 'volunteer',
+        status: AccountStatus.active,
+        page: 3,
+        limit: 25,
+      });
       expect(service.findAllAccounts).toHaveBeenCalledWith(
         'john',
         'volunteer',
@@ -187,7 +187,7 @@ describe('AdminController', () => {
     });
 
     it('passes undefined when query params are omitted', () => {
-      void controller.findAllAccounts();
+      void controller.findAllAccounts({});
       expect(service.findAllAccounts).toHaveBeenCalledWith(
         undefined,
         undefined,
@@ -227,13 +227,13 @@ describe('AdminController', () => {
 
   describe('findAllSessions', () => {
     it('passes filters and parsed pagination to service', () => {
-      void controller.findAllSessions(
-        SessionStatus.active,
-        'seeker-id',
-        'listener-id',
-        '1',
-        '10',
-      );
+      void controller.findAllSessions({
+        status: SessionStatus.active,
+        seekerId: 'seeker-id',
+        listenerId: 'listener-id',
+        page: 1,
+        limit: 10,
+      });
       expect(service.findAllSessions).toHaveBeenCalledWith(
         SessionStatus.active,
         'seeker-id',
@@ -244,7 +244,7 @@ describe('AdminController', () => {
     });
 
     it('passes undefined when query params are omitted', () => {
-      void controller.findAllSessions();
+      void controller.findAllSessions({});
       expect(service.findAllSessions).toHaveBeenCalledWith(
         undefined,
         undefined,

@@ -9,8 +9,8 @@ import {
   ReportStatus,
   SessionStatus,
   VerificationStatus,
-} from 'src/generated/prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+} from '../generated/prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AdminService {
