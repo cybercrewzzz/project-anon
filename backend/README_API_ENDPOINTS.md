@@ -753,6 +753,8 @@ Take action on a report (warn, suspend, ban the reported user).
 
 **Side effects:** Updates `report.status` → `resolved`, inserts `account_action`, updates `account.status` if ban/suspend.
 
+**Errors:** `404` report not found, `409` report already resolved/dismissed, `400` validation
+
 ---
 
 ### `PATCH /admin/reports/:reportId/dismiss`
@@ -764,6 +766,8 @@ Dismiss a report without action.
 ```json
 { "reportStatus": "dismissed" }
 ```
+
+**Errors:** `404` report not found, `409` report already resolved/dismissed
 
 ---
 
@@ -808,6 +812,8 @@ Approve a volunteer application. Grants `volunteer` role.
 
 **Side effects:** Updates `volunteer_verification.status` → `approved`, `volunteer_profile.verification_status` → `approved`, inserts `account_role` with `volunteer` role, sends push notification to the volunteer.
 
+**Errors:** `404` request not found, `409` application already approved/rejected
+
 ---
 
 ### `PATCH /admin/volunteer-applications/:requestId/reject`
@@ -827,6 +833,8 @@ Reject a volunteer application.
 ```json
 { "message": "Application rejected" }
 ```
+
+**Errors:** `404` request not found, `409` application already approved/rejected
 
 ---
 
