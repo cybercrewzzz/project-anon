@@ -10,11 +10,12 @@ import * as argon2 from 'argon2';
 import { createHash, randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { RegisterVolunteerDto } from './dto/register-volunteer.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
 import { LogoutDto } from './dto/logout.dto.js';
 import { generateUniqueNickname } from '../common/utils/nickname-generator.js';
-import { Gender } from '../generated/prisma/client.js';
+import { AgeRange } from '../generated/prisma/client.js';
 
 @Injectable()
 export class AuthService {
@@ -59,10 +60,9 @@ export class AuthService {
         data: {
           email: dto.email,
           passwordHash,
-          name: null,
+          name: dto.name || 'No Name',
           nickname,
-          dateOfBirth: new Date(dto.dateOfBirth),
-          gender: (dto.gender as Gender) || 'prefer_not_to_say',
+          ageRange: dto.ageRange as AgeRange,
           status: 'active',
         },
       });
@@ -95,6 +95,81 @@ export class AuthService {
         accountId: account.accountId,
         email: account.email,
         nickname: account.nickname,
+        roles,
+      },
+    };
+  }
+
+  // ── Register Volunteer ─────────────────────────────────────────────
+
+  async registerVolunteer(dto: RegisterVolunteerDto) {
+    // Check if email is taken
+    const existingAccount = await this.prisma.account.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (existingAccount) {
+      throw new ConflictException('Email already registered');
+    }
+
+    // Hash password with argon2id
+    const passwordHash = await argon2.hash(dto.password, {
+      type: argon2.argon2id,
+    });
+
+    // Generate unique nickname
+    const nickname = await generateUniqueNickname(this.prisma);
+
+    // Find the volunteer role
+    const volunteerRole = await this.prisma.role.findUnique({
+      where: { name: 'volunteer' },
+    });
+
+    if (!volunteerRole) {
+      throw new Error('Volunteer role not found in database. Run seed first.');
+    }
+
+    // Create account + assign volunteer role in a transaction
+    const account = await this.prisma.$transaction(async (tx) => {
+      const newAccount = await tx.account.create({
+        data: {
+          email: dto.email,
+          passwordHash,
+          name: dto.name,
+          nickname,
+          status: 'active',
+        },
+      });
+
+      await tx.accountRole.create({
+        data: {
+          accountId: newAccount.accountId,
+          roleId: volunteerRole.roleId,
+        },
+      });
+
+      return newAccount;
+    });
+
+    const roles = ['volunteer'];
+
+    // Generate token pair
+    const { accessToken, refreshToken } = await this.generateTokens(
+      account.accountId,
+      roles,
+    );
+
+    // Store refresh token
+    await this.storeRefreshToken(account.accountId, refreshToken);
+
+    return {
+      accessToken,
+      refreshToken,
+      account: {
+        accountId: account.accountId,
+        email: account.email,
+        nickname: account.nickname,
+        name: account.name,
         roles,
       },
     };
