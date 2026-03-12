@@ -67,7 +67,9 @@ describe('AdminService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  }); // ── Reports ───────────────────────────────────────────────────────
+  });
+
+  // ── Reports ───────────────────────────────────────────────────────
 
   describe('findAllReports', () => {
     it('returns paginated reports without a status filter', async () => {
@@ -247,7 +249,9 @@ describe('AdminService', () => {
         }),
       );
     });
-  }); // ── Volunteer Applications ────────────────────────────────────────
+  });
+
+  // ── Volunteer Applications ────────────────────────────────────────
 
   describe('getVolunteerApplications', () => {
     it('returns paginated applications', async () => {
@@ -403,7 +407,9 @@ describe('AdminService', () => {
 
       expect(result).toEqual({ message: 'Application rejected' });
     });
-  }); // ── Accounts ──────────────────────────────────────────────────────
+  });
+
+  // ── Accounts ──────────────────────────────────────────────────────
 
   describe('findAllAccounts', () => {
     it('returns paginated accounts with roles mapped', async () => {
@@ -511,7 +517,9 @@ describe('AdminService', () => {
       expect(result).toEqual({ actionId: 'act2' });
       expect(db.$transaction).toHaveBeenCalled();
     });
-  }); // ── Sessions ──────────────────────────────────────────────────────
+  });
+
+  // ── Sessions ──────────────────────────────────────────────────────
 
   describe('findAllSessions', () => {
     it('returns paginated sessions with category mapped from problem', async () => {
@@ -561,7 +569,9 @@ describe('AdminService', () => {
         }),
       );
     });
-  }); // ── Dashboard Stats ───────────────────────────────────────────────
+  });
+
+  // ── Dashboard Stats ───────────────────────────────────────────────
 
   describe('getDashboardStats', () => {
     it('returns all dashboard stats', async () => {

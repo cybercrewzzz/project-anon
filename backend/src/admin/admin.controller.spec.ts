@@ -45,7 +45,9 @@ describe('AdminController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
-  }); // ── Reports ───────────────────────────────────────────────────────
+  });
+
+  // ── Reports ───────────────────────────────────────────────────────
 
   describe('findAllReports', () => {
     it('passes status and parsed pagination to service', () => {
@@ -113,7 +115,9 @@ describe('AdminController', () => {
       void controller.dismissReport(REPORT_ID);
       expect(service.dismissReport).toHaveBeenCalledWith(REPORT_ID);
     });
-  }); // ── Volunteer Applications ────────────────────────────────────────
+  });
+
+  // ── Volunteer Applications ────────────────────────────────────────
 
   describe('getVolunteerApplications', () => {
     it('passes status and parsed pagination to service', () => {
@@ -160,7 +164,9 @@ describe('AdminController', () => {
         'Not qualified',
       );
     });
-  }); // ── Accounts ──────────────────────────────────────────────────────
+  });
+
+  // ── Accounts ──────────────────────────────────────────────────────
 
   describe('findAllAccounts', () => {
     it('passes all filters and parsed pagination to service', () => {
@@ -215,7 +221,9 @@ describe('AdminController', () => {
         undefined,
       );
     });
-  }); // ── Sessions ──────────────────────────────────────────────────────
+  });
+
+  // ── Sessions ──────────────────────────────────────────────────────
 
   describe('findAllSessions', () => {
     it('passes filters and parsed pagination to service', () => {
@@ -245,7 +253,9 @@ describe('AdminController', () => {
         undefined,
       );
     });
-  }); // ── Dashboard ─────────────────────────────────────────────────────
+  });
+
+  // ── Dashboard ─────────────────────────────────────────────────────
 
   describe('getDashboardStats', () => {
     it('delegates to service', () => {
