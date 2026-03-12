@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { ReportStatus } from 'src/generated/prisma/client';
 
@@ -17,5 +17,10 @@ export class AdminController {
       page ? parseInt(page, 10) : undefined,
       limit ? parseInt(limit, 10) : undefined,
     );
+  }
+
+  @Get('reports/:reportId')
+  findReport(@Param('reportId') reportId: string) {
+    return this.adminService.findReport(reportId);
   }
 }

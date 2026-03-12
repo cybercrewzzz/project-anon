@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { NotFoundError } from 'rxjs';
 import { ReportStatus } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -21,5 +22,52 @@ export class AdminService {
     ]);
 
     return { data, total, page, limit };
+  }
+
+  async findReport(reportId: string) {
+    const report = await this.prisma.report.findUnique({
+      where: { reportId: reportId },
+      include: {
+        session: {
+          select: {
+            closedReason: true,
+            problem: {
+              select: {
+                problemId: true,
+                customCategoryLabel: true,
+                feelingLevel: true,
+                status: true,
+                createdAt: true,
+              },
+            },
+            starredByUser: true,
+            startedAt: true,
+            status: true,
+            userRating: true,
+            volunteerRating: true,
+          },
+        },
+        reporter: {
+          select: {
+            accountId: true,
+            name: true,
+            email: true,
+          },
+        },
+        reported: {
+          select: {
+            accountId: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with ID ${reportId} not found`);
+    }
+
+    return report;
   }
 }
