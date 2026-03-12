@@ -76,8 +76,8 @@ export class AdminController {
   ) {
     return this.adminService.getVolunteerApplications(
       status,
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 20,
+      page ? parseInt(page, 10) : undefined,
+      limit ? parseInt(limit, 10) : undefined,
     );
   }
 

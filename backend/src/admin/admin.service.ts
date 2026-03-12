@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   AccountStatus,
   ActionType,
@@ -12,23 +16,29 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private sanitizePagination(page?: number, limit?: number) {
+    const p = Math.max(1, Number.isFinite(page) ? page! : 1);
+    const l = Math.min(100, Math.max(1, Number.isFinite(limit) ? limit! : 20));
+    return { page: p, limit: l, skip: (p - 1) * l };
+  }
+
   // ── Reports ─────────────────────────────────────────────────────
 
-  async findAllReports(status?: ReportStatus, page = 1, limit = 20) {
+  async findAllReports(status?: ReportStatus, page?: number, limit?: number) {
     const where = status ? { status } : {};
-    const skip = (page - 1) * limit;
+    const { page: p, limit: l, skip } = this.sanitizePagination(page, limit);
 
     const [data, total] = await Promise.all([
       this.prisma.report.findMany({
         where,
         skip,
-        take: limit,
+        take: l,
         orderBy: { reportedAt: 'desc' },
       }),
       this.prisma.report.count({ where }),
     ]);
 
-    return { data, total, page, limit };
+    return { data, total, page: p, limit: l };
   }
 
   async findReport(reportId: string) {
@@ -93,6 +103,10 @@ export class AdminService {
       throw new NotFoundException(`Report with ID ${reportId} not found`);
     }
 
+    if (report.status === 'resolved' || report.status === 'dismissed') {
+      throw new ConflictException(`Report is already ${report.status}`);
+    }
+
     const statusMap: Partial<Record<ActionType, AccountStatus>> = {
       suspend: 'suspended',
       ban: 'banned',
@@ -135,6 +149,10 @@ export class AdminService {
       throw new NotFoundException(`Report with ID ${reportId} not found`);
     }
 
+    if (report.status === 'resolved' || report.status === 'dismissed') {
+      throw new ConflictException(`Report is already ${report.status}`);
+    }
+
     await this.prisma.report.update({
       where: { reportId },
       data: { status: 'dismissed', resolvedAt: new Date() },
@@ -147,17 +165,17 @@ export class AdminService {
 
   async getVolunteerApplications(
     status?: VerificationStatus,
-    page = 1,
-    limit = 20,
+    page?: number,
+    limit?: number,
   ) {
     const where = status ? { status } : {};
-    const skip = (page - 1) * limit;
+    const { page: p, limit: l, skip } = this.sanitizePagination(page, limit);
 
     const [data, total] = await Promise.all([
       this.prisma.volunteerVerification.findMany({
         where,
         skip,
-        take: limit,
+        take: l,
         orderBy: { submittedAt: 'desc' },
         include: {
           volunteer: {
@@ -171,7 +189,7 @@ export class AdminService {
       this.prisma.volunteerVerification.count({ where }),
     ]);
 
-    return { data, total, page, limit };
+    return { data, total, page: p, limit: l };
   }
 
   async approveVolunteerApplication(requestId: string, adminId: string) {
@@ -185,6 +203,12 @@ export class AdminService {
       );
     }
 
+    if (verification.status !== 'pending') {
+      throw new ConflictException(
+        `Application is already ${verification.status}`,
+      );
+    }
+
     const volunteerRole = await this.prisma.role.findUnique({
       where: { name: 'volunteer' },
     });
@@ -192,6 +216,15 @@ export class AdminService {
     if (!volunteerRole) {
       throw new NotFoundException('Volunteer role not found in database');
     }
+
+    const existingAccountRole = await this.prisma.accountRole.findUnique({
+      where: {
+        accountId_roleId: {
+          accountId: verification.volunteerId,
+          roleId: volunteerRole.roleId,
+        },
+      },
+    });
 
     await this.prisma.$transaction([
       this.prisma.volunteerVerification.update({
@@ -206,13 +239,17 @@ export class AdminService {
         where: { accountId: verification.volunteerId },
         data: { verificationStatus: 'approved' },
       }),
-      this.prisma.accountRole.create({
-        data: {
-          accountId: verification.volunteerId,
-          roleId: volunteerRole.roleId,
-          assignedBy: adminId,
-        },
-      }),
+      ...(existingAccountRole
+        ? []
+        : [
+            this.prisma.accountRole.create({
+              data: {
+                accountId: verification.volunteerId,
+                roleId: volunteerRole.roleId,
+                assignedBy: adminId,
+              },
+            }),
+          ]),
     ]);
 
     return {
@@ -233,6 +270,12 @@ export class AdminService {
     if (!verification) {
       throw new NotFoundException(
         `Verification request ${requestId} not found`,
+      );
+    }
+
+    if (verification.status !== 'pending') {
+      throw new ConflictException(
+        `Application is already ${verification.status}`,
       );
     }
 
@@ -261,10 +304,10 @@ export class AdminService {
     search?: string,
     role?: string,
     status?: AccountStatus,
-    page = 1,
-    limit = 20,
+    page?: number,
+    limit?: number,
   ) {
-    const skip = (page - 1) * limit;
+    const { page: p, limit: l, skip } = this.sanitizePagination(page, limit);
 
     const where: Record<string, unknown> = {};
 
@@ -290,7 +333,7 @@ export class AdminService {
       this.prisma.account.findMany({
         where,
         skip,
-        take: limit,
+        take: l,
         orderBy: { createdAt: 'desc' },
         select: {
           accountId: true,
@@ -313,7 +356,7 @@ export class AdminService {
       accountRoles: undefined,
     }));
 
-    return { data: mapped, total, page, limit };
+    return { data: mapped, total, page: p, limit: l };
   }
 
   async findAccount(accountId: string) {
@@ -427,10 +470,10 @@ export class AdminService {
     status?: SessionStatus,
     seekerId?: string,
     listenerId?: string,
-    page = 1,
-    limit = 20,
+    page?: number,
+    limit?: number,
   ) {
-    const skip = (page - 1) * limit;
+    const { page: p, limit: l, skip } = this.sanitizePagination(page, limit);
 
     const where: Record<string, unknown> = {};
     if (status) where.status = status;
@@ -441,7 +484,7 @@ export class AdminService {
       this.prisma.chatSession.findMany({
         where,
         skip,
-        take: limit,
+        take: l,
         orderBy: { startedAt: 'desc' },
         select: {
           sessionId: true,
@@ -465,11 +508,11 @@ export class AdminService {
 
     const mapped = data.map((s) => ({
       ...s,
-      category: s.problem.category.name,
+      category: s.problem?.category?.name ?? null,
       problem: undefined,
     }));
 
-    return { data: mapped, total, page, limit };
+    return { data: mapped, total, page: p, limit: l };
   }
 
   // ── Dashboard Stats ─────────────────────────────────────────────

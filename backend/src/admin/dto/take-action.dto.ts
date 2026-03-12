@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
 import { ActionType } from 'src/generated/prisma/client';
 
@@ -14,6 +15,7 @@ export class TakeActionDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(300)
   reason: string;
 
   @IsOptional()
