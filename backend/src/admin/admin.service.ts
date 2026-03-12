@@ -10,7 +10,7 @@ export class AdminService {
     const where = status ? { status } : {};
     const skip = (page - 1) * limit;
 
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await Promise.all([
       this.prisma.report.findMany({
         where,
         skip,
