@@ -1,7 +1,8 @@
 import { AppText } from '@/components/AppText';
-import { Pressable, View, Image } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import React from 'react';
+import { Image } from 'expo-image';
 
 export default function Welcome() {
   return (
