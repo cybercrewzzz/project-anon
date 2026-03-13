@@ -20,40 +20,6 @@ export class VolunteerService {
   // SHARED HELPER — findProfileOrFail()
 
   constructor(private readonly prisma: PrismaService) {}
-  // private findProfileOrFail(accountId: string) {
-  //   const profile = volunteerProfiles.find((p) => p.accountId === accountId);
-
-  //   if (!profile) {
-  //     throw new NotFoundException('Volunteer profile not found');
-  //   }
-  //   return profile;
-  // }
-
-  // // SHARED HELPER — formatProfile()
-  // private formatProfile(profile: (typeof volunteerProfiles)[0]) {
-  //   return {
-  //     accountId: profile.accountId,
-  //     name: profile.name,
-  //     instituteEmail: profile.instituteEmail,
-  //     instituteName: profile.instituteName,
-  //     studentId: profile.studentId,
-  //     instituteIdImageUrl: profile.instituteIdImageUrl,
-  //     grade: profile.grade,
-  //     about: profile.about,
-  //     verificationStatus: profile.verificationStatus,
-  //     isAvailable: profile.isAvailable,
-  //     specialisations: profile.specialisations.map((s) => ({
-  //       specialisationId: s.specialisationId,
-  //       name: s.name,
-  //       description: s.description,
-  //     })),
-  //     experience: {
-  //       points: profile.experience.points,
-  //       level: profile.experience.level,
-  //       lastUpdated: profile.experience.lastUpdated,
-  //     },
-  //   };
-  // }
 
   // GET /volunteer/profile
 
@@ -105,99 +71,57 @@ export class VolunteerService {
 
   // PATCH /volunteer/profile
 
-  updateProfile(accountId: string, dto: UpdateProfileDTO) {
+  async updateProfile(accountId: string, dto: UpdateProfileDTO) {
     // Find the profile — throws 404 if not found
-    const profile = this.findProfileOrFail(accountId);
+    const existing = await this.prisma.volunteerProfile.findUnique({
+      where: { accountId },
+    });
 
-    // ── Update 'about'
-    if (dto.about !== undefined) {
-      profile.about = dto.about;
+    if (!existing) {
+      throw new NotFoundException('Volunteer profile not found');
     }
 
+    await this.prisma.volunteerProfile.update({
+      where: { accountId },
+      data: {
+        ...(dto.about !== undefined && { about: dto.about }),
+      },
+    });
+
+    // ── Update 'specialisations'
     if (dto.specialisationIds !== undefined) {
-      profile.specialisations = dto.specialisationIds
-        .map((id) =>
-          masterSpecialisations.find((s) => s.specialisationId === id),
-        )
-        .filter(Boolean) as typeof profile.specialisations;
+      await this.prisma.$transaction([
+        this.prisma.volunteerSpecialisation.deleteMany({
+          where: { accountId },
+        }),
+        this.prisma.volunteerSpecialisation.createMany({
+          data: dto.specialisationIds.map((specialisationId) => ({
+            accountId,
+            specialisationId,
+          })),
+        }),
+      ]);
     }
-    return this.formatProfile(profile);
+    return this.getProfile(accountId);
   }
 
   // PATCH /volunteer/status
 
-  updateStatus(accountId: string, dto: UpdateStatusDTO) {
-    const profile = this.findProfileOrFail(accountId);
-    profile.isAvailable = dto.available;
-    return {
-      isAvailable: profile.isAvailable,
-    };
+  async updateStatus(accountId: string, dto: UpdateStatusDTO) {
+    const existing = await this.prisma.volunteerProfile.findUnique({
+      where: { accountId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Volunteer profile not found');
+    }
+
+    const updated = await this.prisma.volunteerProfile.update({
+      where: { accountId },
+      data: { isAvailable: dto.available },
+    });
+    return { isAvailable: updated.isAvailable };
   }
 
   // POST /volunteer/apply
-
-  applyAsVolunteer(accountId: string, dto: ApplyVolunteerDTO) {
-    const alreadyAVolunteer = volunteerProfiles.find(
-      (p) => p.accountId === accountId,
-    );
-
-    const alreadyApplied = pendingApplications.find(
-      (a) => a.accountId === accountId,
-    );
-
-    // ConflictException automatically sends a 409 response.
-    if (alreadyAVolunteer || alreadyApplied) {
-      throw new ConflictException('already_applied');
-    }
-
-    // ── Look up full specialisation objects
-
-    const resolvedSpecialisations = dto.specialisationIds.map((id) => {
-      const found = masterSpecialisations.find(
-        (s) => s.specialisationId === id,
-      );
-
-      if (!found) {
-        throw new NotFoundException(`Specialisation with id ${id} not found`);
-      }
-      return found;
-    });
-
-    // ── Generate a mock requestId
-    const requestId = `req-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    const submittedAt = new Date().toISOString();
-
-    // ── Simulate the 4-table transaction
-    pendingApplications.push({
-      requestId,
-      accountId,
-      status: 'pending',
-      submittedAt,
-    });
-
-    volunteerProfiles.push({
-      accountId,
-      name: dto.name,
-      instituteEmail: dto.instituteEmail,
-      instituteName: dto.instituteName,
-      studentId: dto.studentId,
-      instituteIdImageUrl: dto.instituteIdImageUrl,
-      grade: dto.grade,
-      about: dto.about ?? null,
-      verificationStatus: 'pending',
-      isAvailable: false,
-      specialisations: resolvedSpecialisations,
-      experience: {
-        points: 0,
-        level: 0,
-        lastUpdated: submittedAt,
-      },
-    });
-
-    // ── Return response
-    return {
-      message: 'Application submitted',
-      verificationStatus: 'pending',
-    };
-  }
 }
