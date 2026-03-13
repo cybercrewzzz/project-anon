@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import mockData from '../volunteer/mock-volunteer-data.json';
-
-const masterSpecialisations = mockData.specialisations;
-const masterCategories = mockData.categories;
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class LookupService {
+  constructor(private readonly prisma: PrismaService) {}
+
   // GET /specialisations
-  getSpecialisations() {
-    return masterSpecialisations.map((s) => ({
-      specialisationId: s.specialisationId,
-      name: s.name,
-      description: s.description,
-    }));
+  async getSpecialisations() {
+    return this.prisma.specialisation.findMany({
+      select: {
+        specialisationId: true,
+        name: true,
+        description: true,
+      },
+      orderBy: { name: 'asc' },
+    });
   }
 
   // GET /categories
-  getCategories() {
-    return masterCategories.map((c) => ({
-      categoryID: c.categoryId,
-      name: c.name,
-      description: c.description,
-    }));
+  async getCategories() {
+    return this.prisma.category.findMany({
+      select: {
+        categoryId: true,
+        name: true,
+        description: true,
+      },
+      orderBy: { name: 'asc' },
+    });
   }
 }
