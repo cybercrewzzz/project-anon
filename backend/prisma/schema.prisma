@@ -27,6 +27,12 @@ enum Gender {
   prefer_not_to_say
 }
 
+enum AgeRange {
+  range_16_20
+  range_21_26
+  range_27_plus
+}
+
 enum VerificationStatus {
   pending
   approved
@@ -86,7 +92,7 @@ model Account {
   oauthId             String?       @map("oauth_id") @db.VarChar(255)
   name                String?       @db.VarChar(100)
   nickname            String?       @unique @db.VarChar(50)
-  dateOfBirth         DateTime      @map("date_of_birth") @db.Date
+  ageRange            AgeRange?     @map("age_range")
   gender              Gender        @default(prefer_not_to_say)
   interfaceLanguageId String?       @map("interface_language_id") @db.Uuid
   status              AccountStatus @default(active)

@@ -2,8 +2,10 @@
 const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const eslintConfigPrettier = require('eslint-config-prettier/flat');
+const pluginQuery = require('@tanstack/eslint-plugin-query');
 
 module.exports = defineConfig([
+  ...pluginQuery.configs['flat/recommended'],
   expoConfig,
   {
     ignores: ['dist/*'],
