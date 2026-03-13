@@ -22,24 +22,12 @@ import { ApplyVolunteerDTO } from './dto/apply-volunteer.dto';
 export class VolunteerController {
   constructor(private readonly volunteerService: VolunteerService) {}
 
-  // POST /volunteer/apply
 
-  @Post('apply')
-  @Roles('user')
-
-  // @HttpCode sets the success response code to 201 Created.
-  @HttpCode(HttpStatus.CREATED)
-  async applyAsVolunteer(
-    @CurrentUser() user: { sub: string },
-    @Body() dto: ApplyVolunteerDTO,
-  ) {
-    return this.volunteerService.applyAsVolunteer(user.sub, dto);
-  }
 
   // GET /volunteer/profile
   @Get('profile')
   @Roles('volunteer')
-  async getProfile(@CurrentUser() user: { sub: string }) {
+  getProfile(@CurrentUser() user: { sub: string }) {
     return this.volunteerService.getProfile(user.sub);
   }
 
@@ -47,21 +35,34 @@ export class VolunteerController {
 
   @Patch('profile')
   @Roles('volunteer')
-  async updateProfile(
+  updateProfile(
     @CurrentUser() user: { sub: string },
-    @Body() dto: UpdateProfileDTO,
+    @Body() body: UpdateProfileDTO,
   ) {
-    return this.volunteerService.updateProfile(user.sub, dto);
+    return this.volunteerService.updateProfile(user.sub, body);
   }
 
   // PATCH /volunteer/status
 
   @Patch('status')
   @Roles('volunteer')
-  async updateStatus(
+  @HttpCode(HttpStatus.OK)
+  updateStatus(
     @CurrentUser() user: { sub: string },
-    @Body() dto: UpdateStatusDTO,
+    @Body() body: UpdateStatusDTO,
   ) {
-    return this.volunteerService.updateStatus(user.sub, dto);
+    return this.volunteerService.updateStatus(user.sub, body);
   }
 }
+
+// POST /volunteer/apply
+
+  @Post('apply')
+  @Roles('user')
+  @HttpCode(HttpStatus.CREATED)
+  applyAsVolunteer(
+    @CurrentUser() user: { sub: string },
+    @Body() body: ApplyVolunteerDTO,
+  ) {
+    return this.volunteerService.applyAsVolunteer(user.sub, body);
+  }
