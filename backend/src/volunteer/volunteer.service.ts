@@ -3,33 +3,83 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { UpdateStatusDTO } from './dto/update-status.dto';
 import { ApplyVolunteerDTO } from './dto/apply-volunteer.dto';
+//import { spec } from 'node:test/reporters';
 
-import mockData from './mock-volunteer-data.json';
+//import mockData from './mock-volunteer-data.json';
 
-const volunteerProfiles = mockData.volunteerProfiles;
-const pendingApplications = mockData.pendingApplications;
-const masterSpecialisations = mockData.specialisations;
+// const volunteerProfiles = mockData.volunteerProfiles;
+// const pendingApplications = mockData.pendingApplications;
+// const masterSpecialisations = mockData.specialisations;
 
 @Injectable()
 export class VolunteerService {
   // SHARED HELPER — findProfileOrFail()
-  private findProfileOrFail(accountId: string) {
-    const profile = volunteerProfiles.find((p) => p.accountId === accountId);
+
+  constructor(private readonly prisma: PrismaService) {}
+  // private findProfileOrFail(accountId: string) {
+  //   const profile = volunteerProfiles.find((p) => p.accountId === accountId);
+
+  //   if (!profile) {
+  //     throw new NotFoundException('Volunteer profile not found');
+  //   }
+  //   return profile;
+  // }
+
+  // // SHARED HELPER — formatProfile()
+  // private formatProfile(profile: (typeof volunteerProfiles)[0]) {
+  //   return {
+  //     accountId: profile.accountId,
+  //     name: profile.name,
+  //     instituteEmail: profile.instituteEmail,
+  //     instituteName: profile.instituteName,
+  //     studentId: profile.studentId,
+  //     instituteIdImageUrl: profile.instituteIdImageUrl,
+  //     grade: profile.grade,
+  //     about: profile.about,
+  //     verificationStatus: profile.verificationStatus,
+  //     isAvailable: profile.isAvailable,
+  //     specialisations: profile.specialisations.map((s) => ({
+  //       specialisationId: s.specialisationId,
+  //       name: s.name,
+  //       description: s.description,
+  //     })),
+  //     experience: {
+  //       points: profile.experience.points,
+  //       level: profile.experience.level,
+  //       lastUpdated: profile.experience.lastUpdated,
+  //     },
+  //   };
+  // }
+
+  // GET /volunteer/profile
+
+  async getProfile(accountId: string) {
+    // Find the profile — throws 404 automatically if not found
+    const profile = await this.prisma.volunteerProfile.findUnique({
+      where: { accountId },
+      include: {
+        account: {
+          select: { name: true },
+        },
+        volunterrSpecialisations: {
+          include: { specialisations: true },
+        },
+        volunteerExperience: true,
+      },
+    });
 
     if (!profile) {
       throw new NotFoundException('Volunteer profile not found');
     }
-    return profile;
-  }
 
-  // SHARED HELPER — formatProfile()
-  private formatProfile(profile: (typeof volunteerProfiles)[0]) {
+    // Format and return using the shared helper
     return {
       accountId: profile.accountId,
-      name: profile.name,
+      name: profile.account?.name ?? null,
       instituteEmail: profile.instituteEmail,
       instituteName: profile.instituteName,
       studentId: profile.studentId,
@@ -38,27 +88,19 @@ export class VolunteerService {
       about: profile.about,
       verificationStatus: profile.verificationStatus,
       isAvailable: profile.isAvailable,
-      specialisations: profile.specialisations.map((s) => ({
-        specialisationId: s.specialisationId,
-        name: s.name,
-        description: s.description,
+      specialisations: profile.volunterrSpecialisations.map((vs) => ({
+        specialisationId: vs.specialisations.specialisationId,
+        name: vs.specialisations.name,
+        description: vs.specialisations.description,
       })),
-      experience: {
-        points: profile.experience.points,
-        level: profile.experience.level,
-        lastUpdated: profile.experience.lastUpdated,
-      },
+      experience: profile.volunteerExperience
+        ? {
+            points: profile.volunteerExperience.points,
+            level: profile.volunteerExperience.level,
+            lastUpdated: profile.volunteerExperience.lastUpdated,
+          }
+        : null,
     };
-  }
-
-  // GET /volunteer/profile
-
-  getProfile(accountId: string) {
-    // Find the profile — throws 404 automatically if not found
-    const profile = this.findProfileOrFail(accountId);
-
-    // Format and return using the shared helper
-    return this.formatProfile(profile);
   }
 
   // PATCH /volunteer/profile
