@@ -83,3 +83,7 @@ src/generated/
 # .pnp.*
 
 # End of https://www.toptal.com/developers/gitignore/api/yarn,redis
+
+# Learning Materials
+learn/
+*pr.md
