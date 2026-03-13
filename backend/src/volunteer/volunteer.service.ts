@@ -124,4 +124,68 @@ export class VolunteerService {
   }
 
   // POST /volunteer/apply
+
+  async applyAsVolunteer(accountId: string, dto: ApplyVolunteerDTO) {
+    const existingApplication =
+      await this.prisma.volunteerVerification.findFirst({
+        where: {
+          volunteerId: accountId,
+          status: { in: ['PENDING', 'APPROVED'] },
+        },
+      });
+
+    if (existingApplication) {
+      throw new ConflictException('An active application already exists');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.volunteerProfile.create({
+        data: {
+          accountId,
+          instituteEmail: dto.instituteEmail,
+          instituteName: dto.instituteName,
+          studentId: dto.studentId,
+          instituteIdImageUrl: dto.instituteIdImageUrl,
+          grade: dto.grade,
+          about: dto.about ?? null,
+          verificationStatus: 'pending',
+          isAvailable: false,
+        },
+      });
+
+      await tx.volunteerSpecialisation.createMany({
+        data: dto.specialisationIds.map((specialisationId) => ({
+          accountId,
+          specialisationId,
+        })),
+      });
+
+      await tx.volunteerVerification.create({
+        data: {
+          volunteerId: accountId,
+          documentUrl: dto.instituteIdImageUrl,
+          status: 'pending',
+          submittedAt: new Date(),
+        },
+      });
+
+      await tx.volunteerExperience.create({
+        data: {
+          accountId,
+          points: 0,
+          level: 0,
+        },
+      });
+
+      await tx.account.update({
+        where: { accountId },
+        data: { name: dto.name },
+      });
+    });
+
+    return {
+      message: 'Application submitted',
+      verificationStatus: 'pending',
+    };
+  }
 }
