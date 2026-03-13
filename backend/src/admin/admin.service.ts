@@ -357,7 +357,7 @@ export class AdminService {
         email: true,
         name: true,
         nickname: true,
-        dateOfBirth: true,
+        ageRange: true,
         gender: true,
         status: true,
         createdAt: true,
