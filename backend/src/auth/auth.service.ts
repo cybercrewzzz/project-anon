@@ -308,21 +308,29 @@ export class AuthService {
     const { accessToken, refreshToken: newRefreshToken } =
       await this.generateTokens(storedToken.accountId, roles);
 
-    // Revoke old and store new in the SAME family
-    await this.prisma.$transaction([
-      this.prisma.refreshToken.update({
-        where: { tokenId: storedToken.tokenId },
+    // Atomically revoke old token (isRevoked: false guard prevents double-rotation)
+    // then store the new one in the same family.
+    await this.prisma.$transaction(async (tx) => {
+      const revoked = await tx.refreshToken.updateMany({
+        where: { tokenId: storedToken.tokenId, isRevoked: false },
         data: { isRevoked: true },
-      }),
-      this.prisma.refreshToken.create({
+      });
+
+      if (revoked.count === 0) {
+        throw new UnauthorizedException(
+          'Refresh token already used or revoked',
+        );
+      }
+
+      await tx.refreshToken.create({
         data: {
           accountId: storedToken.accountId,
           tokenHash: this.hashToken(newRefreshToken),
           expiresAt: this.getRefreshExpiry(),
-          familyId: storedToken.familyId, // Keep same family
+          familyId: storedToken.familyId,
         },
-      }),
-    ]);
+      });
+    });
 
     return {
       accessToken,
