@@ -46,18 +46,18 @@ export class AuthService {
     // Generate unique nickname
     const nickname = await generateUniqueNickname(this.prisma);
 
-    // Find the seeker role
-    const seekerRole = await this.prisma.role.findUnique({
-      where: { name: 'seeker' },
+    // Find the user role
+    const userRole = await this.prisma.role.findUnique({
+      where: { name: 'user' },
     });
 
-    if (!seekerRole) {
+    if (!userRole) {
       throw new InternalServerErrorException(
-        'Seeker role not found in database. Run seed first.',
+        'User role not found in database. Run seed first.',
       );
     }
 
-    // Create account + assign seeker role in a transaction
+    // Create account + assign user role in a transaction
     const account = await this.prisma.$transaction(async (tx) => {
       const newAccount = await tx.account.create({
         data: {
@@ -73,14 +73,14 @@ export class AuthService {
       await tx.accountRole.create({
         data: {
           accountId: newAccount.accountId,
-          roleId: seekerRole.roleId,
+          roleId: userRole.roleId,
         },
       });
 
       return newAccount;
     });
 
-    const roles = ['seeker'];
+    const roles = ['user'];
 
     // Generate token pair
     const { accessToken, refreshToken } = await this.generateTokens(

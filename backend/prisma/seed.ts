@@ -70,10 +70,10 @@ async function main() {
     create: { name: 'volunteer', description: 'Volunteer listener' },
   });
 
-  const seekerRole = await prisma.role.upsert({
-    where: { name: 'seeker' },
+  const userRole = await prisma.role.upsert({
+    where: { name: 'user' },
     update: {},
-    create: { name: 'seeker', description: 'Help seeker' },
+    create: { name: 'user', description: 'Help seeker' },
   });
 
   // ─── Permissions ────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ async function main() {
     'view_analytics',
   ];
   const volunteerPermissions = ['join_session'];
-  const seekerPermissions = ['create_problem'];
+  const userPermissions = ['create_problem'];
 
   for (const pName of adminPermissions) {
     await prisma.rolePermission.upsert({
@@ -154,17 +154,17 @@ async function main() {
     });
   }
 
-  for (const pName of seekerPermissions) {
+  for (const pName of userPermissions) {
     await prisma.rolePermission.upsert({
       where: {
         roleId_permissionId: {
-          roleId: seekerRole.roleId,
+          roleId: userRole.roleId,
           permissionId: permByName[pName].permissionId,
         },
       },
       update: {},
       create: {
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
         permissionId: permByName[pName].permissionId,
       },
     });
@@ -360,13 +360,13 @@ async function main() {
     where: {
       accountId_roleId: {
         accountId: seeker1.accountId,
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
       },
     },
     update: {},
     create: {
       accountId: seeker1.accountId,
-      roleId: seekerRole.roleId,
+      roleId: userRole.roleId,
     },
   });
 
@@ -374,13 +374,13 @@ async function main() {
     where: {
       accountId_roleId: {
         accountId: seeker2.accountId,
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
       },
     },
     update: {},
     create: {
       accountId: seeker2.accountId,
-      roleId: seekerRole.roleId,
+      roleId: userRole.roleId,
     },
   });
 

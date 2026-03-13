@@ -74,7 +74,7 @@ describe('AuthService', () => {
       ).rejects.toThrow('Email already registered');
     });
 
-    it('should throw InternalServerErrorException if seeker role not found', async () => {
+    it('should throw InternalServerErrorException if user role not found', async () => {
       mockPrismaService.account.findUnique.mockResolvedValueOnce(null);
       mockPrismaService.role.findUnique.mockResolvedValueOnce(null);
       await expect(
@@ -83,7 +83,7 @@ describe('AuthService', () => {
           password: 'pwd',
           ageRange: 'range_21_26' as any,
         }),
-      ).rejects.toThrow('Seeker role not found in database. Run seed first.');
+      ).rejects.toThrow('User role not found in database. Run seed first.');
     });
   });
 
