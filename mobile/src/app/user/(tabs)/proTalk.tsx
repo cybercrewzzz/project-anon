@@ -66,6 +66,10 @@ const ProTalk = () => {
           title="To reset password"
           onPress={() => router.navigate('/user/resetPassword/ResetPassword')}
         />
+        <Button
+          title="Welcome Screen"
+          onPress={() => router.push('/user/welcome/Welcome')}
+        />
       </View>
     </SafeAreaView>
   );
