@@ -17,6 +17,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto.js';
 import { LogoutDto } from './dto/logout.dto.js';
 import { generateUniqueNickname } from '../common/utils/nickname-generator.js';
 import { AgeRange } from '../generated/prisma/client.js';
+import type { StringValue } from 'ms';
 
 @Injectable()
 export class AuthService {
@@ -360,12 +361,12 @@ export class AuthService {
       this.jwtService.signAsync(payload, {
         secret: this.configService.getOrThrow<string>('JWT_SECRET'),
         expiresIn: (this.configService.get<string>('JWT_ACCESS_EXPIRY') ||
-          '15m') as any,
+          '15m') as StringValue,
       }),
       this.jwtService.signAsync(payload, {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: (this.configService.get<string>('JWT_REFRESH_EXPIRY') ||
-          '7d') as any,
+          '7d') as StringValue,
       }),
     ]);
 
