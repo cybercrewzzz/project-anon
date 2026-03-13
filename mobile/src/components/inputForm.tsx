@@ -79,10 +79,7 @@ const InputForm = ({
 
   return (
     <View
-      style={[
-        styles.inputBox(formColor, isFocused),
-        contentContainerStyle,
-      ]}
+      style={[styles.inputBox(formColor, isFocused), contentContainerStyle]}
     >
       {/* Floating Label */}
       <Animated.Text
@@ -129,9 +126,9 @@ const InputForm = ({
         >
           <Image
             source={
-              isPasswordVisible
-                ? require('@/assets/icons/eye-openOPT.svg')
-                : require('@/assets/icons/eye-closedOPT.svg')
+              isPasswordVisible ?
+                require('@/assets/icons/eye-openOPT.svg')
+              : require('@/assets/icons/eye-closedOPT.svg')
             }
             style={styles.eyeIcon}
             contentFit="contain"
