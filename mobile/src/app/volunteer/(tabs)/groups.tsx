@@ -1,26 +1,39 @@
-import { View } from 'react-native';
-import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import Button from '@/components/button';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Groups = () => {
   const router = useRouter();
   return (
-    <View>
-      <Button
-        text="Verify"
-        onPress={() => router.navigate('/volunteer/getStarted/verify')}
-      />
-      <Button
-        text="Sign Up"
-        onPress={() => router.navigate('/volunteer/getStarted/signUp')}
-      />
-      <Button
-        text="Select Language"
-        onPress={() => router.navigate('/volunteer/getStarted/selectLanguage')}
-      />
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Button
+          text="Verify"
+          onPress={() => router.navigate('/volunteer/getStarted/verify')}
+        />
+        <Button
+          text="Sign Up"
+          onPress={() => router.navigate('/volunteer/getStarted/signUp')}
+        />
+        <Button
+          text="Select Language"
+          onPress={() =>
+            router.navigate('/volunteer/getStarted/selectLanguage')
+          }
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
 export default Groups;
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+  },
+});

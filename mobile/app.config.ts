@@ -90,6 +90,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       'expo-web-browser',
+      'expo-secure-store',
+      'expo-sqlite',
+      'expo-asset',
     ],
     experiments: {
       typedRoutes: true,
