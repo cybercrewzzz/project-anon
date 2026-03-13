@@ -6,7 +6,7 @@ export default function RootLayout() {
     <View style={{ backgroundColor: 'bg-default', flex: 1 }}>
       <Stack>
         <Stack.Screen
-          name="endcall"
+          name="endCall"
           options={{
             headerShown: false,
             title: '',

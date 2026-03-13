@@ -70,6 +70,10 @@ const ProTalk = () => {
           title="Welcome Screen"
           onPress={() => router.push('/user/welcome/Welcome')}
         />
+        <Button
+          title="End Call"
+          onPress={() => router.push('/user/EndCall/endCall')}
+        />
       </View>
     </SafeAreaView>
   );
