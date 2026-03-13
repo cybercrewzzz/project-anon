@@ -1,6 +1,5 @@
 import {
   Controller,
-  UseGuards,
   Get,
   Patch,
   Body,
@@ -8,61 +7,41 @@ import {
   HttpStatus,
   Post,
 } from '@nestjs/common';
-import { AuthGuard } from '../common/guards/auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
 import { VolunteerService } from './volunteer.service';
-import { Roles } from '../common/decorators/roles.decorator';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { UpdateStatusDTO } from './dto/update-status.dto';
 import { ApplyVolunteerDTO } from './dto/apply-volunteer.dto';
 
 @Controller('volunteer')
-@UseGuards(AuthGuard, RolesGuard)
 export class VolunteerController {
   constructor(private readonly volunteerService: VolunteerService) {}
 
-
+  // TODO: Replace with real account ID from JWT when auth is implemented.
+  private readonly accountId = '07e78a03-c194-4140-a73a-ba4a1cb57998';
 
   // GET /volunteer/profile
   @Get('profile')
-  @Roles('volunteer')
-  getProfile(@CurrentUser() user: { sub: string }) {
-    return this.volunteerService.getProfile(user.sub);
+  getProfile() {
+    return this.volunteerService.getProfile(this.accountId);
   }
 
   // PATCH /volunteer/profile
-
   @Patch('profile')
-  @Roles('volunteer')
-  updateProfile(
-    @CurrentUser() user: { sub: string },
-    @Body() body: UpdateProfileDTO,
-  ) {
-    return this.volunteerService.updateProfile(user.sub, body);
+  updateProfile(@Body() body: UpdateProfileDTO) {
+    return this.volunteerService.updateProfile(this.accountId, body);
   }
 
   // PATCH /volunteer/status
-
   @Patch('status')
-  @Roles('volunteer')
   @HttpCode(HttpStatus.OK)
-  updateStatus(
-    @CurrentUser() user: { sub: string },
-    @Body() body: UpdateStatusDTO,
-  ) {
-    return this.volunteerService.updateStatus(user.sub, body);
+  updateStatus(@Body() body: UpdateStatusDTO) {
+    return this.volunteerService.updateStatus(this.accountId, body);
+  }
+
+  // POST /volunteer/apply
+  @Post('apply')
+  @HttpCode(HttpStatus.CREATED)
+  applyAsVolunteer(@Body() body: ApplyVolunteerDTO) {
+    return this.volunteerService.applyAsVolunteer(this.accountId, body);
   }
 }
-
-// POST /volunteer/apply
-
-  @Post('apply')
-  @Roles('user')
-  @HttpCode(HttpStatus.CREATED)
-  applyAsVolunteer(
-    @CurrentUser() user: { sub: string },
-    @Body() body: ApplyVolunteerDTO,
-  ) {
-    return this.volunteerService.applyAsVolunteer(user.sub, body);
-  }

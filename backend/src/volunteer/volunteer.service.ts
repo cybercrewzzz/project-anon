@@ -7,45 +7,35 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { UpdateStatusDTO } from './dto/update-status.dto';
 import { ApplyVolunteerDTO } from './dto/apply-volunteer.dto';
-//import { spec } from 'node:test/reporters';
-
-//import mockData from './mock-volunteer-data.json';
-
-// const volunteerProfiles = mockData.volunteerProfiles;
-// const pendingApplications = mockData.pendingApplications;
-// const masterSpecialisations = mockData.specialisations;
 
 @Injectable()
 export class VolunteerService {
-  // SHARED HELPER — findProfileOrFail()
-
   constructor(private readonly prisma: PrismaService) {}
 
   // GET /volunteer/profile
 
   async getProfile(accountId: string) {
-    // Find the profile — throws 404 automatically if not found
-    const profile = await this.prisma.volunteerProfile.findUnique({
+    const account = await this.prisma.account.findUnique({
       where: { accountId },
-      include: {
-        account: {
-          select: { name: true },
-        },
-        volunterrSpecialisations: {
-          include: { specialisations: true },
+      select: {
+        name: true,
+        volunteerProfile: true,
+        volunteerSpecialisations: {
+          include: { specialisation: true },
         },
         volunteerExperience: true,
       },
     });
 
-    if (!profile) {
+    if (!account?.volunteerProfile) {
       throw new NotFoundException('Volunteer profile not found');
     }
 
-    // Format and return using the shared helper
+    const profile = account.volunteerProfile;
+
     return {
       accountId: profile.accountId,
-      name: profile.account?.name ?? null,
+      name: account.name,
       instituteEmail: profile.instituteEmail,
       instituteName: profile.instituteName,
       studentId: profile.studentId,
@@ -54,16 +44,16 @@ export class VolunteerService {
       about: profile.about,
       verificationStatus: profile.verificationStatus,
       isAvailable: profile.isAvailable,
-      specialisations: profile.volunterrSpecialisations.map((vs) => ({
-        specialisationId: vs.specialisations.specialisationId,
-        name: vs.specialisations.name,
-        description: vs.specialisations.description,
+      specialisations: account.volunteerSpecialisations.map((vs) => ({
+        specialisationId: vs.specialisation.specialisationId,
+        name: vs.specialisation.name,
+        description: vs.specialisation.description,
       })),
-      experience: profile.volunteerExperience
+      experience: account.volunteerExperience
         ? {
-            points: profile.volunteerExperience.points,
-            level: profile.volunteerExperience.level,
-            lastUpdated: profile.volunteerExperience.lastUpdated,
+            points: account.volunteerExperience.points,
+            level: account.volunteerExperience.level,
+            lastUpdated: account.volunteerExperience.lastUpdated,
           }
         : null,
     };
@@ -72,7 +62,6 @@ export class VolunteerService {
   // PATCH /volunteer/profile
 
   async updateProfile(accountId: string, dto: UpdateProfileDTO) {
-    // Find the profile — throws 404 if not found
     const existing = await this.prisma.volunteerProfile.findUnique({
       where: { accountId },
     });
@@ -88,7 +77,7 @@ export class VolunteerService {
       },
     });
 
-    // ── Update 'specialisations'
+    // ── Update specialisations
     if (dto.specialisationIds !== undefined) {
       await this.prisma.$transaction([
         this.prisma.volunteerSpecialisation.deleteMany({
@@ -102,6 +91,7 @@ export class VolunteerService {
         }),
       ]);
     }
+
     return this.getProfile(accountId);
   }
 
@@ -120,6 +110,7 @@ export class VolunteerService {
       where: { accountId },
       data: { isAvailable: dto.available },
     });
+
     return { isAvailable: updated.isAvailable };
   }
 
@@ -130,7 +121,7 @@ export class VolunteerService {
       await this.prisma.volunteerVerification.findFirst({
         where: {
           volunteerId: accountId,
-          status: { in: ['PENDING', 'APPROVED'] },
+          status: { in: ['pending', 'approved'] },
         },
       });
 
@@ -138,8 +129,8 @@ export class VolunteerService {
       throw new ConflictException('An active application already exists');
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.volunteerProfile.create({
+    await this.prisma.$transaction([
+      this.prisma.volunteerProfile.create({
         data: {
           accountId,
           instituteEmail: dto.instituteEmail,
@@ -151,37 +142,33 @@ export class VolunteerService {
           verificationStatus: 'pending',
           isAvailable: false,
         },
-      });
-
-      await tx.volunteerSpecialisation.createMany({
+      }),
+      this.prisma.volunteerSpecialisation.createMany({
         data: dto.specialisationIds.map((specialisationId) => ({
           accountId,
           specialisationId,
         })),
-      });
-
-      await tx.volunteerVerification.create({
+      }),
+      this.prisma.volunteerVerification.create({
         data: {
           volunteerId: accountId,
           documentUrl: dto.instituteIdImageUrl,
           status: 'pending',
           submittedAt: new Date(),
         },
-      });
-
-      await tx.volunteerExperience.create({
+      }),
+      this.prisma.volunteerExperience.create({
         data: {
           accountId,
           points: 0,
           level: 0,
         },
-      });
-
-      await tx.account.update({
+      }),
+      this.prisma.account.update({
         where: { accountId },
         data: { name: dto.name },
-      });
-    });
+      }),
+    ]);
 
     return {
       message: 'Application submitted',

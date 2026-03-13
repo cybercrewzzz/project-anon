@@ -5,9 +5,16 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AdminModule } from './admin/admin.module';
 import { VolunteerModule } from './volunteer/volunteer.module';
+import { LookupModule } from './lookup/lookup.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), PrismaModule, AdminModule, VolunteerModule],
+  imports: [
+    ConfigModule.forRoot(),
+    PrismaModule,
+    AdminModule,
+    VolunteerModule,
+    LookupModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
