@@ -1,3 +1,11 @@
+### [Database Schema Guide](README_DB_SCHEMA.md)
+
+### [Api Endpoints Guide](README_API_ENDPOINTS.md)
+
+### [Backend Scripts Guide](README_SCRIPTS.md)
+
+---
+
 # Backend Architecture & Connection Paths
 
 > **Audience:** Team developers who understand the app's features but need to learn _how_ the backend implements them.
@@ -5,11 +13,6 @@
 > **Scope:** Low-level data flows, service interactions, and protocol choices. This does NOT cover feature descriptions or how to run Docker / dev-tools.
 >
 > **Status:** This document describes the **target architecture**. The backend is currently a fresh NestJS scaffold — use this as the implementation guide.
-
----
-
-[Database Schema Guide](DB_SCHEMA.md)
-[Api Endpoints Guide](API_ENDPOINTS.md)
 
 ---
 
