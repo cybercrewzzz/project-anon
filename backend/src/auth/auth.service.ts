@@ -3,6 +3,7 @@ import {
   ConflictException,
   UnauthorizedException,
   ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -51,7 +52,9 @@ export class AuthService {
     });
 
     if (!seekerRole) {
-      throw new Error('Seeker role not found in database. Run seed first.');
+      throw new InternalServerErrorException(
+        'Seeker role not found in database. Run seed first.',
+      );
     }
 
     // Create account + assign seeker role in a transaction
@@ -126,7 +129,9 @@ export class AuthService {
     });
 
     if (!volunteerRole) {
-      throw new Error('Volunteer role not found in database. Run seed first.');
+      throw new InternalServerErrorException(
+        'Volunteer role not found in database. Run seed first.',
+      );
     }
 
     // Create account + assign volunteer role in a transaction
@@ -270,6 +275,22 @@ export class AuthService {
       );
     }
 
+    // Check account status
+    if (storedToken.account.status === 'banned') {
+      await this.prisma.refreshToken.updateMany({
+        where: { familyId: storedToken.familyId },
+        data: { isRevoked: true },
+      });
+      throw new ForbiddenException('Account has been banned');
+    }
+    if (storedToken.account.status === 'suspended') {
+      await this.prisma.refreshToken.updateMany({
+        where: { familyId: storedToken.familyId },
+        data: { isRevoked: true },
+      });
+      throw new ForbiddenException('Account is suspended');
+    }
+
     // Check expiry
     if (new Date() > storedToken.expiresAt) {
       // Revoke expired token
@@ -310,12 +331,12 @@ export class AuthService {
 
   // ── Logout ────────────────────────────────────────────────────────
 
-  async logout(dto: LogoutDto) {
+  async logout(dto: LogoutDto, accountId: string) {
     const tokenHash = this.hashToken(dto.refreshToken);
 
     // Revoke the refresh token
     const result = await this.prisma.refreshToken.updateMany({
-      where: { tokenHash, isRevoked: false },
+      where: { tokenHash, accountId, isRevoked: false },
       data: { isRevoked: true },
     });
 

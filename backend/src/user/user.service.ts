@@ -2,13 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findByEmail(email: string) {
     return this.prisma.account.findUnique({
       where: { email },
-      include: {
+      select: {
+        accountId: true,
+        email: true,
+        nickname: true,
+        name: true,
+        ageRange: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
         accountRoles: {
           include: { role: true },
         },
@@ -19,7 +27,15 @@ export class UsersService {
   async findById(accountId: string) {
     return this.prisma.account.findUnique({
       where: { accountId },
-      include: {
+      select: {
+        accountId: true,
+        email: true,
+        nickname: true,
+        name: true,
+        ageRange: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
         accountRoles: {
           include: { role: true },
         },

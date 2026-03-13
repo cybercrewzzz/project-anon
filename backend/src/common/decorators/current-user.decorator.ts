@@ -1,16 +1,16 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-export interface JwtPayload {
-  sub: string;
+export interface ValidatedUser {
+  accountId: string;
   roles: string[];
 }
 
 export const CurrentUser = createParamDecorator(
   (
-    data: keyof JwtPayload | undefined,
+    data: keyof ValidatedUser | undefined,
     ctx: ExecutionContext,
-  ): JwtPayload | string | string[] => {
-    const request = ctx.switchToHttp().getRequest<{ user: JwtPayload }>();
+  ): ValidatedUser | string | string[] => {
+    const request = ctx.switchToHttp().getRequest<{ user: ValidatedUser }>();
     const user = request.user;
     return data ? user[data] : user;
   },

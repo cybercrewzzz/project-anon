@@ -13,6 +13,7 @@ import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
 import { LogoutDto } from './dto/logout.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 
 @Controller('auth')
 export class AuthController {
@@ -45,7 +46,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@Body() dto: LogoutDto) {
-    return this.authService.logout(dto);
+  logout(@Body() dto: LogoutDto, @CurrentUser('accountId') accountId: string) {
+    return this.authService.logout(dto, accountId);
   }
 }
