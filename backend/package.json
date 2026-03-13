@@ -6,13 +6,14 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "db:start": "docker compose --env-file .env.local -f docker-compose.dev.yaml up -d",
-    "db:stop": "docker compose --env-file .env.local -f docker-compose.dev.yaml down",
-    "db:wipe": "docker compose --env-file .env.local -f docker-compose.dev.yaml down -v",
-    "db:logs": "docker compose --env-file .env.local -f docker-compose.dev.yaml logs -f",
+    "db:start": "docker compose -f docker-compose.dev.yaml up -d",
+    "db:stop": "docker compose -f docker-compose.dev.yaml down",
+    "db:wipe": "docker compose -f docker-compose.dev.yaml down -v",
+    "db:logs": "docker compose -f docker-compose.dev.yaml logs -f",
     "db:push": "yarn prisma db push",
     "db:seed": "yarn prisma db seed",
-    "db:studio": "yarn prisma studio",
+    "studio": "yarn prisma studio",
+    "generate": "yarn prisma generate",
     "dev": "yarn db:start && yarn prisma generate && yarn prisma db push && nest start --watch",
     "build": "nest build",
     "format": "prettier -w .",
@@ -35,9 +36,12 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
@@ -85,6 +89,10 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1",
+      "^(\\.{1,2}/.+)\\.js$": "$1"
+    }
   }
 }

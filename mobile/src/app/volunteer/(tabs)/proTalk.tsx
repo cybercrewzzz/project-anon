@@ -32,7 +32,7 @@ const ProTalk = () => {
         />
         <Button
           text="Open Peer to Peer"
-          onPress={() => router.push('/volunteer/PeertoPeer/peertopeer')}
+          onPress={() => router.push('/volunteer/P2p-And/p2p-and')}
         />
         <Button
           text="SignUpNLogin"
