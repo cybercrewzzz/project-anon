@@ -1,7 +1,6 @@
 import { AppText } from '@/components/AppText';
 import { Pressable, View } from 'react-native';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
-import React from 'react';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';

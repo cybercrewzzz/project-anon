@@ -6,7 +6,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { View } from 'react-native';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
-//import { useRouter } from 'expo-router';
 import { useRouter } from 'expo-router';
 
 const GradientColors = withUnistyles(LinearGradient, theme => ({
