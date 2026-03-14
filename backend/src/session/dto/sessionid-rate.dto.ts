@@ -29,4 +29,4 @@ export const RateSessionBodySchema = z.object({
 });
 
 export type RateSessionParamsDto = z.infer<typeof RateSessionParamsSchema>;
-export type RateSessionBodyDto   = z.infer<typeof RateSessionBodySchema>;
+export type RateSessionBodyDto = z.infer<typeof RateSessionBodySchema>;
