@@ -26,7 +26,9 @@ const ProTalk = () => {
         />
         <Button
           title="SignupNLogin"
-          onPress={() => router.push('/user/start/authScreens/signupNlogin' as any)}
+          onPress={() =>
+            router.push('/user/start/authScreens/signupNlogin' as any)
+          }
         />
         <Button
           title="Create New Password"
@@ -47,7 +49,9 @@ const ProTalk = () => {
         <Button
           title="To Category Dropdown Filter"
           onPress={() =>
-            router.push('/user/categorydropdownfilter/categorydropdownfilter' as any)
+            router.push(
+              '/user/categorydropdownfilter/categorydropdownfilter' as any,
+            )
           }
         />
         <Button
@@ -59,12 +63,16 @@ const ProTalk = () => {
         <Button
           title="Category Dropdown Other"
           onPress={() =>
-            router.navigate('/user/categorydropdownother/categorydropother' as any)
+            router.navigate(
+              '/user/categorydropdownother/categorydropother' as any,
+            )
           }
         />
         <Button
           title="To reset password"
-          onPress={() => router.navigate('/user/start/authScreens/ResetPassword' as any)}
+          onPress={() =>
+            router.navigate('/user/start/authScreens/ResetPassword' as any)
+          }
         />
         <Button
           title="Welcome Screen"

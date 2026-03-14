@@ -115,7 +115,9 @@ const OTPVerification = () => {
       <View style={styles.buttonContainer}>
         <Pressable
           style={styles.button}
-          onPress={() => router.replace('/user/start/authScreens/ResetPassword' as any)}
+          onPress={() =>
+            router.replace('/user/start/authScreens/ResetPassword' as any)
+          }
         >
           <AppText variant="headline" color="secondary">
             {' '}

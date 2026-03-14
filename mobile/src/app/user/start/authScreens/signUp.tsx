@@ -99,18 +99,25 @@ const SignUp = () => {
       </Pressable>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton onPress={() => router.push('/start/authScreens/signIn' as any)}>
+        <FullWidthButton
+          onPress={() => router.push('/start/authScreens/signIn' as any)}
+        >
           <AppText variant="headline" color="secondary">
             Sign Up
           </AppText>
         </FullWidthButton>
-        <Pressable onPress={() => router.push('/start/authScreens/signIn' as any)} style={{ marginTop: 24, alignItems: 'center' }}>
+        <Pressable
+          onPress={() => router.push('/start/authScreens/signIn' as any)}
+          style={{ marginTop: 24, alignItems: 'center' }}
+        >
           <AppText variant="body" color="primary">
-            Already have an account? <AppText variant="body" emphasis="emphasized" color="accent">Log in</AppText>
+            Already have an account?{' '}
+            <AppText variant="body" emphasis="emphasized" color="accent">
+              Log in
+            </AppText>
           </AppText>
         </Pressable>
       </View>
-
     </KeyboardAwareScrollView>
   );
 };
@@ -177,5 +184,5 @@ const styles = StyleSheet.create((theme, rt) => ({
   buttonContainer: {
     alignSelf: 'stretch',
     marginTop: theme.spacing.s6,
-  }
+  },
 }));

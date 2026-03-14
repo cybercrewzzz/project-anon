@@ -20,7 +20,7 @@ export default function Welcome() {
       <AppText
         variant="largeTitle"
         emphasis="emphasized"
-        color='accent'
+        color="accent"
         style={styles.welcomeText}
       >
         Welcome !
@@ -66,7 +66,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   logoImage: {
     width: '100%',
     height: 300,
-    marginHorizontal: theme.spacing.s4
+    marginHorizontal: theme.spacing.s4,
   },
   bottom: {
     alignItems: 'center',

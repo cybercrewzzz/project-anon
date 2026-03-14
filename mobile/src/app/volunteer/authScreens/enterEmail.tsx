@@ -78,7 +78,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   title: {
     textAlign: 'left',
     paddingLeft: theme.spacing.s2,
-  }, 
+  },
   description: {
     marginTop: theme.spacing.s5,
     marginLeft: theme.spacing.s2,

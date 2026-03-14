@@ -20,7 +20,9 @@ const SelectLanguage = () => {
       <GradientColors style={styles.gradient} />
       <HeroImage source={require('@/assets/images/hero.webp')} />
       <LanguageSelection />
-      <FullWidthButton onPress={() => router.push('/user/start/authScreens/signIn' as any)}>
+      <FullWidthButton
+        onPress={() => router.push('/user/start/authScreens/signIn' as any)}
+      >
         <AppText variant="headline" color="secondary">
           Continue
         </AppText>
