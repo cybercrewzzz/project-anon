@@ -1,11 +1,11 @@
 import { AppText } from '@/components/AppText';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SuccessAnimation } from '@/components/SuccessAnimation';
 
-const LoginSuccessful = () => {
+const RegisterSuccessful = () => {
   const router = useRouter();
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const LoginSuccessful = () => {
             emphasis="emphasized"
             style={styles.textLine1}
           >
-            Login Successful!
+            Registration Successful!
           </AppText>
           <AppText variant="subhead" color="primary" style={styles.textLine2}>
             Please Wait
@@ -40,13 +40,12 @@ const LoginSuccessful = () => {
           </AppText>
         </View>
 
-
       </View>
     </View>
   );
 };
 
-export default LoginSuccessful;
+export default RegisterSuccessful;
 
 const styles = StyleSheet.create((theme, rt) => ({
   container: {

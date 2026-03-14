@@ -1,13 +1,12 @@
 import { View, Pressable } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { SmallButton } from '@/components/SmallButton';
 import InputForm from '@/components/inputForm';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import { useRouter } from 'expo-router';
-import { useUnistyles } from 'react-native-unistyles';
 
 const AGE_RANGES = ['16 -20', '21 -26', '27+'] as const;
 
@@ -102,14 +101,14 @@ const SignUp = () => {
 
       <View style={styles.buttonContainer}>
         <FullWidthButton
-          onPress={() => router.push('/start/authScreens/signIn' as any)}
+          onPress={() => router.push('/user/start/authScreens/registerSuccessful' as any)}
         >
           <AppText variant="headline" color="secondary">
             Sign Up
           </AppText>
         </FullWidthButton>
         <Pressable
-          onPress={() => router.push('/start/authScreens/signIn' as any)}
+          onPress={() => router.push('/user/start/authScreens/signIn' as any)}
           style={styles.loginLink}
         >
           <AppText variant="body" color="primary">

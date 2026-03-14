@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';

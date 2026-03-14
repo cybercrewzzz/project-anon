@@ -24,6 +24,13 @@ const AuthLayout = () => {
           animation: 'fade',
         }}
       />
+      <Stack.Screen
+        name="registerSuccessful"
+        options={{
+          presentation: 'transparentModal',
+          animation: 'fade',
+        }}
+      />
     </Stack>
   );
 };

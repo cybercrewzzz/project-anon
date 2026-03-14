@@ -1,18 +1,16 @@
 import { AppText } from '@/components/AppText';
 import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { Image } from 'expo-image';
+import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
+import { SuccessAnimation } from '@/components/SuccessAnimation';
 
 const ResetPassword = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
-      setIsLoading(false);
       router.replace('/user/start/authScreens/signIn' as any);
     }, 5000);
 
@@ -23,10 +21,7 @@ const ResetPassword = () => {
     <View style={styles.container}>
       <View style={styles.cardContainer}>
         <View style={styles.imageContainer}>
-          <Image
-            source={require('@/assets/images/resetPasswordSuccessful.webp')}
-            style={styles.image}
-          />
+          <SuccessAnimation />
         </View>
         <View>
           <AppText
@@ -45,12 +40,7 @@ const ResetPassword = () => {
           </AppText>
         </View>
 
-        {/* Animated Loader */}
-        {isLoading && (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#9500FF" />
-          </View>
-        )}
+
       </View>
     </View>
   );
@@ -85,10 +75,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: theme.spacing.s6,
   },
 
-  image: {
-    width: 200,
-    height: 185,
-  },
+
 
   textLine1: {
     justifyContent: 'center',
@@ -108,10 +95,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     textAlign: 'center',
   },
 
-  loaderContainer: {
-    marginTop: theme.spacing.s6,
-    paddingTop: theme.spacing.s4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
 }));
