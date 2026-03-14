@@ -1,27 +1,32 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { List, DateField } from "@refinedev/antd";
-import { Table, Select, Space, Button, App } from "antd";
+import { List, DateField, ShowButton } from "@refinedev/antd";
+import { Table, Select, Space, Button, App, Tooltip, Typography } from "antd";
+import { EyeOutlined, FileTextOutlined } from "@ant-design/icons";
 import { StatusTag } from "@components/status-tag";
 import { RejectModal } from "@components/reject-modal";
 import { mockVolunteerApplications } from "@/mock/volunteer-applications";
 import type { VerificationStatus, VolunteerApplicationItem } from "@/types";
+
+const { Text } = Typography;
 
 export default function VolunteerApplicationListPage() {
   const [statusFilter, setStatusFilter] = useState<
     VerificationStatus | undefined
   >();
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [, setSelectedRequestId] = useState<string | null>(null);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
+    null,
+  );
   const { message } = App.useApp();
 
   const filteredData = useMemo(
     () =>
       mockVolunteerApplications.filter(
-        (a) => !statusFilter || a.status === statusFilter
+        (a) => !statusFilter || a.status === statusFilter,
       ),
-    [statusFilter]
+    [statusFilter],
   );
 
   const handleApprove = (requestId: string) => {
@@ -54,72 +59,109 @@ export default function VolunteerApplicationListPage() {
         dataSource={filteredData}
         rowKey="requestId"
         pagination={{ pageSize: 10 }}
+        scroll={{ x: 900 }}
       >
         <Table.Column
-          title="Request ID"
-          dataIndex="requestId"
-          render={(value: string) => (
-            <span style={{ fontFamily: "monospace", fontSize: 12 }}>
-              {value.slice(0, 12)}...
-            </span>
+          title="Volunteer"
+          key="volunteer"
+          render={(_: unknown, record: VolunteerApplicationItem) => (
+            <div>
+              <Text strong>{record.volunteer.name}</Text>
+              <br />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {record.volunteer.email}
+              </Text>
+            </div>
           )}
         />
         <Table.Column
-          title="Volunteer Name"
-          render={(
-            _: unknown,
-            record: VolunteerApplicationItem
-          ) => record.volunteer.name}
+          title="Institute"
+          key="institute"
+          render={(_: unknown, record: VolunteerApplicationItem) =>
+            record.volunteer.volunteerProfile?.instituteName ?? (
+              <Text type="secondary">Not provided</Text>
+            )
+          }
         />
         <Table.Column
-          title="Institute"
-          render={(
-            _: unknown,
-            record: VolunteerApplicationItem
-          ) => record.volunteer.volunteerProfile?.instituteName ?? "N/A"}
+          title="Document"
+          key="document"
+          render={(_: unknown, record: VolunteerApplicationItem) => (
+            <Tooltip title="View submitted document">
+              <Button
+                type="link"
+                icon={<FileTextOutlined />}
+                href={record.documentUrl}
+                target="_blank"
+                size="small"
+              >
+                View
+              </Button>
+            </Tooltip>
+          )}
         />
         <Table.Column
           title="Status"
           dataIndex="status"
+          width={120}
           render={(value: string) => <StatusTag status={value} />}
         />
         <Table.Column
-          title="Submitted At"
+          title="Submitted"
           dataIndex="submittedAt"
+          width={150}
           render={(value: string) => (
             <DateField value={value} format="YYYY-MM-DD HH:mm" />
           )}
         />
         <Table.Column
-          title="Actions"
-          render={(
-            _: unknown,
-            record: VolunteerApplicationItem
-          ) =>
-            record.status === "pending" ? (
-              <Space>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={() => handleApprove(record.requestId)}
-                >
-                  Approve
-                </Button>
-                <Button
-                  danger
-                  size="small"
-                  onClick={() => {
-                    setSelectedRequestId(record.requestId);
-                    setRejectModalOpen(true);
-                  }}
-                >
-                  Reject
-                </Button>
-              </Space>
+          title="Reviewed"
+          dataIndex="reviewedAt"
+          width={150}
+          render={(value: string | null) =>
+            value ? (
+              <DateField value={value} format="YYYY-MM-DD HH:mm" />
             ) : (
-              "-"
+              <Text type="secondary">Pending</Text>
             )
           }
+        />
+        <Table.Column
+          title="Actions"
+          key="actions"
+          width={200}
+          fixed="right"
+          render={(_: unknown, record: VolunteerApplicationItem) => (
+            <Space>
+              <ShowButton
+                hideText
+                size="small"
+                recordItemId={record.requestId}
+                icon={<EyeOutlined />}
+              />
+              {record.status === "pending" && (
+                <>
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={() => handleApprove(record.requestId)}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    danger
+                    size="small"
+                    onClick={() => {
+                      setSelectedRequestId(record.requestId);
+                      setRejectModalOpen(true);
+                    }}
+                  >
+                    Reject
+                  </Button>
+                </>
+              )}
+            </Space>
+          )}
         />
       </Table>
 

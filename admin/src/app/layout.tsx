@@ -19,10 +19,11 @@ import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "@refinedev/antd/dist/reset.css";
 import { ColorModeContextProvider } from "@contexts/color-mode";
 import { authProviderClient } from "@providers/auth-provider/auth-provider.client";
+import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard",
-  description: "MindBridge Admin Dashboard",
+  title: "Anora Admin",
+  description: "Anora App Admin Dashboard",
   icons: {
     icon: "/favicon.ico",
   },
@@ -70,6 +71,7 @@ export default async function RootLayout({
                       {
                         name: "volunteer-applications",
                         list: "/volunteer-applications",
+                        show: "/volunteer-applications/show/:id",
                         meta: {
                           label: "Applications",
                           icon: <SolutionOutlined />,
@@ -95,6 +97,23 @@ export default async function RootLayout({
                       syncWithLocation: true,
                       warnWhenUnsavedChanges: true,
                       projectId: "7fsHuo-qrDnml-AgIy9A",
+                      title: {
+                        text: (
+                          <div
+                            style={{ paddingTop: "8px", paddingLeft: "6px" }}
+                          >
+                            Admin Dashboard
+                          </div>
+                        ),
+                        icon: (
+                          <Image
+                            src="/anora.png"
+                            alt="Anora Logo"
+                            width={32}
+                            height={32}
+                          />
+                        ),
+                      },
                     }}
                   >
                     {children}

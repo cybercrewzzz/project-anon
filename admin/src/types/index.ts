@@ -73,7 +73,11 @@ export interface VolunteerApplicationItem {
   reviewedAt: string | null;
   volunteer: {
     name: string;
-    volunteerProfile: { instituteName: string } | null;
+    email: string;
+    volunteerProfile: {
+      instituteName: string;
+      bio: string;
+    } | null;
   };
 }
 
