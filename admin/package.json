@@ -23,6 +23,7 @@
     "@refinedev/nextjs-router": "^7.0.0",
     "@refinedev/simple-rest": "^6.0.0",
     "antd": "^5.23.0",
+    "axios": "^1.7.9",
     "js-cookie": "^3.0.5",
     "next": "^15.2.4",
     "react": "^19.1.0",
