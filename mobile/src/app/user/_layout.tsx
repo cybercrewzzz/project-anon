@@ -9,6 +9,7 @@ const UserLayout = () => {
         name="WaitingScreen"
         options={{ presentation: 'transparentModal', animation: 'fade' }}
       />
+      <Stack.Screen name="session" />
     </Stack>
   );
 };

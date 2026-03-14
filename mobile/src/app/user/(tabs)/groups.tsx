@@ -17,6 +17,15 @@ const Groups = () => {
         text="Sign In"
         onPress={() => router.push('/user/start/authScreens/signIn' as any)}
       />
+      <Button
+        text="Chat Session"
+        onPress={() =>
+          router.navigate({
+            pathname: '/user/session/[chat]',
+            params: { chat: '1' },
+          })
+        }
+      />
     </View>
   );
 };
