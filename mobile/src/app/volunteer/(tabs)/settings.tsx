@@ -267,7 +267,6 @@ const SettingsScreen = () => {
 
 export default SettingsScreen;
 
-// ─── Styles (unchanged from original) ────────────────────────────────────────
 
 const styles = StyleSheet.create((theme, rt) => ({
   screen: {
