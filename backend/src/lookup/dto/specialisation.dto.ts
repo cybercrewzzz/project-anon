@@ -1,6 +1,6 @@
 import { IsUUID, IsString } from 'class-validator';
 
-export class SpecilaisationDTO {
+export class SpecialisationDTO {
   // specialisation.specialisation_id
   @IsUUID()
   specialisationId: string;

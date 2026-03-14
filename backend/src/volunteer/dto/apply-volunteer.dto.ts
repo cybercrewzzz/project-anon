@@ -1,5 +1,6 @@
 import {
   ArrayMinSize,
+  ArrayUnique,
   IsArray,
   IsEmail,
   IsOptional,
@@ -48,5 +49,6 @@ export class ApplyVolunteerDTO {
   @IsArray()
   @IsUUID('4', { each: true })
   @ArrayMinSize(1)
+  @ArrayUnique()
   specialisationIds: string[];
 }

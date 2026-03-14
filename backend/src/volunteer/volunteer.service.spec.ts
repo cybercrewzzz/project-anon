@@ -12,6 +12,7 @@ const createMockPrisma = () => ({
     findUnique: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    upsert: jest.fn(),
   },
   volunteerSpecialisation: {
     deleteMany: jest.fn(),
@@ -23,6 +24,7 @@ const createMockPrisma = () => ({
   },
   volunteerExperience: {
     create: jest.fn(),
+    upsert: jest.fn(),
   },
   $transaction: jest.fn(),
 });
@@ -188,7 +190,7 @@ describe('VolunteerService', () => {
 
     it('updates profile and returns result of getProfile', async () => {
       db.volunteerProfile.findUnique.mockResolvedValue({ accountId });
-      db.$transaction.mockResolvedValue([{}, {}]);
+      db.$transaction.mockImplementation((fn) => fn(db));
       db.account.findUnique.mockResolvedValue({
         name: 'John Doe',
         volunteerProfile: {
@@ -255,7 +257,7 @@ describe('VolunteerService', () => {
 
     it('runs specialisation delete+create in a transaction', async () => {
       db.volunteerProfile.findUnique.mockResolvedValue({ accountId });
-      db.$transaction.mockResolvedValue([{}, {}]);
+      db.$transaction.mockImplementation((fn) => fn(db));
       db.account.findUnique.mockResolvedValue({
         name: 'John Doe',
         volunteerProfile: { accountId },
@@ -333,13 +335,7 @@ describe('VolunteerService', () => {
 
     it('creates application and returns submitted message', async () => {
       db.volunteerVerification.findFirst.mockResolvedValue(null);
-      db.$transaction.mockResolvedValue([
-        { accountId },
-        { count: 2 },
-        { volunteerId: accountId },
-        { accountId },
-        { accountId },
-      ]);
+      db.$transaction.mockImplementation((fn) => fn(db));
 
       const result = await service.applyAsVolunteer(accountId, applyDto);
 
@@ -390,13 +386,7 @@ describe('VolunteerService', () => {
       };
 
       db.volunteerVerification.findFirst.mockResolvedValue(null);
-      db.$transaction.mockResolvedValue([
-        { accountId },
-        { count: 2 },
-        { volunteerId: accountId },
-        { accountId },
-        { accountId },
-      ]);
+      db.$transaction.mockImplementation((fn) => fn(db));
 
       const result = await service.applyAsVolunteer(
         accountId,

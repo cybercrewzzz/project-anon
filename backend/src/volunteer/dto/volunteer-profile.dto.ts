@@ -90,7 +90,8 @@ export class VolunteerProfileDTO {
   specialisations: SpecialisationDTO[];
 
   // Joined from volunteer_experience table
+  @IsOptional()
   @ValidateNested()
   @Type(() => ExperienceDto)
-  experience: ExperienceDto;
+  experience: ExperienceDto | null;
 }
