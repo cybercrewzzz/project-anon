@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -95,16 +95,18 @@ export function SuccessAnimation() {
     theme.state.success,
   ];
 
-  const [bubbleSeeds] = useState<BubbleSeed[]>(() =>
-    Array.from({ length: CIRCLE_COUNT }).map((_, i) => ({
-      index: i,
-      // Smaller circles: 4 to 12 variations
-      size: 4 + (i % 3) * 4,
-      // Distribute tightly and farther out in rings
-      baseR: 50 + (i % 4) * 15,
-      baseAngle: (i / CIRCLE_COUNT) * 2 * Math.PI,
-      color: colors[i % colors.length],
-    })),
+  const bubbleSeeds = useMemo<BubbleSeed[]>(
+    () =>
+      Array.from({ length: CIRCLE_COUNT }).map((_, i) => ({
+        index: i,
+        // Smaller circles: 4 to 12 variations
+        size: 4 + (i % 3) * 4,
+        // Distribute tightly and farther out in rings
+        baseR: 50 + (i % 4) * 15,
+        baseAngle: (i / CIRCLE_COUNT) * 2 * Math.PI,
+        color: colors[i % colors.length],
+      })),
+    [theme],
   );
 
   const lifeProgress = useSharedValue(0);
