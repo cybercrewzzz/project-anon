@@ -7,7 +7,9 @@ export const dataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters }) => {
     const params: Record<string, any> = {};
 
-    const paginationAny = pagination as { current?: number; pageSize?: number } | undefined;
+    const paginationAny = pagination as
+      | { current?: number; pageSize?: number }
+      | undefined;
     if (paginationAny?.current) params.page = paginationAny.current;
     if (paginationAny?.pageSize) params.limit = paginationAny.pageSize;
 

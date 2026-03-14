@@ -43,7 +43,6 @@ To learn more about **Refine**, please check out the [Documentation](https://ref
 - **Ant Design** [Docs](https://refine.dev/docs/ui-frameworks/antd/tutorial/)
 - **Custom Auth Provider** [Docs](https://refine.dev/docs/core/providers/auth-provider/)
 
-
 ## License
 
 MIT

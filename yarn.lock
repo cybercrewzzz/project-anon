@@ -6337,11 +6337,13 @@ __metadata:
     "@types/react": "npm:^19.1.0"
     "@types/react-dom": "npm:^19.1.0"
     antd: "npm:^5.23.0"
+    axios: "npm:^1.7.9"
     cross-env: "npm:^7.0.3"
     eslint: "npm:^8"
     eslint-config-next: "npm:^15.0.3"
     js-cookie: "npm:^3.0.5"
     next: "npm:^15.2.4"
+    prettier: "npm:3.8.1"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
     typescript: "npm:^5.8.3"
@@ -6922,7 +6924,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.11.0, axios@npm:^1.13.6":
+"axios@npm:^1.11.0, axios@npm:^1.13.6, axios@npm:^1.7.9":
   version: 1.13.6
   resolution: "axios@npm:1.13.6"
   dependencies:
@@ -15900,21 +15902,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier@npm:3.8.1, prettier@npm:^3.4.2, prettier@npm:^3.7.4":
+  version: 3.8.1
+  resolution: "prettier@npm:3.8.1"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 10c0/33169b594009e48f570471271be7eac7cdcf88a209eed39ac3b8d6d78984039bfa9132f82b7e6ba3b06711f3bfe0222a62a1bfb87c43f50c25a83df1b78a2c42
+  languageName: node
+  linkType: hard
+
 "prettier@npm:^2.7.1":
   version: 2.8.8
   resolution: "prettier@npm:2.8.8"
   bin:
     prettier: bin-prettier.js
   checksum: 10c0/463ea8f9a0946cd5b828d8cf27bd8b567345cf02f56562d5ecde198b91f47a76b7ac9eae0facd247ace70e927143af6135e8cf411986b8cb8478784a4d6d724a
-  languageName: node
-  linkType: hard
-
-"prettier@npm:^3.4.2, prettier@npm:^3.7.4":
-  version: 3.8.1
-  resolution: "prettier@npm:3.8.1"
-  bin:
-    prettier: bin/prettier.cjs
-  checksum: 10c0/33169b594009e48f570471271be7eac7cdcf88a209eed39ac3b8d6d78984039bfa9132f82b7e6ba3b06711f3bfe0222a62a1bfb87c43f50c25a83df1b78a2c42
   languageName: node
   linkType: hard
 

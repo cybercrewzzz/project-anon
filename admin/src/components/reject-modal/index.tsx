@@ -41,7 +41,10 @@ export const RejectModal: React.FC<RejectModalProps> = ({
           name="adminNotes"
           label="Reason for Rejection"
           rules={[
-            { required: true, message: "Please provide a reason for rejection" },
+            {
+              required: true,
+              message: "Please provide a reason for rejection",
+            },
           ]}
         >
           <Input.TextArea

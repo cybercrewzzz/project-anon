@@ -3,22 +3,21 @@ import { authProviderServer } from "@providers/auth-provider/auth-provider.serve
 import { redirect } from "next/navigation";
 
 export default async function ForgotPassword() {
-    const data = await getData();
+  const data = await getData();
 
-    if (data.authenticated) {
-        redirect(data?.redirectTo || "/");
-    }
+  if (data.authenticated) {
+    redirect(data?.redirectTo || "/");
+  }
 
-    return <AuthPage type="forgotPassword" />;
+  return <AuthPage type="forgotPassword" />;
 }
 
 async function getData() {
-    const { authenticated, redirectTo, error } =
-        await authProviderServer.check();
+  const { authenticated, redirectTo, error } = await authProviderServer.check();
 
-    return {
-        authenticated,
-        redirectTo,
-        error,
-    };
+  return {
+    authenticated,
+    redirectTo,
+    error,
+  };
 }
