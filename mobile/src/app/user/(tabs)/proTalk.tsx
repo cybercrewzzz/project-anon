@@ -26,12 +26,12 @@ const ProTalk = () => {
         />
         <Button
           title="SignupNLogin"
-          onPress={() => router.push('/start/authScreens/signupNlogin' as any)}
+          onPress={() => router.push('/user/start/authScreens/signupNlogin' as any)}
         />
         <Button
           title="Create New Password"
           onPress={() =>
-            router.push('/start/authScreens/CreateNewPassword' as any)
+            router.push('/user/start/authScreens/CreateNewPassword' as any)
           }
         />
         <Button
@@ -64,11 +64,11 @@ const ProTalk = () => {
         />
         <Button
           title="To reset password"
-          onPress={() => router.navigate('/start/authScreens/ResetPassword' as any)}
+          onPress={() => router.navigate('/user/start/authScreens/ResetPassword' as any)}
         />
         <Button
           title="Welcome Screen"
-          onPress={() => router.push('/start/welcome' as any)}
+          onPress={() => router.push('/user/start/welcome' as any)}
         />
         <Button
           title="End Call"

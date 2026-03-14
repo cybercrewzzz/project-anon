@@ -9,6 +9,9 @@ const AuthLayout = () => {
       <Stack.Screen name="signupNlogin" />
       <Stack.Screen name="ResetPassword" />
       <Stack.Screen name="CreateNewPassword" />
+      <Stack.Screen name="enterEmail" />
+      <Stack.Screen name="OTPVerification" />
+      <Stack.Screen name="loginSuccessful" />
     </Stack>
   );
 };

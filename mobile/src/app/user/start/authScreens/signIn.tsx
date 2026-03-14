@@ -44,7 +44,7 @@ const SignIn = () => {
           value={credentials.password}
           secureTextEntry={true}
         />
-        <Pressable onPress={() => router.push('/start/authScreens/ResetPassword' as any)}>
+        <Pressable onPress={() => router.push('/user/start/authScreens/ResetPassword' as any)}>
           <AppText variant="footnote" color="accent">
             Forgot your password?
           </AppText>
@@ -52,7 +52,7 @@ const SignIn = () => {
       </View>
       <Button text="Sign In" onPress={() => router.replace('/user/(tabs)/groups' as any)} />
       <OAuthSignIn />
-      <Pressable onPress={() => router.push('/start/authScreens/signUp' as any)} style={styles.signUp}>
+      <Pressable onPress={() => router.push('/user/start/authScreens/signUp' as any)} style={styles.signUp}>
         <AppText variant="callout" color="subtle1">
           Need An Account?{' '}
         </AppText>

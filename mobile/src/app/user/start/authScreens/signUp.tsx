@@ -40,6 +40,17 @@ const SignUp = () => {
       </View>
 
       <View style={styles.form}>
+        <InputForm
+          placeholder="Email"
+          placeholderColor="subtle2"
+          formColor="#FDFAFF"
+          onChangeText={updateField('email')}
+          value={form.email}
+          inputMode="email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
         <View style={styles.ageSection}>
           <AppText variant="callout" emphasis="emphasized" color="accent">
             Age
@@ -57,17 +68,6 @@ const SignUp = () => {
             ))}
           </View>
         </View>
-
-        <InputForm
-          placeholder="Email"
-          placeholderColor="subtle2"
-          formColor="#FDFAFF"
-          onChangeText={updateField('email')}
-          value={form.email}
-          inputMode="email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
         <InputForm
           placeholder="Password"
           placeholderColor="subtle2"

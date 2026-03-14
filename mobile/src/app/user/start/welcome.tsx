@@ -29,7 +29,7 @@ export default function Welcome() {
       <View style={styles.bottom}>
         <Pressable 
           style={styles.button}
-          onPress={() => router.push('/start/selectLanguage' as any)}
+          onPress={() => router.push('/user/start/selectLanguage' as any)}
         >
           <AppText style={styles.buttonText}>Get Started</AppText>
         </Pressable>
