@@ -1,9 +1,12 @@
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, ActivityIndicator } from 'react-native';
 import React from 'react';
 import { AppText, AppTextProps } from '@/components/AppText';
 import { Image, ImageSource } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useVolunteerProfile } from '@/hooks/useVolunteerProfile';
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface XpCardProps {
   text: string;
@@ -26,7 +29,6 @@ const XpCard = ({ text, value, icon }: XpCardProps) => {
           {text}
         </AppText>
       </View>
-
       <View style={styles.cardValue}>
         <Image
           source={icon}
@@ -62,7 +64,53 @@ const MenuItem = ({
   );
 };
 
-const Home = () => {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Map numeric level to a display label matching the Figma design */
+function getLevelLabel(level: number): string {
+  if (level <= 1) return 'Basic';
+  if (level <= 3) return 'Intermediate';
+  if (level <= 6) return 'Advanced';
+  return 'Expert';
+}
+
+/** XP needed to reach the next level (simple linear scale: 300 × level) */
+function getXpCap(level: number): number {
+  return Math.max(1, level) * 300;
+}
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
+const SettingsScreen = () => {
+  const { data: profile, isLoading, isError } = useVolunteerProfile();
+
+  // ── Loading state ──
+  if (isLoading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // ── Error state ──
+  if (isError || !profile) {
+    return (
+      <View style={styles.centered}>
+        <AppText variant="body" color="primary">
+          Could not load profile. Please try again.
+        </AppText>
+      </View>
+    );
+  }
+
+  // ── Derived values from real data ──
+  const level = profile.experience?.level ?? 1;
+  const points = profile.experience?.points ?? 0;
+  const xpCap = getXpCap(level);
+  const xpPercent = Math.min(points / xpCap, 1);
+  const levelLabel = getLevelLabel(level);
+
   return (
     <View style={styles.screen}>
       <LinearGradient
@@ -74,6 +122,7 @@ const Home = () => {
       />
 
       <ScrollView contentContainerStyle={styles.contentContainer}>
+        {/* ── Profile card ── */}
         <View style={styles.profileCard}>
           <View style={styles.profileImage}>
             <Image
@@ -83,20 +132,25 @@ const Home = () => {
             />
           </View>
           <View style={styles.profileDetails}>
+            {/* Real name from API */}
             <AppText variant="headline" emphasis="emphasized" color="accent">
-              John Doe
+              {profile.name}
             </AppText>
+            {/* Real institute from API */}
             <AppText variant="footnote" emphasis="emphasized" color="primary">
-              Institute Of Mental Health
+              {profile.instituteName}
             </AppText>
             <View style={styles.levelText}>
               <AppText variant="caption1">Level: </AppText>
+              {/* Real level label derived from experience.level */}
               <AppText variant="footnote" emphasis="emphasized">
-                Basic
+                {levelLabel}
               </AppText>
             </View>
           </View>
         </View>
+
+        {/* ── XP section ── */}
         <View style={styles.xpSection}>
           <LinearGradient
             colors={['#1D47DC', '#0E7FBC']}
@@ -106,8 +160,9 @@ const Home = () => {
             locations={[0, 0.5]}
           >
             <View style={styles.xpText}>
+              {/* Real level number */}
               <AppText variant="footnote" emphasis="regular" color="secondary">
-                Level 1
+                Level {level}
               </AppText>
               <View style={styles.xpAmount}>
                 <AppText
@@ -115,39 +170,47 @@ const Home = () => {
                   emphasis="emphasized"
                   color="secondary"
                 >
-                  XP:
+                  XP:{' '}
                 </AppText>
+                {/* Real points / cap */}
                 <AppText
                   variant="footnote"
                   emphasis="regular"
                   color="secondary"
                 >
-                  150/300
+                  {points}/{xpCap}
                 </AppText>
               </View>
             </View>
             <View style={styles.xpBar}>
-              <View style={styles.xpBarFill}></View>
+              {/* Dynamic fill width based on real XP progress */}
+              <View
+                style={[styles.xpBarFill, { width: `${xpPercent * 100}%` }]}
+              />
             </View>
           </LinearGradient>
+
           <View style={styles.xpCardsContainer}>
+            {/* Real points in all three cards — swap icons/labels as needed */}
             <XpCard
               text="Daily login"
               value={3}
               icon={require('@/assets/images/fireIconOPT.webp')}
             />
             <XpCard
-              text="Daily login"
-              value={3}
+              text="Points"
+              value={points}
               icon={require('@/assets/images/fireIconOPT.webp')}
             />
             <XpCard
-              text="Daily login"
-              value={3}
+              text="Points"
+              value={points}
               icon={require('@/assets/images/fireIconOPT.webp')}
             />
           </View>
         </View>
+
+        {/* ── Certificate banner ── */}
         <View style={styles.Certificate}>
           <View style={styles.CertificateText}>
             <AppText variant="title3" emphasis="emphasized">
@@ -163,6 +226,8 @@ const Home = () => {
             contentFit="contain"
           />
         </View>
+
+        {/* ── Menu section ── */}
         <View style={styles.menuSection}>
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
@@ -171,32 +236,27 @@ const Home = () => {
           />
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
+            text="Your Specialisation"
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
+            text="History"
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
+            text="About"
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
+            text="Help & FAQs"
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
-            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-          />
-          <MenuItem
-            leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
+            text="Log out"
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
         </View>
@@ -205,7 +265,9 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default SettingsScreen;
+
+// ─── Styles (unchanged from original) ────────────────────────────────────────
 
 const styles = StyleSheet.create((theme, rt) => ({
   screen: {
@@ -214,6 +276,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: rt.insets.bottom,
     paddingLeft: rt.insets.left + theme.spacing.s5,
     paddingRight: rt.insets.right + theme.spacing.s5,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   contentContainer: {
     gap: theme.spacing.s4,
@@ -286,7 +353,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   xpBarFill: {
     height: '100%',
-    width: '50%',
     backgroundColor: '#36D367',
     borderRadius: theme.radius.full,
   },
