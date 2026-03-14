@@ -81,13 +81,13 @@ describe('AdminController', () => {
   });
 
   describe('takeAction', () => {
-    it('delegates to service with hardcoded admin ID', () => {
+    it('delegates to service with admin ID from JWT', () => {
       const body = {
         actionType: ActionType.warning,
         reason: 'test reason',
         expiresAt: undefined,
       };
-      void controller.takeAction(REPORT_ID, body);
+      void controller.takeAction(REPORT_ID, body, ADMIN_ID);
       expect(service.takeAction).toHaveBeenCalledWith(
         REPORT_ID,
         ADMIN_ID,
@@ -103,7 +103,7 @@ describe('AdminController', () => {
         reason: 'violation',
         expiresAt: '2026-12-31',
       };
-      void controller.takeAction(REPORT_ID, body);
+      void controller.takeAction(REPORT_ID, body, ADMIN_ID);
       expect(service.takeAction).toHaveBeenCalledWith(
         REPORT_ID,
         ADMIN_ID,
@@ -148,8 +148,8 @@ describe('AdminController', () => {
   });
 
   describe('approveVolunteerApplication', () => {
-    it('delegates to service with hardcoded admin ID', () => {
-      void controller.approveVolunteerApplication(REQUEST_ID);
+    it('delegates to service with admin ID from JWT', () => {
+      void controller.approveVolunteerApplication(REQUEST_ID, ADMIN_ID);
       expect(service.approveVolunteerApplication).toHaveBeenCalledWith(
         REQUEST_ID,
         ADMIN_ID,
@@ -159,9 +159,11 @@ describe('AdminController', () => {
 
   describe('rejectVolunteerApplication', () => {
     it('delegates to service with admin ID and adminNotes', () => {
-      void controller.rejectVolunteerApplication(REQUEST_ID, {
-        adminNotes: 'Not qualified',
-      });
+      void controller.rejectVolunteerApplication(
+        REQUEST_ID,
+        { adminNotes: 'Not qualified' },
+        ADMIN_ID,
+      );
       expect(service.rejectVolunteerApplication).toHaveBeenCalledWith(
         REQUEST_ID,
         ADMIN_ID,
@@ -210,13 +212,13 @@ describe('AdminController', () => {
   });
 
   describe('takeAccountAction', () => {
-    it('delegates to service with hardcoded admin ID', () => {
+    it('delegates to service with admin ID from JWT', () => {
       const body = {
         actionType: ActionType.ban,
         reason: 'severe violation',
         expiresAt: undefined,
       };
-      void controller.takeAccountAction(ACCOUNT_ID, body);
+      void controller.takeAccountAction(ACCOUNT_ID, body, ADMIN_ID);
       expect(service.takeAccountAction).toHaveBeenCalledWith(
         ACCOUNT_ID,
         ADMIN_ID,
