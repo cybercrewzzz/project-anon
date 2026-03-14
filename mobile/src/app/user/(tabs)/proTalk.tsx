@@ -26,12 +26,14 @@ const ProTalk = () => {
         />
         <Button
           title="SignupNLogin"
-          onPress={() => router.push('/user/SignupNLogin/signupNlogin')}
+          onPress={() =>
+            router.push('/user/start/authScreens/signupNlogin' as any)
+          }
         />
         <Button
           title="Create New Password"
           onPress={() =>
-            router.push('/user/createNewPassword/CreateNewPassword')
+            router.push('/user/start/authScreens/CreateNewPassword' as any)
           }
         />
         <Button
@@ -47,32 +49,38 @@ const ProTalk = () => {
         <Button
           title="To Category Dropdown Filter"
           onPress={() =>
-            router.push('/user/categorydropdownfilter/categorydropdownfilter')
+            router.push(
+              '/user/categorydropdownfilter/categorydropdownfilter' as any,
+            )
           }
         />
         <Button
           title="Category Dropdown 1"
           onPress={() =>
-            router.navigate('/user/categorydropdown1/categorydrop1')
+            router.navigate('/user/categorydropdown1/categorydrop1' as any)
           }
         />
         <Button
           title="Category Dropdown Other"
           onPress={() =>
-            router.navigate('/user/categorydropdownother/categorydropother')
+            router.navigate(
+              '/user/categorydropdownother/categorydropother' as any,
+            )
           }
         />
         <Button
           title="To reset password"
-          onPress={() => router.navigate('/user/resetPassword/ResetPassword')}
+          onPress={() =>
+            router.navigate('/user/start/authScreens/ResetPassword' as any)
+          }
         />
         <Button
           title="Welcome Screen"
-          onPress={() => router.push('/user/welcome/Welcome')}
+          onPress={() => router.push('/user/start/welcome' as any)}
         />
         <Button
           title="End Call"
-          onPress={() => router.push('/user/EndCall/endCall')}
+          onPress={() => router.push('/user/EndCall/endCall' as any)}
         />
       </View>
     </SafeAreaView>
