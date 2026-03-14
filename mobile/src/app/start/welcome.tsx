@@ -3,8 +3,11 @@ import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import React from 'react';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 
 export default function Welcome() {
+  const router = useRouter();
+  
   return (
     <View style={styles.container}>
       {/* Top*/}
@@ -24,7 +27,10 @@ export default function Welcome() {
 
       {/* Bottom */}
       <View style={styles.bottom}>
-        <Pressable style={styles.button}>
+        <Pressable 
+          style={styles.button}
+          onPress={() => router.push('/start/selectLanguage' as any)}
+        >
           <AppText style={styles.buttonText}>Get Started</AppText>
         </Pressable>
 

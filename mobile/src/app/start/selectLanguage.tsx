@@ -7,20 +7,21 @@ import React from 'react';
 import { View } from 'react-native';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
 //import { useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 const GradientColors = withUnistyles(LinearGradient, theme => ({
   colors: theme.gradient.backgroundPrimary,
 }));
 
 const SelectLanguage = () => {
-  //const router = useRouter();
+  const router = useRouter();
 
   return (
     <View style={styles.screen}>
       <GradientColors style={styles.gradient} />
       <HeroImage source={require('@/assets/images/hero.webp')} />
       <LanguageSelection />
-      <FullWidthButton>
+      <FullWidthButton onPress={() => router.push('/start/authScreens/signIn' as any)}>
         <AppText variant="headline" color="secondary">
           Continue
         </AppText>

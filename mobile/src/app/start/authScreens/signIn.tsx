@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
@@ -7,8 +7,10 @@ import InputForm from '@/components/inputForm';
 import OAuthSignIn from '@/components/oAuthSignIn';
 import Button from '@/components/button';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useRouter } from 'expo-router';
 
 const SignIn = () => {
+  const router = useRouter();
   const [credentials, setCredentials] = useState({
     email: '',
     password: '',
@@ -42,20 +44,22 @@ const SignIn = () => {
           value={credentials.password}
           secureTextEntry={true}
         />
-        <AppText variant="footnote" color="accent">
-          Forgot your password?
-        </AppText>
+        <Pressable onPress={() => router.push('/start/authScreens/ResetPassword' as any)}>
+          <AppText variant="footnote" color="accent">
+            Forgot your password?
+          </AppText>
+        </Pressable>
       </View>
-      <Button text="Sign In" />
+      <Button text="Sign In" onPress={() => router.replace('/user/(tabs)/groups' as any)} />
       <OAuthSignIn />
-      <View style={styles.signUp}>
+      <Pressable onPress={() => router.push('/start/authScreens/signUp' as any)} style={styles.signUp}>
         <AppText variant="callout" color="subtle1">
-          Need An Account?
+          Need An Account?{' '}
         </AppText>
         <AppText variant="callout" emphasis="emphasized" color="subtle1">
           Sign Up
         </AppText>
-      </View>
+      </Pressable>
     </KeyboardAwareScrollView>
   );
 };
@@ -84,5 +88,12 @@ const styles = StyleSheet.create((theme, rt) => ({
   signUp: {
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
   },
 }));
+
+
+/*
+
+
+*/
