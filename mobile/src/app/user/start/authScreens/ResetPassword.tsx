@@ -1,5 +1,5 @@
 import { AppText } from '@/components/AppText';
-import React, { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';

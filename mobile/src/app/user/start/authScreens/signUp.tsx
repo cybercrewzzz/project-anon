@@ -102,7 +102,7 @@ const SignUp = () => {
       <View style={styles.buttonContainer}>
         <FullWidthButton
           onPress={() =>
-            router.push('/user/start/authScreens/registerSuccessful' as any)
+            router.replace('/user/start/authScreens/registerSuccessful' as any)
           }
         >
           <AppText variant="headline" color="secondary">

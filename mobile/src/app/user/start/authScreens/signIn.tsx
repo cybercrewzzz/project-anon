@@ -1,6 +1,6 @@
 import { View, Pressable } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet,useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import AuthHeader from '@/components/authHeader';
 import InputForm from '@/components/inputForm';
@@ -8,7 +8,6 @@ import OAuthSignIn from '@/components/oAuthSignIn';
 import Button from '@/components/button';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
-import { useUnistyles } from 'react-native-unistyles';
 
 const SignIn = () => {
   const router = useRouter();
@@ -59,7 +58,7 @@ const SignIn = () => {
       <Button
         text="Sign In"
         onPress={() =>
-          router.push('/user/start/authScreens/loginSuccessful' as any)
+          router.replace('/user/start/authScreens/loginSuccessful' as any)
         }
       />
       <OAuthSignIn />
