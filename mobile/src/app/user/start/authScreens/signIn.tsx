@@ -1,6 +1,6 @@
 import { View, Pressable } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet,useUnistyles } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import AuthHeader from '@/components/authHeader';
 import InputForm from '@/components/inputForm';
