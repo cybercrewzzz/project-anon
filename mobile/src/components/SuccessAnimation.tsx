@@ -88,12 +88,15 @@ const OrbitingBubble = ({
 export function SuccessAnimation() {
   const { theme } = useUnistyles();
 
-  const colors = [
-    theme.action.primary,
-    theme.action.secondary,
-    theme.text.subtle1,
-    theme.state.success,
-  ];
+  const colors = useMemo(
+    () => [
+      theme.action.primary,
+      theme.action.secondary,
+      theme.text.subtle1,
+      theme.state.success,
+    ],
+    [theme],
+  );
 
   const bubbleSeeds = useMemo<BubbleSeed[]>(
     () =>
@@ -106,7 +109,7 @@ export function SuccessAnimation() {
         baseAngle: (i / CIRCLE_COUNT) * 2 * Math.PI,
         color: colors[i % colors.length],
       })),
-    [theme],
+    [colors],
   );
 
   const lifeProgress = useSharedValue(0);
