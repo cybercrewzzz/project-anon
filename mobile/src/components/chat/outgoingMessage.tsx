@@ -27,11 +27,11 @@ export default function OutgoingMessage({
 const styles = StyleSheet.create(theme => ({
   outgoingMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.surface.muted,
     padding: theme.spacing.s3,
     marginVertical: theme.spacing.s1,
-    borderRadius: 17,
-    borderTopEndRadius: 4,
+    borderRadius: theme.radius.messageBubble,
+    borderTopEndRadius: theme.radius.messageBubbleTail,
   },
   messageTime: {
     paddingTop: theme.spacing.s2,

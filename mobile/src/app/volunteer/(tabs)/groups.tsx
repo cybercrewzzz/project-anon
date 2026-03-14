@@ -24,7 +24,12 @@ const Groups = () => {
         />
         <Button
           text="Chat Session"
-          onPress={() => router.navigate('/user/session/[chat]')}
+          onPress={() =>
+            router.navigate({
+              pathname: '/user/session/[chat]',
+              params: { chat: '1' },
+            })
+          }
         />
       </View>
     </SafeAreaView>

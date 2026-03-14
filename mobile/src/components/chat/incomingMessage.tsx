@@ -29,11 +29,11 @@ export default function IncomingMessage({
 const styles = StyleSheet.create(theme => ({
   incomingMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#4F39F6',
+    backgroundColor: theme.surface.chatBubbleIncoming,
     padding: theme.spacing.s3,
     marginVertical: theme.spacing.s1,
-    borderRadius: 17,
-    borderTopStartRadius: 4,
+    borderRadius: theme.radius.messageBubble,
+    borderTopStartRadius: theme.radius.messageBubbleTail,
   },
   messageTime: {
     paddingTop: theme.spacing.s2,

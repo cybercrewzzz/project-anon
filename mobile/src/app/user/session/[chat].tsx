@@ -114,7 +114,7 @@ export default function Chat() {
           />
           <Pressable
             onPress={handleSend}
-            disabled={messageContent === '' || !isEncryptionReady}
+            disabled={messageContent.trim() === '' || !isEncryptionReady}
           >
             <Image
               source={require('@/assets/icons/userSend.svg')}
@@ -149,7 +149,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: 'row',
     gap: theme.spacing.s4,
     alignItems: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: theme.surface.chatSurface,
     padding: theme.spacing.s3,
     borderRadius: theme.radius.full,
     marginHorizontal: theme.spacing.s4,

@@ -9,17 +9,17 @@ import { queryClient } from '@/api/queryClient';
 import { useAuth } from '@/store/useAuth';
 import { useRole } from '@/store/useRole';
 import { connectSocket, disconnectSocket } from '@/api/socket';
-import * as Crypto from 'expo-crypto';
 
 // Side-effect import: registers axios interceptors
 import '@/api/client';
 
 // TODO: Remove mock IDs when JWT auth is implemented.
 // These are only used as fallbacks when account is null.
-// const MOCK_USER_ID = 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
-// const MOCK_VOLUNTEER_ID = '3e4ece8c-6115-4cae-87b8-20561283973f';
-const MOCK_USER_ID = Crypto.randomUUID();
-const MOCK_VOLUNTEER_ID = Crypto.randomUUID();
+// Fixed UUIDs (not random) so the socket and chat screens share the same
+// userId; Crypto.randomUUID() here caused divergence with the hardcoded
+// fallbacks in the chat screens, breaking sender/outgoing detection.
+const MOCK_USER_ID = 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
+const MOCK_VOLUNTEER_ID = '3e4ece8c-6115-4cae-87b8-20561283973f';
 
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({

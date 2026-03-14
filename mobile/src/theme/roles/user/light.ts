@@ -94,6 +94,9 @@ export const userLightTheme = {
     secondary: purple[50],
     tertiary: purple[100],
     muted: common.gray[100],
+    chatSurface: colors.blue[100],
+    chatBubbleIncoming: purple[800],
+    chatTimerTrack: common.gray[200],
     highlightedGradient: [purple[800], purple[500]],
   },
   text: {

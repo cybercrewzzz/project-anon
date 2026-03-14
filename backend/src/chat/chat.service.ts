@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service';
 
 const SESSION_TTL = 86400; // 24 hours
+const SOCKET_TTL = 86400; // match session TTL so stale mappings expire after a server crash
+const MAX_SESSION_MESSAGES = 1000;
 
 @Injectable()
 export class ChatService {
@@ -11,14 +13,21 @@ export class ChatService {
 
   async mapSocket(socketId: string, userId: string): Promise<void> {
     await this.redis.set(`socket:${socketId}`, userId);
+    await this.redis.expire(`socket:${socketId}`, SOCKET_TTL);
     await this.redis.set(`user:${userId}:socket`, socketId);
+    await this.redis.expire(`user:${userId}:socket`, SOCKET_TTL);
   }
 
   async unmapSocket(socketId: string): Promise<void> {
     const userId = await this.redis.get(`socket:${socketId}`);
     await this.redis.del(`socket:${socketId}`);
     if (userId) {
-      await this.redis.del(`user:${userId}:socket`);
+      // Only remove the user→socket mapping if it still points to this socket.
+      // A reconnect may have already replaced it with a new socket ID.
+      const currentSocketId = await this.redis.get(`user:${userId}:socket`);
+      if (currentSocketId === socketId) {
+        await this.redis.del(`user:${userId}:socket`);
+      }
     }
   }
 
@@ -74,8 +83,10 @@ export class ChatService {
   ): Promise<number> {
     const key = `session:${sessionId}:msgs`;
     const length = await this.redis.rpush(key, JSON.stringify(message));
+    // Cap the buffer so a busy or malicious session can't exhaust Redis memory.
+    await this.redis.ltrim(key, -MAX_SESSION_MESSAGES, -1);
     await this.redis.expire(key, SESSION_TTL);
-    return length - 1; // return 0-based index of the pushed message
+    return Math.min(length - 1, MAX_SESSION_MESSAGES - 1); // return 0-based index
   }
 
   async getMessages(

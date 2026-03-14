@@ -42,7 +42,7 @@ const styles = StyleSheet.create(theme => ({
   },
   timerBar: {
     flex: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.surface.chatTimerTrack,
     height: theme.spacing.s3,
     borderRadius: theme.radius.full,
     position: 'relative',
@@ -53,7 +53,7 @@ const styles = StyleSheet.create(theme => ({
     top: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: '#F39C12',
+    backgroundColor: theme.state.warning,
     width: `${percentage}%`,
     borderRadius: theme.radius.full,
   }),

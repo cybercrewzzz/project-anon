@@ -1,7 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
-import { getSocket, joinRoom, leaveRoom } from '@/api/socket';
+import {
+  getSocket,
+  joinRoom,
+  leaveRoom,
+  subscribeToConnect,
+} from '@/api/socket';
 import {
   generateKeyPair,
   keyPairFromSecretKey,
@@ -49,10 +54,21 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isEncryptionReady, setIsEncryptionReady] = useState(false);
 
+  // Bumped each time the socket connects so the setup effect re-runs when
+  // the socket wasn't ready on the initial render (child effects run before
+  // parent effects, so _layout's connectSocket may not have fired yet).
+  const [socketTick, setSocketTick] = useState(0);
+
   const keyPairRef = useRef<KeyPair | null>(null);
   const sharedSecretRef = useRef<Uint8Array | null>(null);
   const lastMsgIndexRef = useRef<number>(-1);
   const pendingDecryptRef = useRef<PendingMessage[]>([]);
+
+  // Subscribe to socket connect events so the chat setup effect re-runs
+  // if the socket wasn't available on the first render.
+  useEffect(() => {
+    return subscribeToConnect(() => setSocketTick(t => t + 1));
+  }, []);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -72,20 +88,20 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       if (!keyPairRef.current) return; // init hasn't finished yet (extremely unlikely but safe)
 
       const peerPublicKey = base64ToBytes(payload.publicKey);
-      sharedSecretRef.current = deriveSharedSecret(
+      // Store in a local const so TypeScript can narrow out null and the
+      // value is stable for the rest of this handler.
+      const shared = deriveSharedSecret(
         keyPairRef.current.secretKey,
         peerPublicKey,
       );
+      sharedSecretRef.current = shared;
       setIsEncryptionReady(true);
 
       // Decrypt any messages that arrived before the key exchange completed
       if (pendingDecryptRef.current.length > 0) {
         const decrypted: Message[] = [];
         for (const msg of pendingDecryptRef.current) {
-          const content = decrypt(
-            msg.encryptedPayload,
-            sharedSecretRef.current,
-          );
+          const content = decrypt(msg.encryptedPayload, shared);
           if (content) {
             decrypted.push({
               id: msg.clientMsgId,
@@ -112,15 +128,15 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
         payload.msgIndex,
       );
 
-      if (!sharedSecretRef.current) {
+      // Read into a local const so TS can narrow out null and the value
+      // is stable between the guard and the decrypt call.
+      const shared = sharedSecretRef.current;
+      if (!shared) {
         pendingDecryptRef.current.push(payload);
         return;
       }
 
-      const content = decrypt(
-        payload.encryptedPayload,
-        sharedSecretRef.current,
-      );
+      const content = decrypt(payload.encryptedPayload, shared);
       if (content === null) {
         console.warn('Failed to decrypt message:', payload.clientMsgId);
         return;
@@ -152,17 +168,15 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
           'message:sync',
           { sessionId, lastMsgIndex: lastMsgIndexRef.current + 1 },
           (response: { messages: Record<string, unknown>[] }) => {
-            if (!sharedSecretRef.current || !response?.messages) return;
+            const shared = sharedSecretRef.current;
+            if (!shared || !response?.messages) return;
 
             const synced: Message[] = [];
             for (const msg of response.messages) {
               const senderId = msg.senderId as string;
               if (senderId === userId) continue;
 
-              const content = decrypt(
-                msg.encryptedPayload as string,
-                sharedSecretRef.current,
-              );
+              const content = decrypt(msg.encryptedPayload as string, shared);
               if (!content) continue;
 
               const clientMsgId = msg.clientMsgId as string;
@@ -207,15 +221,15 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       const stored = await SecureStore.getItemAsync(SK_STORE_KEY(sessionId));
       if (cancelled) return;
 
-      if (stored) {
-        // Restore the key pair from the previous session mount.
-        // This lets us decrypt the Redis message buffer after a hard app kill.
-        keyPairRef.current = keyPairFromSecretKey(stored);
-      } else {
-        keyPairRef.current = generateKeyPair();
+      // Store the result in a local const so TypeScript knows it is non-null
+      // for the rest of this function, without relying on ref narrowing.
+      const keyPair = stored ? keyPairFromSecretKey(stored) : generateKeyPair();
+      keyPairRef.current = keyPair;
+
+      if (!stored) {
         await SecureStore.setItemAsync(
           SK_STORE_KEY(sessionId),
-          bytesToBase64(keyPairRef.current.secretKey),
+          bytesToBase64(keyPair.secretKey),
         );
       }
 
@@ -227,7 +241,7 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       // Send our public key — same key whether new or restored
       socket.emit('key:exchange', {
         sessionId,
-        publicKey: bytesToBase64(keyPairRef.current.publicKey),
+        publicKey: bytesToBase64(keyPair.publicKey),
       });
     };
 
@@ -249,21 +263,25 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       sharedSecretRef.current = null;
       pendingDecryptRef.current = [];
     };
-  }, [sessionId, userId]);
+  }, [sessionId, userId, socketTick]);
 
   // ── Send Message ──────────────────────────────────────────────────
 
   const sendMessage = useCallback(
     (content: string) => {
-      if (!sessionId || !sharedSecretRef.current || content.trim() === '')
-        return;
+      if (!sessionId || content.trim() === '') return;
+
+      // Read into a local const so TS can narrow out null and the value
+      // can't change between the guard and the encrypt call.
+      const shared = sharedSecretRef.current;
+      if (!shared) return;
 
       const socket = getSocket();
       if (!socket) return;
 
       const clientMsgId = Crypto.randomUUID();
       const timestamp = Date.now();
-      const encryptedPayload = encrypt(content, sharedSecretRef.current);
+      const encryptedPayload = encrypt(content, shared);
 
       socket.emit(
         'message:send',

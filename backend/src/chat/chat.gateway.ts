@@ -9,6 +9,9 @@ import {
 import { Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService) {}
@@ -20,10 +23,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Currently: read userId from handshake query (no JWT).
     // TODO: When auth is implemented, replace with:
     //   const userId = await this.authService.validateToken(client.handshake.auth.token);
-    const userId = client.handshake.query.userId as string;
+    const raw = client.handshake.query.userId;
+    const userId = Array.isArray(raw) ? raw[0] : raw;
 
-    if (!userId) {
-      console.log('[Rejected] Connection missing userId');
+    if (!userId || !UUID_RE.test(userId)) {
+      console.log(
+        `[Rejected] Connection with invalid or missing userId from socket: ${client.id}`,
+      );
       client.disconnect();
       return;
     }
@@ -130,6 +136,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = await this.chatService.getUserIdBySocket(client.id);
     if (!userId) return { status: 'error' };
 
+    // Reject messages for rooms the client hasn't joined — prevents
+    // injecting messages into arbitrary sessions.
+    if (!client.rooms.has(payload.sessionId)) {
+      return { status: 'error', message: 'Not in session' };
+    }
+
     const message = {
       ...payload,
       senderId: userId,
@@ -159,7 +171,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('message:sync')
   async handleMessageSync(
     @MessageBody() payload: { sessionId: string; lastMsgIndex: number },
+    @ConnectedSocket() client: Socket,
   ) {
+    const userId = await this.chatService.getUserIdBySocket(client.id);
+    if (!userId) return { status: 'error' };
+
+    // Only serve buffered messages to clients that have joined the room.
+    if (!client.rooms.has(payload.sessionId)) {
+      return { status: 'forbidden' };
+    }
+
     const messages = await this.chatService.getMessages(
       payload.sessionId,
       payload.lastMsgIndex,
