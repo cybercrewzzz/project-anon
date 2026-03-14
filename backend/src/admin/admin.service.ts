@@ -11,7 +11,7 @@ import {
   VerificationStatus,
 } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import maskEmail from 'src/utils/maskEmail';
+import maskEmail from '../utils/maskEmail';
 
 @Injectable()
 export class AdminService {
