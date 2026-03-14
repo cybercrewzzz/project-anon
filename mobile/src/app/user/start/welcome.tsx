@@ -1,33 +1,42 @@
 import { AppText } from '@/components/AppText';
 import { Pressable, View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, withUnistyles } from 'react-native-unistyles';
 import React from 'react';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const GradientColors = withUnistyles(LinearGradient, theme => ({
+  colors: theme.gradient.backgroundPrimary,
+}));
 
 export default function Welcome() {
   const router = useRouter();
-  
+
   return (
     <View style={styles.container}>
+      <GradientColors style={styles.gradient} />
+
       {/* Top*/}
       <AppText
         variant="largeTitle"
         emphasis="emphasized"
+        color='accent'
         style={styles.welcomeText}
       >
-        Welcome!
+        Welcome !
       </AppText>
 
       {/* Image in between */}
       <Image
-        source={require('@/assets/images/hero.webp')}
-        style={{ width: 100, height: 100 }}
+        source={require('@/assets/images/anoraLogo.png')}
+        style={styles.logoImage}
+        contentFit="contain"
       />
 
       {/* Bottom */}
       <View style={styles.bottom}>
-        <Pressable 
+        <Pressable
           style={styles.button}
           onPress={() => router.push('/user/start/selectLanguage' as any)}
         >
@@ -43,17 +52,22 @@ export default function Welcome() {
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
-    backgroundColor: '#D2ECFE',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: rt.insets.top + 40,
-    paddingBottom: 80,
+    paddingBottom: rt.insets.bottom + 40,
   },
+  gradient: { position: 'absolute', inset: 0 },
   welcomeText: {
-    fontSize: 32,
-    color: theme.text.accent,
+    fontSize: 36,
     textAlign: 'center',
-    lineHeight: 40,
+    lineHeight: 44,
+    marginTop: theme.spacing.s6,
+  },
+  logoImage: {
+    width: '100%',
+    height: 300,
+    marginHorizontal: theme.spacing.s4
   },
   bottom: {
     alignItems: 'center',
@@ -69,10 +83,12 @@ const styles = StyleSheet.create((theme, rt) => ({
   buttonText: {
     color: theme.text.secondary,
     fontWeight: 'bold',
+    fontSize: 18,
   },
   volunteerText: {
     textAlign: 'center',
     fontWeight: 'bold',
-    color: theme.text.accent,
+    color: theme.text.primary,
+    fontSize: 16,
   },
 }));

@@ -17,7 +17,7 @@ const LoginSuccessful = () => {
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <View style={styles.container}>
