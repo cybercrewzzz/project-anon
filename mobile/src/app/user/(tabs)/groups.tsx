@@ -11,11 +11,11 @@ const Groups = () => {
     <View style={styles.screen}>
       <Button
         text="Get Started"
-        onPress={() => router.navigate('/user/StartedScreens/selectLanguage')}
+        onPress={() => router.push('/user/start/welcome' as any)}
       />
       <Button
         text="Sign In"
-        onPress={() => router.navigate('/user/authScreens/signIn')}
+        onPress={() => router.push('/user/start/authScreens/signIn' as any)}
       />
     </View>
   );

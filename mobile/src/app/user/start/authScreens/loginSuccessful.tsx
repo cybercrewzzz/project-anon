@@ -3,26 +3,28 @@ import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
+import { useRouter } from 'expo-router';
 
-const ResetPassword = () => {
+const LoginSuccessful = () => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
       setIsLoading(false);
-      // Add your navigation logic here
+      router.replace('/user/(tabs)/home' as any);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <View style={styles.container}>
       <View style={styles.cardContainer}>
         <View style={styles.imageContainer}>
           <Image
-            source={require('@/assets/images/resetPasswordSuccessful.webp')}
+            source={require('@/assets/images/loginSuccessful.webp')}
             style={styles.image}
           />
         </View>
@@ -33,7 +35,7 @@ const ResetPassword = () => {
             emphasis="emphasized"
             style={styles.textLine1}
           >
-            Reset Password Successful!
+            Login Successful!
           </AppText>
           <AppText variant="subhead" color="primary" style={styles.textLine2}>
             Please Wait
@@ -54,7 +56,7 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default LoginSuccessful;
 
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
