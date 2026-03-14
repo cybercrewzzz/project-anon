@@ -192,6 +192,29 @@ export class AdminService {
     return { data, total, page: p, limit: l };
   }
 
+  async getVolunteerApplication(requestId: string) {
+    const verification = await this.prisma.volunteerVerification.findUnique({
+      where: { requestId },
+      include: {
+        volunteer: {
+          select: {
+            name: true,
+            email: true,
+            volunteerProfile: { select: { instituteName: true, about: true } },
+          },
+        },
+      },
+    });
+
+    if (!verification) {
+      throw new NotFoundException(
+        `Verification request ${requestId} not found`,
+      );
+    }
+
+    return verification;
+  }
+
   async approveVolunteerApplication(requestId: string, adminId: string) {
     const verification = await this.prisma.volunteerVerification.findUnique({
       where: { requestId },
