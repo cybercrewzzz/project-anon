@@ -3,15 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
+import { useRouter } from 'expo-router';
 
 const LoginSuccessful = () => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
       setIsLoading(false);
-      // Add your navigation logic here
+      router.replace('/user/(tabs)/home' as any);
     }, 5000);
 
     return () => clearTimeout(timer);

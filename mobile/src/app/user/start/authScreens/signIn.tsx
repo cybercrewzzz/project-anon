@@ -44,13 +44,13 @@ const SignIn = () => {
           value={credentials.password}
           secureTextEntry={true}
         />
-        <Pressable onPress={() => router.push('/user/start/authScreens/ResetPassword' as any)}>
+        <Pressable onPress={() => router.push('/user/start/authScreens/enterEmail' as any)}>
           <AppText variant="footnote" color="accent">
             Forgot your password?
           </AppText>
         </Pressable>
       </View>
-      <Button text="Sign In" onPress={() => router.replace('/user/(tabs)/groups' as any)} />
+      <Button text="Sign In" onPress={() => router.replace('/user/start/authScreens/loginSuccessful' as any)} />
       <OAuthSignIn />
       <Pressable onPress={() => router.push('/user/start/authScreens/signUp' as any)} style={styles.signUp}>
         <AppText variant="callout" color="subtle1">

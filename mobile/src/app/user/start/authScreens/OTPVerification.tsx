@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
-//import { useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 interface OTPInputProps {
   value: string;
@@ -31,7 +31,7 @@ const OTPInput = ({
 };
 
 const OTPVerification = () => {
-  //const router = useRouter();
+  const router = useRouter();
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = [
     useRef<TextInput>(null),
@@ -115,7 +115,7 @@ const OTPVerification = () => {
       <View style={styles.buttonContainer}>
         <Pressable
           style={styles.button}
-          //onPress={() => router.navigate('')}
+          onPress={() => router.replace('/user/start/authScreens/ResetPassword' as any)}
         >
           <AppText variant="headline" color="secondary">
             {' '}

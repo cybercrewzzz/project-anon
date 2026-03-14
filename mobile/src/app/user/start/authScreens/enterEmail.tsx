@@ -4,8 +4,10 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
+import { useRouter } from 'expo-router';
 
 const EnterEmail = () => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
 
   return (
@@ -45,7 +47,7 @@ const EnterEmail = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton>
+        <FullWidthButton onPress={() => router.push('/user/start/authScreens/OTPVerification' as any)}>
           <AppText variant="headline" color="secondary">
             Continue
           </AppText>

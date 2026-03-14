@@ -3,15 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
+import { useRouter } from 'expo-router';
 
 const ResetPassword = () => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
       setIsLoading(false);
-      // Add your navigation logic here
+      router.replace('/user/start/authScreens/signIn' as any);
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -39,7 +41,7 @@ const ResetPassword = () => {
             Please Wait
           </AppText>
           <AppText variant="subhead" color="primary" style={styles.textLine3}>
-            You will be directed to the homepage.
+            You will be directed to the sign in screen.
           </AppText>
         </View>
 
