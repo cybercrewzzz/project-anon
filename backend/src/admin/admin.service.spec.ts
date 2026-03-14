@@ -112,10 +112,22 @@ describe('AdminService', () => {
 
   describe('findReport', () => {
     it('returns the report when found', async () => {
-      const report = { reportId: 'r1', status: ReportStatus.pending };
+      const report = {
+        reportId: 'r1',
+        status: ReportStatus.pending,
+        reporter: {
+          accountId: 'acc1',
+          name: 'Alice',
+          email: 'alice@example.com',
+        },
+        reported: { accountId: 'acc2', name: 'Bob', email: 'bob@example.com' },
+        session: null,
+      };
       db.report.findUnique.mockResolvedValue(report);
 
-      await expect(service.findReport('r1')).resolves.toEqual(report);
+      const result = await service.findReport('r1');
+      expect(result.reportId).toEqual('r1');
+      expect(result.status).toEqual(ReportStatus.pending);
     });
 
     it('throws NotFoundException when report does not exist', async () => {

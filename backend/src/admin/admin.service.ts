@@ -11,6 +11,7 @@ import {
   VerificationStatus,
 } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import maskEmail from '../utils/maskEmail';
 
 @Injectable()
 export class AdminService {
@@ -83,6 +84,14 @@ export class AdminService {
 
     if (!report) {
       throw new NotFoundException(`Report with ID ${reportId} not found`);
+    }
+
+    if (report.reporter.email) {
+      report.reporter.email = maskEmail(report.reporter.email);
+    }
+
+    if (report.reported.email) {
+      report.reported.email = maskEmail(report.reported.email);
     }
 
     return report;
@@ -190,6 +199,29 @@ export class AdminService {
     ]);
 
     return { data, total, page: p, limit: l };
+  }
+
+  async getVolunteerApplication(requestId: string) {
+    const verification = await this.prisma.volunteerVerification.findUnique({
+      where: { requestId },
+      include: {
+        volunteer: {
+          select: {
+            name: true,
+            email: true,
+            volunteerProfile: { select: { instituteName: true, about: true } },
+          },
+        },
+      },
+    });
+
+    if (!verification) {
+      throw new NotFoundException(
+        `Verification request ${requestId} not found`,
+      );
+    }
+
+    return verification;
   }
 
   async approveVolunteerApplication(requestId: string, adminId: string) {
@@ -342,6 +374,7 @@ export class AdminService {
 
     const mapped = data.map((a) => ({
       ...a,
+      email: maskEmail(a.email),
       roles: a.accountRoles.map((ar) => ar.role.name),
       accountRoles: undefined,
     }));
