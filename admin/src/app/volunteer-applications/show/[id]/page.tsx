@@ -34,19 +34,33 @@ export default function VolunteerApplicationShowPage() {
   const [loading, setLoading] = useState(true);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { message } = App.useApp();
 
   useEffect(() => {
     apiClient
       .get(`/admin/volunteer-applications/${id}`)
       .then((res) => setApplication(res.data))
+      .catch(() => setError("Failed to load application."))
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading || !application) {
+  if (loading) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
         <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error || !application) {
+    return (
+      <div style={{ textAlign: "center", padding: 48 }}>
+        <Alert
+          message={error ?? "Application not found."}
+          type="error"
+          showIcon
+        />
       </div>
     );
   }

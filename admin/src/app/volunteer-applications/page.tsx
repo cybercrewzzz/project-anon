@@ -111,7 +111,7 @@ export default function VolunteerApplicationListPage() {
               <Text strong>{record.volunteer.name}</Text>
               <br />
               <Text type="secondary" style={{ fontSize: 12 }}>
-                {record.volunteer.email}
+                {record.volunteer.email ?? "N/A"}
               </Text>
             </div>
           )}

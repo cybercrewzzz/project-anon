@@ -12,6 +12,7 @@ import {
   Typography,
   App,
   Spin,
+  Alert,
 } from "antd";
 import { StatusTag } from "@components/status-tag";
 import { TakeActionModal } from "@components/take-action-modal";
@@ -26,19 +27,29 @@ export default function AccountShowPage() {
   const [loading, setLoading] = useState(true);
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { message } = App.useApp();
 
   useEffect(() => {
     apiClient
       .get(`/admin/accounts/${id}`)
       .then((res) => setAccount(res.data))
+      .catch(() => setError("Failed to load account."))
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading || !account) {
+  if (loading) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
         <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error || !account) {
+    return (
+      <div style={{ textAlign: "center", padding: 48 }}>
+        <Alert message={error ?? "Account not found."} type="error" showIcon />
       </div>
     );
   }

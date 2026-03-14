@@ -108,11 +108,15 @@ export default function SessionListPage() {
         <Table.Column
           title="Listener ID"
           dataIndex="listenerId"
-          render={(value: string) => (
-            <span style={{ fontFamily: "monospace", fontSize: 12 }}>
-              {value.slice(0, 12)}...
-            </span>
-          )}
+          render={(value: string | null) =>
+            value ? (
+              <span style={{ fontFamily: "monospace", fontSize: 12 }}>
+                {value.slice(0, 12)}...
+              </span>
+            ) : (
+              "N/A"
+            )
+          }
         />
         <Table.Column
           title="Status"

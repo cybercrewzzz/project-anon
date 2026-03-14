@@ -1,9 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Show } from "@refinedev/antd";
-import { Descriptions, Card, Button, Tag, Typography, App, Spin } from "antd";
+import {
+  Descriptions,
+  Card,
+  Button,
+  Tag,
+  Typography,
+  App,
+  Spin,
+  Alert,
+} from "antd";
 import { StatusTag } from "@components/status-tag";
 import { TakeActionModal } from "@components/take-action-modal";
 import { apiClient } from "@providers/axios";
@@ -13,24 +22,33 @@ const { Text } = Typography;
 
 export default function ReportShowPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const [report, setReport] = useState<ReportDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { message } = App.useApp();
 
   useEffect(() => {
     apiClient
       .get(`/admin/reports/${id}`)
       .then((res) => setReport(res.data))
+      .catch(() => setError("Failed to load report."))
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading || !report) {
+  if (loading) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
         <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error || !report) {
+    return (
+      <div style={{ textAlign: "center", padding: 48 }}>
+        <Alert message={error ?? "Report not found."} type="error" showIcon />
       </div>
     );
   }

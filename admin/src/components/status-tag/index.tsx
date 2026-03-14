@@ -34,7 +34,7 @@ interface StatusTagProps {
   status: string;
 }
 
-export const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
+export const StatusTag = ({ status }: StatusTagProps) => {
   const color = statusColors[status] || "default";
   const label = status.replace(/_/g, " ").toUpperCase();
   return <Tag color={color}>{label}</Tag>;
