@@ -59,7 +59,7 @@ const SignIn = () => {
       <Button
         text="Sign In"
         onPress={() =>
-          router.replace('/user/start/authScreens/loginSuccessful' as any)
+          router.push('/user/start/authScreens/loginSuccessful' as any)
         }
       />
       <OAuthSignIn />

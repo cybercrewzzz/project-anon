@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { AppText } from '@/components/AppText';
 import { View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
 import { useRouter } from 'expo-router';
-import { useUnistyles } from 'react-native-unistyles';
 
 const EnterEmail = () => {
   const router = useRouter();

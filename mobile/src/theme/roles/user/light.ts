@@ -87,7 +87,7 @@ export const userLightTheme = {
     default: common.white,
     secondary: purple[50],
     accent: purple[500],
-    overlay: 'rgba(149, 0, 255, 0.8)',
+    overlay: 'rgba(51, 51, 51, 0.8)',
   },
   surface: {
     primary: common.white,
