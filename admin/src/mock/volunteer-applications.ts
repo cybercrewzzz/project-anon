@@ -1,0 +1,95 @@
+import type { VolunteerApplicationItem } from "@/types";
+
+export const mockVolunteerApplications: VolunteerApplicationItem[] = [
+  {
+    requestId: "va-00000001-1111-4000-a000-000000000001",
+    volunteerId: "u1u2u3u4-1111-4000-a000-000000000001",
+    documentUrl: "https://storage.example.com/docs/nic-front-001.jpg",
+    status: "pending",
+    adminNotes: null,
+    submittedAt: "2026-03-13T10:00:00Z",
+    reviewedAt: null,
+    volunteer: {
+      name: "Tharushi Bandara",
+      volunteerProfile: { instituteName: "University of Colombo" },
+    },
+  },
+  {
+    requestId: "va-00000002-2222-4000-a000-000000000002",
+    volunteerId: "u1u2u3u4-2222-4000-a000-000000000002",
+    documentUrl: "https://storage.example.com/docs/nic-front-002.jpg",
+    status: "pending",
+    adminNotes: null,
+    submittedAt: "2026-03-12T15:30:00Z",
+    reviewedAt: null,
+    volunteer: {
+      name: "Ashan Rajapaksha",
+      volunteerProfile: { instituteName: "University of Moratuwa" },
+    },
+  },
+  {
+    requestId: "va-00000003-3333-4000-a000-000000000003",
+    volunteerId: "u1u2u3u4-3333-4000-a000-000000000003",
+    documentUrl: "https://storage.example.com/docs/nic-front-003.jpg",
+    status: "pending",
+    adminNotes: null,
+    submittedAt: "2026-03-14T08:20:00Z",
+    reviewedAt: null,
+    volunteer: {
+      name: "Nethmi Wickramasinghe",
+      volunteerProfile: { instituteName: "University of Peradeniya" },
+    },
+  },
+  {
+    requestId: "va-00000004-4444-4000-a000-000000000004",
+    volunteerId: "u1u2u3u4-4444-4000-a000-000000000004",
+    documentUrl: "https://storage.example.com/docs/nic-front-004.jpg",
+    status: "approved",
+    adminNotes: null,
+    submittedAt: "2026-03-05T09:00:00Z",
+    reviewedAt: "2026-03-06T14:00:00Z",
+    volunteer: {
+      name: "Kasun Dissanayake",
+      volunteerProfile: { instituteName: "University of Kelaniya" },
+    },
+  },
+  {
+    requestId: "va-00000005-5555-4000-a000-000000000005",
+    volunteerId: "u1u2u3u4-5555-4000-a000-000000000005",
+    documentUrl: "https://storage.example.com/docs/nic-front-005.jpg",
+    status: "approved",
+    adminNotes: null,
+    submittedAt: "2026-03-02T11:45:00Z",
+    reviewedAt: "2026-03-03T10:00:00Z",
+    volunteer: {
+      name: "Imalsha Gunawardena",
+      volunteerProfile: { instituteName: "SLIIT" },
+    },
+  },
+  {
+    requestId: "va-00000006-6666-4000-a000-000000000006",
+    volunteerId: "u1u2u3u4-6666-4000-a000-000000000006",
+    documentUrl: "https://storage.example.com/docs/nic-front-006.jpg",
+    status: "rejected",
+    adminNotes: "Document was blurry and unreadable. Please resubmit.",
+    submittedAt: "2026-03-01T16:00:00Z",
+    reviewedAt: "2026-03-02T09:30:00Z",
+    volunteer: {
+      name: "Dineth Pathirana",
+      volunteerProfile: { instituteName: "NSBM Green University" },
+    },
+  },
+  {
+    requestId: "va-00000007-7777-4000-a000-000000000007",
+    volunteerId: "u1u2u3u4-7777-4000-a000-000000000007",
+    documentUrl: "https://storage.example.com/docs/nic-front-007.jpg",
+    status: "rejected",
+    adminNotes: "Applicant does not meet the minimum age requirement.",
+    submittedAt: "2026-02-28T12:00:00Z",
+    reviewedAt: "2026-03-01T08:00:00Z",
+    volunteer: {
+      name: "Sandun Perera",
+      volunteerProfile: null,
+    },
+  },
+];
