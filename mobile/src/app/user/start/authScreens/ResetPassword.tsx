@@ -39,8 +39,6 @@ const ResetPassword = () => {
             You will be directed to the sign in screen.
           </AppText>
         </View>
-
-
       </View>
     </View>
   );
@@ -75,8 +73,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: theme.spacing.s6,
   },
 
-
-
   textLine1: {
     justifyContent: 'center',
     textAlign: 'center',
@@ -94,6 +90,4 @@ const styles = StyleSheet.create((theme, rt) => ({
     justifyContent: 'center',
     textAlign: 'center',
   },
-
-
 }));

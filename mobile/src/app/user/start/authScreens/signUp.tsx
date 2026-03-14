@@ -101,7 +101,9 @@ const SignUp = () => {
 
       <View style={styles.buttonContainer}>
         <FullWidthButton
-          onPress={() => router.push('/user/start/authScreens/registerSuccessful' as any)}
+          onPress={() =>
+            router.push('/user/start/authScreens/registerSuccessful' as any)
+          }
         >
           <AppText variant="headline" color="secondary">
             Sign Up
