@@ -11,11 +11,15 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
-import { ConnectSessionDto, ConnectSessionSchema } from './dto/connect-session.dto';
-import { AcceptSessionParamsSchema } from './dto/accept-session.dto';
-import { RateSessionParamsSchema, RateSessionBodySchema, RateSessionBodyDto } from './dto/rate-session.dto';
-import { SessionHistoryQuerySchema, SessionHistoryQueryDto } from './dto/session-history.dto';
-import { AuthGuard } from '../common/guards/auth.guard';
+import { ConnectSessionSchema } from './dto/session-connect.dto';
+import { ConnectSessionDto } from './dto/session-connect.dto';
+import { AcceptSessionParamsSchema } from './dto/sessionid-accept.dto';
+import { RateSessionParamsSchema } from './dto/sessionid-rate.dto';
+import { RateSessionBodySchema } from './dto/sessionid-rate.dto';
+import { RateSessionBodyDto } from './dto/sessionid-rate.dto';
+import { SessionHistoryQuerySchema } from './dto/sessionhistory.dto';
+import { SessionHistoryQueryDto } from './dto/sessionhistory.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -41,7 +45,7 @@ import { JwtPayload } from '../common/types/jwt-payload.type';
 // If the token is missing or invalid, the request is rejected with 401
 // before it even reaches your method.
 // RolesGuard checks the `roles[]` claim inside the JWT against @Roles().
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class SessionController {
   // NestJS "injects" SessionService here automatically (Dependency Injection).
   // You never call `new SessionService()` yourself — NestJS manages that.
@@ -129,7 +133,7 @@ export class SessionController {
 
     // @Query() extracts URL query parameters (?page=1&limit=20).
     // ZodValidationPipe validates and coerces them from strings to numbers.
-    @Query(new ZodValidationPipe(SessionHistoryQuerySchema)) query: SessionHistoryQueryDto,
+    @Query(new ZodValidationPipe(SessionHistoryQuerySchema))query: SessionHistoryQueryDto,
   ) {
     return this.sessionService.getHistory(user.sub, query);
   }
