@@ -1,29 +1,39 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { List, DateField } from "@refinedev/antd";
 import { Table, Select, Input, Space } from "antd";
 import { StatusTag } from "@components/status-tag";
-import { mockSessions } from "@/mock/sessions";
-import type { SessionStatus } from "@/types";
+import { apiClient } from "@providers/axios";
+import type { SessionStatus, SessionListItem } from "@/types";
 
 export default function SessionListPage() {
-  const [statusFilter, setStatusFilter] = useState<
-    SessionStatus | undefined
-  >();
+  const [statusFilter, setStatusFilter] = useState<SessionStatus | undefined>();
   const [seekerIdFilter, setSeekerIdFilter] = useState("");
   const [listenerIdFilter, setListenerIdFilter] = useState("");
+  const [data, setData] = useState<SessionListItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const filteredData = useMemo(() => {
-    return mockSessions.filter((s) => {
-      const matchesStatus = !statusFilter || s.status === statusFilter;
-      const matchesSeeker =
-        !seekerIdFilter || s.seekerId.includes(seekerIdFilter);
-      const matchesListener =
-        !listenerIdFilter || s.listenerId.includes(listenerIdFilter);
-      return matchesStatus && matchesSeeker && matchesListener;
-    });
-  }, [statusFilter, seekerIdFilter, listenerIdFilter]);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: Record<string, any> = { page, limit: 10 };
+      if (statusFilter) params.status = statusFilter;
+      if (seekerIdFilter) params.seekerId = seekerIdFilter;
+      if (listenerIdFilter) params.listenerId = listenerIdFilter;
+      const res = await apiClient.get("/admin/sessions", { params });
+      setData(res.data.data);
+      setTotal(res.data.total);
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter, seekerIdFilter, listenerIdFilter, page]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <List>
@@ -31,7 +41,10 @@ export default function SessionListPage() {
         <Select
           placeholder="Filter by status"
           allowClear
-          onChange={(value) => setStatusFilter(value)}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
           style={{ width: 220 }}
           options={[
             { value: "active", label: "Active" },
@@ -45,21 +58,33 @@ export default function SessionListPage() {
         <Input
           placeholder="Seeker ID"
           allowClear
-          onChange={(e) => setSeekerIdFilter(e.target.value)}
+          onChange={(e) => {
+            setSeekerIdFilter(e.target.value);
+            setPage(1);
+          }}
           style={{ width: 200 }}
         />
         <Input
           placeholder="Listener ID"
           allowClear
-          onChange={(e) => setListenerIdFilter(e.target.value)}
+          onChange={(e) => {
+            setListenerIdFilter(e.target.value);
+            setPage(1);
+          }}
           style={{ width: 200 }}
         />
       </Space>
 
       <Table
-        dataSource={filteredData}
+        dataSource={data}
         rowKey="sessionId"
-        pagination={{ pageSize: 10 }}
+        loading={loading}
+        pagination={{
+          current: page,
+          pageSize: 10,
+          total,
+          onChange: (p) => setPage(p),
+        }}
         scroll={{ x: 1200 }}
       >
         <Table.Column

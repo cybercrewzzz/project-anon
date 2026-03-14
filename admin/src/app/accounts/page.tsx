@@ -1,47 +1,60 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { List, ShowButton, DateField } from "@refinedev/antd";
 import { Table, Input, Select, Space, Tag } from "antd";
 import { StatusTag } from "@components/status-tag";
-import { mockAccounts } from "@/mock/accounts";
+import { apiClient } from "@providers/axios";
 import type { AccountStatus, AccountListItem } from "@/types";
 
 export default function AccountListPage() {
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    AccountStatus | undefined
-  >();
+  const [statusFilter, setStatusFilter] = useState<AccountStatus | undefined>();
   const [roleFilter, setRoleFilter] = useState<string | undefined>();
+  const [data, setData] = useState<AccountListItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const filteredData = useMemo(() => {
-    return mockAccounts.filter((a) => {
-      const q = searchText.toLowerCase();
-      const matchesSearch =
-        !searchText ||
-        a.email.toLowerCase().includes(q) ||
-        a.name.toLowerCase().includes(q) ||
-        a.nickname.toLowerCase().includes(q);
-      const matchesStatus = !statusFilter || a.status === statusFilter;
-      const matchesRole = !roleFilter || a.roles.includes(roleFilter);
-      return matchesSearch && matchesStatus && matchesRole;
-    });
-  }, [searchText, statusFilter, roleFilter]);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: Record<string, any> = { page, limit: 10 };
+      if (searchText) params.search = searchText;
+      if (statusFilter) params.status = statusFilter;
+      if (roleFilter) params.role = roleFilter;
+      const res = await apiClient.get("/admin/accounts", { params });
+      setData(res.data.data);
+      setTotal(res.data.total);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchText, statusFilter, roleFilter, page]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <List>
       <Space style={{ marginBottom: 16 }} wrap>
         <Input.Search
           placeholder="Search by email, name, or nickname"
-          onSearch={setSearchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          onSearch={(v) => {
+            setSearchText(v);
+            setPage(1);
+          }}
+          onChange={(e) => !e.target.value && setSearchText("")}
           allowClear
           style={{ width: 300 }}
         />
         <Select
           placeholder="Filter by status"
           allowClear
-          onChange={(value) => setStatusFilter(value)}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
           style={{ width: 160 }}
           options={[
             { value: "active", label: "Active" },
@@ -53,7 +66,10 @@ export default function AccountListPage() {
         <Select
           placeholder="Filter by role"
           allowClear
-          onChange={(value) => setRoleFilter(value)}
+          onChange={(value) => {
+            setRoleFilter(value);
+            setPage(1);
+          }}
           style={{ width: 160 }}
           options={[
             { value: "user", label: "User" },
@@ -64,9 +80,15 @@ export default function AccountListPage() {
       </Space>
 
       <Table
-        dataSource={filteredData}
+        dataSource={data}
         rowKey="accountId"
-        pagination={{ pageSize: 10 }}
+        loading={loading}
+        pagination={{
+          current: page,
+          pageSize: 10,
+          total,
+          onChange: (p) => setPage(p),
+        }}
       >
         <Table.Column
           title="Account ID"
@@ -117,11 +139,7 @@ export default function AccountListPage() {
         <Table.Column
           title="Actions"
           render={(_: unknown, record: AccountListItem) => (
-            <ShowButton
-              hideText
-              size="small"
-              recordItemId={record.accountId}
-            />
+            <ShowButton hideText size="small" recordItemId={record.accountId} />
           )}
         />
       </Table>

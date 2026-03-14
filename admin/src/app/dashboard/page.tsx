@@ -1,6 +1,7 @@
 "use client";
 
-import { Row, Col, Card, Statistic } from "antd";
+import { useEffect, useState } from "react";
+import { Row, Col, Card, Statistic, Spin } from "antd";
 import {
   TeamOutlined,
   UserOutlined,
@@ -9,10 +10,27 @@ import {
   FlagOutlined,
   SolutionOutlined,
 } from "@ant-design/icons";
-import { mockDashboardStats } from "@/mock/dashboard";
+import { apiClient } from "@providers/axios";
+import type { DashboardStats } from "@/types";
 
 export default function DashboardPage() {
-  const stats = mockDashboardStats;
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiClient
+      .get("/admin/dashboard/stats")
+      .then((res) => setStats(res.data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || !stats) {
+    return (
+      <div style={{ textAlign: "center", padding: 48 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   const cards = [
     {

@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { List, DateField, ShowButton } from "@refinedev/antd";
 import { Table, Select, Space, Button, App, Tooltip, Typography } from "antd";
 import { EyeOutlined, FileTextOutlined } from "@ant-design/icons";
 import { StatusTag } from "@components/status-tag";
 import { RejectModal } from "@components/reject-modal";
-import { mockVolunteerApplications } from "@/mock/volunteer-applications";
+import { apiClient } from "@providers/axios";
 import type { VerificationStatus, VolunteerApplicationItem } from "@/types";
 
 const { Text } = Typography;
@@ -19,24 +19,57 @@ export default function VolunteerApplicationListPage() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
     null,
   );
+  const [data, setData] = useState<VolunteerApplicationItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const { message } = App.useApp();
 
-  const filteredData = useMemo(
-    () =>
-      mockVolunteerApplications.filter(
-        (a) => !statusFilter || a.status === statusFilter,
-      ),
-    [statusFilter],
-  );
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: Record<string, any> = { page, limit: 10 };
+      if (statusFilter) params.status = statusFilter;
+      const res = await apiClient.get("/admin/volunteer-applications", {
+        params,
+      });
+      setData(res.data.data);
+      setTotal(res.data.total);
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter, page]);
 
-  const handleApprove = (requestId: string) => {
-    message.success(`Application ${requestId.slice(0, 8)}... approved`);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleApprove = async (requestId: string) => {
+    try {
+      await apiClient.patch(
+        `/admin/volunteer-applications/${requestId}/approve`,
+      );
+      message.success("Application approved");
+      fetchData();
+    } catch {
+      message.error("Failed to approve application");
+    }
   };
 
-  const handleRejectSubmit = () => {
-    message.success("Application rejected");
-    setRejectModalOpen(false);
-    setSelectedRequestId(null);
+  const handleRejectSubmit = async (adminNotes: string) => {
+    if (!selectedRequestId) return;
+    try {
+      await apiClient.patch(
+        `/admin/volunteer-applications/${selectedRequestId}/reject`,
+        { adminNotes },
+      );
+      message.success("Application rejected");
+      setRejectModalOpen(false);
+      setSelectedRequestId(null);
+      fetchData();
+    } catch {
+      message.error("Failed to reject application");
+    }
   };
 
   return (
@@ -45,7 +78,10 @@ export default function VolunteerApplicationListPage() {
         <Select
           placeholder="Filter by status"
           allowClear
-          onChange={(value) => setStatusFilter(value)}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
           style={{ width: 200 }}
           options={[
             { value: "pending", label: "Pending" },
@@ -56,9 +92,15 @@ export default function VolunteerApplicationListPage() {
       </Space>
 
       <Table
-        dataSource={filteredData}
+        dataSource={data}
         rowKey="requestId"
-        pagination={{ pageSize: 10 }}
+        loading={loading}
+        pagination={{
+          current: page,
+          pageSize: 10,
+          total,
+          onChange: (p) => setPage(p),
+        }}
         scroll={{ x: 900 }}
       >
         <Table.Column

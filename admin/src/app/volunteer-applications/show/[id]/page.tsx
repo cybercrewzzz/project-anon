@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Show } from "@refinedev/antd";
 import {
@@ -13,6 +13,7 @@ import {
   App,
   Alert,
   Empty,
+  Spin,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -21,18 +22,34 @@ import {
 } from "@ant-design/icons";
 import { StatusTag } from "@components/status-tag";
 import { RejectModal } from "@components/reject-modal";
-import { mockVolunteerApplications } from "@/mock/volunteer-applications";
+import { apiClient } from "@providers/axios";
+import type { VolunteerApplicationItem } from "@/types";
 
 const { Title, Paragraph, Text } = Typography;
 
 export default function VolunteerApplicationShowPage() {
   const { id } = useParams<{ id: string }>();
-  const application =
-    mockVolunteerApplications.find((a) => a.requestId === id) ||
-    mockVolunteerApplications[0];
-
+  const [application, setApplication] =
+    useState<VolunteerApplicationItem | null>(null);
+  const [loading, setLoading] = useState(true);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { message } = App.useApp();
+
+  useEffect(() => {
+    apiClient
+      .get(`/admin/volunteer-applications/${id}`)
+      .then((res) => setApplication(res.data))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading || !application) {
+    return (
+      <div style={{ textAlign: "center", padding: 48 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   const isPending = application.status === "pending";
   const isImage =
@@ -40,13 +57,33 @@ export default function VolunteerApplicationShowPage() {
     application.documentUrl.endsWith(".jpeg") ||
     application.documentUrl.endsWith(".png");
 
-  const handleApprove = () => {
-    message.success("Application approved successfully");
+  const handleApprove = async () => {
+    setSubmitting(true);
+    try {
+      await apiClient.patch(`/admin/volunteer-applications/${id}/approve`);
+      message.success("Application approved successfully");
+      setApplication({ ...application, status: "approved" });
+    } catch {
+      message.error("Failed to approve application");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleRejectSubmit = () => {
-    message.success("Application rejected");
-    setRejectModalOpen(false);
+  const handleRejectSubmit = async (adminNotes: string) => {
+    setSubmitting(true);
+    try {
+      await apiClient.patch(`/admin/volunteer-applications/${id}/reject`, {
+        adminNotes,
+      });
+      message.success("Application rejected");
+      setApplication({ ...application, status: "rejected", adminNotes });
+      setRejectModalOpen(false);
+    } catch {
+      message.error("Failed to reject application");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const formatDate = (dateStr: string) =>
@@ -70,6 +107,7 @@ export default function VolunteerApplicationShowPage() {
                 icon={<CloseCircleOutlined />}
                 danger
                 onClick={() => setRejectModalOpen(true)}
+                loading={submitting}
               >
                 Reject
               </Button>
@@ -77,6 +115,7 @@ export default function VolunteerApplicationShowPage() {
                 icon={<CheckCircleOutlined />}
                 type="primary"
                 onClick={handleApprove}
+                loading={submitting}
               >
                 Approve
               </Button>
@@ -85,7 +124,6 @@ export default function VolunteerApplicationShowPage() {
         </>
       )}
     >
-      {/* Application Status Banner */}
       {application.status === "approved" && (
         <Alert
           message="This application has been approved"
@@ -104,7 +142,6 @@ export default function VolunteerApplicationShowPage() {
         />
       )}
 
-      {/* Applicant Info */}
       <Title level={5} style={{ marginTop: 0 }}>
         Applicant Information
       </Title>
@@ -113,7 +150,7 @@ export default function VolunteerApplicationShowPage() {
           {application.volunteer.name}
         </Descriptions.Item>
         <Descriptions.Item label="Email">
-          {application.volunteer.email}
+          {application.volunteer.email ?? "N/A"}
         </Descriptions.Item>
         <Descriptions.Item label="Volunteer ID">
           <Text copyable style={{ fontFamily: "monospace", fontSize: 12 }}>
@@ -126,12 +163,12 @@ export default function VolunteerApplicationShowPage() {
           )}
         </Descriptions.Item>
         <Descriptions.Item label="Bio" span={2}>
-          {application.volunteer.volunteerProfile?.bio ? (
+          {application.volunteer.volunteerProfile?.about ? (
             <Paragraph
               style={{ marginBottom: 0 }}
               ellipsis={{ rows: 3, expandable: true, symbol: "more" }}
             >
-              {application.volunteer.volunteerProfile.bio}
+              {application.volunteer.volunteerProfile.about}
             </Paragraph>
           ) : (
             <Text type="secondary">No bio provided</Text>
@@ -139,7 +176,6 @@ export default function VolunteerApplicationShowPage() {
         </Descriptions.Item>
       </Descriptions>
 
-      {/* Request Details */}
       <Title level={5} style={{ marginTop: 24 }}>
         Request Details
       </Title>
@@ -169,14 +205,11 @@ export default function VolunteerApplicationShowPage() {
         )}
       </Descriptions>
 
-      {/* Document Viewer */}
       <Title level={5} style={{ marginTop: 24 }}>
         Submitted Document
       </Title>
       <Card
-        styles={{
-          body: { padding: 16, textAlign: "center" },
-        }}
+        styles={{ body: { padding: 16, textAlign: "center" } }}
         extra={
           <Space>
             <Button

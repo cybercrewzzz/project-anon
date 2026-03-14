@@ -1,23 +1,64 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Show, DateField } from "@refinedev/antd";
-import { Descriptions, Tag, Tabs, Table, Button, Typography, App } from "antd";
+import {
+  Descriptions,
+  Tag,
+  Tabs,
+  Table,
+  Button,
+  Typography,
+  App,
+  Spin,
+} from "antd";
 import { StatusTag } from "@components/status-tag";
 import { TakeActionModal } from "@components/take-action-modal";
-import { mockAccountDetails } from "@/mock/accounts";
+import { apiClient } from "@providers/axios";
+import type { AccountDetail } from "@/types";
 
 const { Text } = Typography;
 
 export default function AccountShowPage() {
   const { id } = useParams<{ id: string }>();
-  const account =
-    mockAccountDetails.find((a) => a.accountId === id) ||
-    mockAccountDetails[0];
-
+  const [account, setAccount] = useState<AccountDetail | null>(null);
+  const [loading, setLoading] = useState(true);
   const [actionModalOpen, setActionModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { message } = App.useApp();
+
+  useEffect(() => {
+    apiClient
+      .get(`/admin/accounts/${id}`)
+      .then((res) => setAccount(res.data))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading || !account) {
+    return (
+      <div style={{ textAlign: "center", padding: 48 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  const handleTakeAction = async (values: {
+    actionType: string;
+    reason: string;
+    expiresAt?: string;
+  }) => {
+    setSubmitting(true);
+    try {
+      await apiClient.post(`/admin/accounts/${id}/action`, values);
+      message.success("Action taken successfully");
+      setActionModalOpen(false);
+    } catch {
+      message.error("Failed to take action");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Show
@@ -98,10 +139,7 @@ export default function AccountShowPage() {
                   render={(value: string) => <StatusTag status={value} />}
                 />
                 <Table.Column title="Reason" dataIndex="reason" />
-                <Table.Column
-                  title="Admin"
-                  dataIndex={["admin", "email"]}
-                />
+                <Table.Column title="Admin" dataIndex={["admin", "email"]} />
                 <Table.Column
                   title="Date"
                   dataIndex="createdAt"
@@ -211,10 +249,7 @@ export default function AccountShowPage() {
       <TakeActionModal
         open={actionModalOpen}
         onCancel={() => setActionModalOpen(false)}
-        onSubmit={() => {
-          message.success("Action taken successfully");
-          setActionModalOpen(false);
-        }}
+        onSubmit={handleTakeAction}
         targetName={account.name}
       />
     </Show>

@@ -1,19 +1,35 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { List, ShowButton, DateField } from "@refinedev/antd";
 import { Table, Select, Space, Tag } from "antd";
 import { StatusTag } from "@components/status-tag";
-import { mockReports } from "@/mock/reports";
-import type { ReportStatus } from "@/types";
+import { apiClient } from "@providers/axios";
+import type { ReportListItem, ReportStatus } from "@/types";
 
 export default function ReportListPage() {
   const [statusFilter, setStatusFilter] = useState<ReportStatus | undefined>();
+  const [data, setData] = useState<ReportListItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const filteredData = useMemo(
-    () => mockReports.filter((r) => !statusFilter || r.status === statusFilter),
-    [statusFilter]
-  );
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: Record<string, any> = { page, limit: 10 };
+      if (statusFilter) params.status = statusFilter;
+      const res = await apiClient.get("/admin/reports", { params });
+      setData(res.data.data);
+      setTotal(res.data.total);
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter, page]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <List>
@@ -21,7 +37,10 @@ export default function ReportListPage() {
         <Select
           placeholder="Filter by status"
           allowClear
-          onChange={(value) => setStatusFilter(value)}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
           style={{ width: 200 }}
           options={[
             { value: "pending", label: "Pending" },
@@ -33,9 +52,15 @@ export default function ReportListPage() {
       </Space>
 
       <Table
-        dataSource={filteredData}
+        dataSource={data}
         rowKey="reportId"
-        pagination={{ pageSize: 10 }}
+        loading={loading}
+        pagination={{
+          current: page,
+          pageSize: 10,
+          total,
+          onChange: (p) => setPage(p),
+        }}
       >
         <Table.Column
           title="Report ID"
@@ -61,11 +86,13 @@ export default function ReportListPage() {
         <Table.Column
           title="Reported At"
           dataIndex="reportedAt"
-          render={(value: string) => <DateField value={value} format="YYYY-MM-DD HH:mm" />}
+          render={(value: string) => (
+            <DateField value={value} format="YYYY-MM-DD HH:mm" />
+          )}
         />
         <Table.Column
           title="Actions"
-          render={(_, record: (typeof mockReports)[0]) => (
+          render={(_: unknown, record: ReportListItem) => (
             <ShowButton hideText size="small" recordItemId={record.reportId} />
           )}
         />

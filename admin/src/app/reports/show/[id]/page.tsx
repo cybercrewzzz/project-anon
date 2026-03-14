@@ -1,33 +1,73 @@
 "use client";
 
-import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Show } from "@refinedev/antd";
-import {
-  Descriptions,
-  Card,
-  Button,
-  Space,
-  Tag,
-  Typography,
-  App,
-} from "antd";
+import { Descriptions, Card, Button, Tag, Typography, App, Spin } from "antd";
 import { StatusTag } from "@components/status-tag";
 import { TakeActionModal } from "@components/take-action-modal";
-import { mockReportDetails } from "@/mock/reports";
+import { apiClient } from "@providers/axios";
+import type { ReportDetail } from "@/types";
 
 const { Text } = Typography;
 
 export default function ReportShowPage() {
   const { id } = useParams<{ id: string }>();
-  const report =
-    mockReportDetails.find((r) => r.reportId === id) || mockReportDetails[0];
-
+  const router = useRouter();
+  const [report, setReport] = useState<ReportDetail | null>(null);
+  const [loading, setLoading] = useState(true);
   const [actionModalOpen, setActionModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { message } = App.useApp();
+
+  useEffect(() => {
+    apiClient
+      .get(`/admin/reports/${id}`)
+      .then((res) => setReport(res.data))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading || !report) {
+    return (
+      <div style={{ textAlign: "center", padding: 48 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   const isActionable =
     report.status === "pending" || report.status === "reviewing";
+
+  const handleDismiss = async () => {
+    setSubmitting(true);
+    try {
+      await apiClient.patch(`/admin/reports/${id}/dismiss`);
+      message.success("Report dismissed");
+      setReport({ ...report, status: "dismissed" });
+    } catch {
+      message.error("Failed to dismiss report");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleTakeAction = async (values: {
+    actionType: string;
+    reason: string;
+    expiresAt?: string;
+  }) => {
+    setSubmitting(true);
+    try {
+      await apiClient.post(`/admin/reports/${id}/action`, values);
+      message.success("Action taken successfully");
+      setActionModalOpen(false);
+      setReport({ ...report, status: "resolved" });
+    } catch {
+      message.error("Failed to take action");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Show
@@ -36,10 +76,9 @@ export default function ReportShowPage() {
         <>
           {defaultButtons}
           <Button
-            onClick={() => {
-              message.success("Report dismissed");
-            }}
+            onClick={handleDismiss}
             disabled={!isActionable}
+            loading={submitting}
           >
             Dismiss
           </Button>
@@ -83,10 +122,7 @@ export default function ReportShowPage() {
             {report.reporter.email}
           </Descriptions.Item>
           <Descriptions.Item label="Account ID">
-            <Text
-              copyable
-              style={{ fontFamily: "monospace", fontSize: 12 }}
-            >
+            <Text copyable style={{ fontFamily: "monospace", fontSize: 12 }}>
               {report.reporter.accountId.slice(0, 8)}...
             </Text>
           </Descriptions.Item>
@@ -102,10 +138,7 @@ export default function ReportShowPage() {
             {report.reported.email}
           </Descriptions.Item>
           <Descriptions.Item label="Account ID">
-            <Text
-              copyable
-              style={{ fontFamily: "monospace", fontSize: 12 }}
-            >
+            <Text copyable style={{ fontFamily: "monospace", fontSize: 12 }}>
               {report.reported.accountId.slice(0, 8)}...
             </Text>
           </Descriptions.Item>
@@ -160,10 +193,7 @@ export default function ReportShowPage() {
       <TakeActionModal
         open={actionModalOpen}
         onCancel={() => setActionModalOpen(false)}
-        onSubmit={() => {
-          message.success("Action taken successfully");
-          setActionModalOpen(false);
-        }}
+        onSubmit={handleTakeAction}
         targetName={report.reported.name}
       />
     </Show>
