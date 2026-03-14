@@ -1,6 +1,6 @@
 import { View, Pressable } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import AuthHeader from '@/components/authHeader';
 import InputForm from '@/components/inputForm';
@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 
 const SignIn = () => {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const [credentials, setCredentials] = useState({
     email: '',
     password: '',
@@ -27,7 +28,7 @@ const SignIn = () => {
         <InputForm
           placeholder="Email"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={text =>
             setCredentials(prev => ({ ...prev, email: text }))
           }
@@ -37,7 +38,7 @@ const SignIn = () => {
         <InputForm
           placeholder="Password"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={text =>
             setCredentials(prev => ({ ...prev, password: text }))
           }

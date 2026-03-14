@@ -7,11 +7,30 @@ const AuthLayout = () => {
       <Stack.Screen name="signUp" />
       <Stack.Screen name="signIn" />
       <Stack.Screen name="signupNlogin" />
-      <Stack.Screen name="ResetPassword" />
+      <Stack.Screen
+        name="ResetPassword"
+        options={{
+          presentation: 'transparentModal',
+          animation: 'fade',
+        }}
+      />
       <Stack.Screen name="CreateNewPassword" />
       <Stack.Screen name="enterEmail" />
       <Stack.Screen name="OTPVerification" />
-      <Stack.Screen name="loginSuccessful" />
+      <Stack.Screen
+        name="loginSuccessful"
+        options={{
+          presentation: 'transparentModal',
+          animation: 'fade',
+        }}
+      />
+      <Stack.Screen
+        name="registerSuccessful"
+        options={{
+          presentation: 'transparentModal',
+          animation: 'fade',
+        }}
+      />
     </Stack>
   );
 };

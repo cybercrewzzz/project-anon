@@ -1,9 +1,10 @@
 import { AppText } from '@/components/AppText';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import Button from '@/components/button';
 
 const GradientColors = withUnistyles(LinearGradient, theme => ({
   colors: theme.gradient.backgroundPrimary,
@@ -35,12 +36,10 @@ export default function Welcome() {
 
       {/* Bottom */}
       <View style={styles.bottom}>
-        <Pressable
-          style={styles.button}
+        <Button
+          text="Get Started"
           onPress={() => router.push('/user/start/selectLanguage' as any)}
-        >
-          <AppText style={styles.buttonText}>Get Started</AppText>
-        </Pressable>
+        />
 
         <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>
       </View>
@@ -53,14 +52,12 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: rt.insets.top + 40,
-    paddingBottom: rt.insets.bottom + 40,
+    paddingTop: rt.insets.top + theme.spacing.s7,
+    paddingBottom: rt.insets.bottom + theme.spacing.s7,
   },
   gradient: { position: 'absolute', inset: 0 },
   welcomeText: {
-    fontSize: 36,
     textAlign: 'center',
-    lineHeight: 44,
     marginTop: theme.spacing.s6,
   },
   logoImage: {
@@ -71,18 +68,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   bottom: {
     alignItems: 'center',
     gap: theme.spacing.s5,
-  },
-  button: {
-    backgroundColor: theme.background.accent,
-    padding: 12,
-    borderRadius: theme.radius.xl,
-    width: 300,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: theme.text.secondary,
-    fontWeight: 'bold',
-    fontSize: 18,
+    alignSelf: 'stretch',
   },
   volunteerText: {
     textAlign: 'center',

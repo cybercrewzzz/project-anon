@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { FullWidthButton } from '@/components/FullWidthButton';
+import InputForm from '@/components/inputForm';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -30,28 +31,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   form: {
     gap: theme.spacing.s6,
   },
-  fieldGroup: {
-    gap: theme.spacing.s3,
-  },
-  label: {
-    marginLeft: theme.spacing.s1,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FDFAFF',
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: theme.spacing.s4,
-    paddingVertical: theme.spacing.s3,
-    gap: theme.spacing.s3,
-    boxShadow: theme.elevation.level3,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    color: theme.text.primary,
-    padding: 0,
-  },
   buttonContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -64,8 +43,6 @@ const CreateNewPassword = () => {
   const { theme } = useUnistyles();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -83,78 +60,35 @@ const CreateNewPassword = () => {
       </View>
 
       <View style={styles.form}>
-        <View style={styles.fieldGroup}>
-          <AppText
-            variant="subhead"
-            emphasis="emphasized"
-            color="primary"
-            style={styles.label}
-          >
-            New Password
-          </AppText>
-          <View style={styles.inputRow}>
-            {/* <Ionicons
-              name="lock-closed-outline"
-              size={20}
-              color={theme.text.muted}
-            /> */}
-            <TextInput
-              style={styles.textInput}
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry={!showNewPassword}
-              autoCapitalize="none"
-              autoComplete="new-password"
-            />
-            <Pressable onPress={() => setShowNewPassword(v => !v)} hitSlop={8}>
-              <Ionicons
-                name={showNewPassword ? 'eye-outline' : 'eye-off-outline'}
-                size={20}
-                color={theme.text.muted}
-              />
-            </Pressable>
-          </View>
-        </View>
+        <InputForm
+          placeholder="New Password"
+          placeholderColor="subtle2"
+          formColor={theme.surface.primary}
+          value={newPassword}
+          onChangeText={setNewPassword}
+          secureTextEntry={true}
+          autoCapitalize="none"
+          autoComplete="new-password"
+        />
 
-        <View style={styles.fieldGroup}>
-          <AppText
-            variant="subhead"
-            emphasis="emphasized"
-            color="primary"
-            style={styles.label}
-          >
-            Confirm New Password
-          </AppText>
-          <View style={styles.inputRow}>
-            {/* <Ionicons
-              name="lock-closed-outline"
-              size={20}
-              color={theme.text.muted}
-            /> */}
-            <TextInput
-              style={styles.textInput}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry={!showConfirmPassword}
-              autoCapitalize="none"
-              autoComplete="new-password"
-            />
-            <Pressable
-              onPress={() => setShowConfirmPassword(v => !v)}
-              hitSlop={8}
-            >
-              <Ionicons
-                name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'}
-                size={20}
-                color={theme.text.muted}
-              />
-            </Pressable>
-          </View>
-        </View>
+        <InputForm
+          placeholder="Confirm New Password"
+          placeholderColor="subtle2"
+          formColor={theme.surface.primary}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={true}
+          autoCapitalize="none"
+          autoComplete="new-password"
+        />
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton>
+        <FullWidthButton
+          onPress={() =>
+            router.push('/user/start/authScreens/ResetPassword' as any)
+          }
+        >
           <AppText variant="headline" color="secondary">
             Continue
           </AppText>

@@ -1,6 +1,6 @@
 import { View, Pressable } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { SmallButton } from '@/components/SmallButton';
 import InputForm from '@/components/inputForm';
@@ -12,6 +12,7 @@ const AGE_RANGES = ['16 -20', '21 -26', '27+'] as const;
 
 const SignUp = () => {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -43,7 +44,7 @@ const SignUp = () => {
         <InputForm
           placeholder="Email"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('email')}
           value={form.email}
           inputMode="email"
@@ -71,7 +72,7 @@ const SignUp = () => {
         <InputForm
           placeholder="Password"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('password')}
           value={form.password}
           secureTextEntry={true}
@@ -79,7 +80,7 @@ const SignUp = () => {
         <InputForm
           placeholder="Confirm Password"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('confirmPassword')}
           value={form.confirmPassword}
           secureTextEntry={true}
@@ -100,15 +101,17 @@ const SignUp = () => {
 
       <View style={styles.buttonContainer}>
         <FullWidthButton
-          onPress={() => router.push('/start/authScreens/signIn' as any)}
+          onPress={() =>
+            router.replace('/user/start/authScreens/registerSuccessful' as any)
+          }
         >
           <AppText variant="headline" color="secondary">
             Sign Up
           </AppText>
         </FullWidthButton>
         <Pressable
-          onPress={() => router.push('/start/authScreens/signIn' as any)}
-          style={{ marginTop: 24, alignItems: 'center' }}
+          onPress={() => router.push('/user/start/authScreens/signIn' as any)}
+          style={styles.loginLink}
         >
           <AppText variant="body" color="primary">
             Already have an account?{' '}
@@ -184,5 +187,9 @@ const styles = StyleSheet.create((theme, rt) => ({
   buttonContainer: {
     alignSelf: 'stretch',
     marginTop: theme.spacing.s6,
+  },
+  loginLink: {
+    marginTop: theme.spacing.s5,
+    alignItems: 'center',
   },
 }));

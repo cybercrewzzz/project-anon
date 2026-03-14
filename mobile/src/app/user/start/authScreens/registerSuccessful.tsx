@@ -1,17 +1,17 @@
 import { AppText } from '@/components/AppText';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SuccessAnimation } from '@/components/SuccessAnimation';
 
-const ResetPassword = () => {
+const RegisterSuccessful = () => {
   const router = useRouter();
 
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
-      router.replace('/user/start/authScreens/signIn' as any);
+      router.replace('/user/(tabs)/home' as any);
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -30,13 +30,13 @@ const ResetPassword = () => {
             emphasis="emphasized"
             style={styles.textLine1}
           >
-            Reset Password Successful!
+            Registration Successful!
           </AppText>
           <AppText variant="subhead" color="primary" style={styles.textLine2}>
             Please Wait
           </AppText>
           <AppText variant="subhead" color="primary" style={styles.textLine3}>
-            You will be directed to the sign in screen.
+            You will be directed to the homepage.
           </AppText>
         </View>
       </View>
@@ -44,7 +44,7 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default RegisterSuccessful;
 
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
