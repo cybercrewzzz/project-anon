@@ -1,13 +1,20 @@
 import {
   Controller,
   Post,
+  Patch,
+  Get,
+  Param,
   Body,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { ConnectSessionDto, ConnectSessionSchema } from './dto/connect-session.dto';
+import { AcceptSessionParamsSchema } from './dto/accept-session.dto';
+import { RateSessionParamsSchema, RateSessionBodySchema, RateSessionBodyDto } from './dto/rate-session.dto';
+import { SessionHistoryQuerySchema, SessionHistoryQueryDto } from './dto/session-history.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -44,30 +51,106 @@ export class SessionController {
   // ─── POST /session/connect ──────────────────────────────────────────────
 
   @Post('connect')
-  // Only users with the 'user' (Seeker) role can call this endpoint.
-  // If a volunteer tries to call it, they get 403 Forbidden.
   @Roles('user')
-  // By default NestJS returns 201 for POST. We override to 200/202 because:
-  //   200 = match found immediately
-  //   202 = queued, waiting for a volunteer
-  // We return the actual status code dynamically from the service using
-  // HttpException, so this decorator just sets the "happy path" default.
   @HttpCode(HttpStatus.OK)
   async connect(
-    // @CurrentUser() is a custom decorator (from core setup) that reads the
-    // decoded JWT payload that AuthGuard already verified and attached to the
-    // request. This gives us the logged-in user's ID, email, and roles[]
-    // without hitting the database again.
     @CurrentUser() user: JwtPayload,
-
-    // @Body() extracts the JSON request body.
-    // ZodValidationPipe runs FIRST — it validates the body against
-    // ConnectSessionSchema. If validation fails, it throws a 400 error
-    // automatically. If validation passes, `dto` is typed and safe.
     @Body(new ZodValidationPipe(ConnectSessionSchema)) dto: ConnectSessionDto,
   ) {
-    // Hand off to the service. The controller just returns whatever the
-    // service gives back — NestJS serialises it to JSON automatically.
     return this.sessionService.connect(user.sub, dto);
+  }
+
+  // ─── POST /session/:sessionId/accept ───────────────────────────────────
+  //
+  // WHAT THIS ROUTE DOES:
+  // A volunteer received a push notification saying "a seeker needs help".
+  // They tap "Accept" in the app. The app calls this endpoint.
+  //
+  // The key challenge: multiple volunteers may have received the SAME push
+  // notification and all tap Accept at nearly the same time.
+  // Only ONE should win — the first to arrive. The rest get 409.
+  // This race is resolved atomically in the service using Redis HSETNX.
+
+  @Post(':sessionId/accept')
+  // Only volunteers can accept sessions. Seekers get 403.
+  @Roles('volunteer')
+  @HttpCode(HttpStatus.OK)
+  async accept(
+    @CurrentUser() user: JwtPayload,
+
+    // @Param() extracts the :sessionId from the URL path.
+    // ZodValidationPipe validates it is a proper UUID before anything runs.
+    @Param(new ZodValidationPipe(AcceptSessionParamsSchema)) params: { sessionId: string },
+  ) {
+    return this.sessionService.accept(params.sessionId, user.sub);
+  }
+
+  // ─── PATCH /session/:sessionId/rate ────────────────────────────────────
+  //
+  // WHAT THIS ROUTE DOES:
+  // After a session ends, both the seeker AND the volunteer can each rate it
+  // once. The service figures out who is calling from their JWT roles and
+  // writes to the correct column in chat_session.
+  //
+  // Note: @Patch() is used instead of @Post() because we are partially
+  // UPDATING an existing resource (the chat_session row), not creating one.
+
+  @Patch(':sessionId/rate')
+  @Roles('user', 'volunteer')
+  @HttpCode(HttpStatus.OK)
+  async rate(
+    @CurrentUser() user: JwtPayload,
+    @Param(new ZodValidationPipe(RateSessionParamsSchema)) params: { sessionId: string },
+    @Body(new ZodValidationPipe(RateSessionBodySchema)) dto: RateSessionBodyDto,
+  ) {
+    return this.sessionService.rate(params.sessionId, user.sub, user.roles, dto);
+  }
+
+  // ─── GET /session/history ──────────────────────────────────────────────
+  //
+  // WHAT THIS ROUTE DOES:
+  // Returns the calling user's past sessions, paginated.
+  // Works for BOTH seekers and volunteers — the service uses their ID
+  // to find sessions where they were either the seeker or the listener.
+  //
+  // IMPORTANT — route ordering:
+  // This route is declared as 'history' (a fixed string).
+  // The accept route above is ':sessionId' (a dynamic param).
+  // NestJS matches routes TOP TO BOTTOM. 'history' must be declared
+  // BEFORE ':sessionId' routes, otherwise NestJS would treat the
+  // word "history" as a sessionId and hit the wrong handler.
+  // Since we have GET here vs POST/PATCH above, there's no conflict —
+  // but it's good habit to always put fixed routes before dynamic ones.
+
+  @Get('history')
+  @Roles('user', 'volunteer')
+  async history(
+    @CurrentUser() user: JwtPayload,
+
+    // @Query() extracts URL query parameters (?page=1&limit=20).
+    // ZodValidationPipe validates and coerces them from strings to numbers.
+    @Query(new ZodValidationPipe(SessionHistoryQuerySchema)) query: SessionHistoryQueryDto,
+  ) {
+    return this.sessionService.getHistory(user.sub, query);
+  }
+
+  // ─── GET /session/tickets ──────────────────────────────────────────────
+  //
+  // WHAT THIS ROUTE DOES:
+  // Returns how many session tickets the seeker has left today.
+  // The app shows this so the seeker knows before even trying to connect
+  // whether they'll be allowed to start a new session.
+  //
+  // Data comes entirely from Redis — no DB query needed at all.
+  // The ticket state lives in `ticket:{accountId}:{YYYY-MM-DD}` hash.
+  //
+  // Route ordering note: 'tickets' is another fixed string route, so it
+  // must stay above any ':sessionId' dynamic routes — same reason as 'history'.
+
+  @Get('tickets')
+  // Only seekers have ticket limits. Volunteers are not restricted.
+  @Roles('user')
+  async tickets(@CurrentUser() user: JwtPayload) {
+    return this.sessionService.getTickets(user.sub);
   }
 }

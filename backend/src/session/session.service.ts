@@ -3,6 +3,8 @@ import {
   Logger,
   ConflictException,
   ForbiddenException,
+  NotFoundException,
+  BadRequestException,
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
@@ -313,6 +315,411 @@ export class SessionService {
     // Throw an HttpException with 202 status.
     // NestJS doesn't have a built-in 202 exception, so we throw a generic one.
     throw new HttpException(result, HttpStatus.ACCEPTED);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // accept() — the full logic for POST /session/:sessionId/accept
+  //
+  // Called when a volunteer taps "Accept" from a push notification.
+  // Multiple volunteers may call this simultaneously for the same session.
+  // Only the first one wins — Redis HSETNX guarantees this atomically.
+  // ─────────────────────────────────────────────────────────────────────────
+  async accept(sessionId: string, volunteerId: string) {
+
+    // ── STEP 1: Check the session exists in Redis ─────────────────────────
+    //
+    // We check Redis first (not the DB) because it's faster and the session
+    // hash was written there when the seeker connected in Path B.
+    // If the key doesn't exist, the session has already expired or never existed.
+    const sessionHash = await this.redis.client.hgetall(`session:${sessionId}`);
+
+    if (!sessionHash || Object.keys(sessionHash).length === 0) {
+      throw new NotFoundException({
+        statusCode: 404,
+        error: 'session_not_found',
+        message: 'This session no longer exists or has already expired.',
+      });
+    }
+
+    // ── STEP 2: Confirm the session is still waiting ──────────────────────
+    //
+    // The session could have already been accepted by another volunteer in
+    // the milliseconds before this request arrived. Or it could have timed out.
+    // Either way, if it's not 'waiting', we reject immediately.
+    if (sessionHash.status !== 'waiting') {
+      throw new ConflictException({
+        statusCode: 409,
+        error: 'session_not_waiting',
+        message: 'This session has already been accepted or has expired.',
+      });
+    }
+
+    // ── STEP 3: Atomic claim with HSETNX ─────────────────────────────────
+    //
+    // HSETNX = "Hash SET if Not eXists"
+    // It sets a field in the Redis Hash ONLY IF that field currently has no value.
+    // Returns 1 if it set the value (we won), 0 if the field already had a value
+    // (another volunteer got there first).
+    //
+    // WHY is this better than a regular HSET?
+    // HSET would overwrite any existing value — two volunteers could both
+    // think they won. HSETNX is atomic: only one caller can ever get a `1`.
+    // This is the core of the race-condition protection for Path B.
+    const claimed = await this.redis.client.hsetnx(
+      `session:${sessionId}`,
+      'listenerId',
+      volunteerId,
+    );
+
+    if (claimed === 0) {
+      // Another volunteer beat us by milliseconds. Return 409.
+      throw new ConflictException({
+        statusCode: 409,
+        error: 'already_accepted',
+        message: 'Another volunteer has already accepted this session.',
+      });
+    }
+
+    // We won the race. Update the session status in Redis immediately
+    // so any subsequent accept calls hit the status check in Step 2.
+    await this.redis.client.hset(`session:${sessionId}`, 'status', 'active');
+
+    // ── STEP 4: Bidirectional block check ────────────────────────────────
+    //
+    // Even though matching already filtered blocks for Path A, in Path B the
+    // volunteer self-selects by tapping Accept. We must verify there's no
+    // block between them before proceeding.
+    const seekerId = sessionHash.seekerId;
+
+    const block = await this.prisma.blocklist.findFirst({
+      where: {
+        OR: [
+          { blockerId: volunteerId, blockedId: seekerId },
+          { blockerId: seekerId,    blockedId: volunteerId },
+        ],
+      },
+    });
+
+    if (block) {
+      // Undo the Redis claim so the session stays claimable by others.
+      await this.redis.client.hset(`session:${sessionId}`, {
+        listenerId: '',
+        status: 'waiting',
+      });
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'blocked',
+        message: 'You cannot join this session.',
+      });
+    }
+
+    // ── STEP 5: Update the ChatSession in the DB ──────────────────────────
+    //
+    // Now that we've atomically claimed the session in Redis, persist the
+    // volunteer assignment to the database as the permanent record.
+    const session = await this.prisma.chatSession.update({
+      where: { sessionId },
+      data: {
+        listenerId: volunteerId,
+        status: 'active',
+      },
+      include: {
+        // Include the problem + category so we can return the category name
+        // in the response (the volunteer's app displays what they're helping with).
+        problem: {
+          include: { category: true },
+        },
+      },
+    });
+
+    // ── STEP 6: Cancel the match:timeout BullMQ job ───────────────────────
+    //
+    // When the seeker connected (Path B), we scheduled a `match:timeout` job
+    // to fire after 3 minutes if nobody accepted.
+    // Since someone DID accept, we must cancel that job — otherwise it would
+    // incorrectly end the session and notify the seeker of "no match found"
+    // even though a match exists.
+    //
+    // BullMQ jobs can be cancelled by their jobId if they haven't fired yet.
+    try {
+      const timeoutJob = await this.sessionQueue.getJob(`match-timeout:${sessionId}`);
+      if (timeoutJob) {
+        await timeoutJob.remove();
+        this.logger.log(`Cancelled match:timeout job for session ${sessionId}`);
+      }
+    } catch (err) {
+      // Non-fatal — log but don't fail the request. The job may have already
+      // fired or been removed. The DB status is already 'active' so the job's
+      // handler will see that and do nothing harmful.
+      this.logger.warn(`Could not cancel match:timeout job: ${err.message}`);
+    }
+
+    // Schedule the standard session jobs now that it's active:
+    // (same jobs as Path A in connect())
+    await this.sessionQueue.add(
+      'session:grace-end',
+      { sessionId, seekerId },
+      { delay: GRACE_END_MS, jobId: `grace-end:${sessionId}` },
+    );
+    await this.sessionQueue.add(
+      'session:timeout',
+      { sessionId },
+      { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${sessionId}` },
+    );
+
+    // ── STEP 7: Emit WebSocket event to the seeker ────────────────────────
+    //
+    // The seeker is waiting in the app connected via WebSocket.
+    // We need to tell them "your volunteer has arrived!".
+    //
+    // HOW: Look up the seeker's socket ID from Redis, then emit
+    // `session:matched` to that socket via the WebSocket gateway.
+    //
+    // The WebSocket gateway is Thusirui's code (Task 6). We call it via
+    // a shared service or event emitter so we don't import the whole ChatModule.
+    // For now we log it — wire up the actual emit when Task 6 is merged.
+    const seekerSocketId = await this.redis.client.get(`account:${seekerId}:socket`);
+
+    if (seekerSocketId) {
+      // TODO: call ChatGateway.emitToSocket(seekerSocketId, 'session:matched', payload)
+      // This will be wired up once Thusirui's ChatModule is merged.
+      this.logger.log(
+        `Should emit session:matched to seeker socket ${seekerSocketId} — wire up ChatGateway here`,
+      );
+    } else {
+      // Seeker disconnected between connecting and now. The reconnect logic
+      // in the WebSocket gateway handles this case — it reads the Redis session
+      // hash on reconnect and sees status='active'.
+      this.logger.warn(`Seeker ${seekerId} has no active socket — they may have disconnected`);
+    }
+
+    // ── STEP 8: Return the response to the volunteer ──────────────────────
+    return {
+      sessionId,
+      seekerId,
+      category: session.problem?.category?.name ?? null,
+      wsRoom: `session:${sessionId}`,
+      turnCredentials: this.generateTurnCredentials(sessionId),
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // rate() — the full logic for PATCH /session/:sessionId/rate
+  //
+  // Both seekers and volunteers call this after a session ends.
+  // The same endpoint handles both — the service detects who is calling
+  // from the `roles` array and writes to the correct DB column.
+  // ─────────────────────────────────────────────────────────────────────────
+  async rate(
+    sessionId: string,
+    callerId: string,
+    roles: string[],
+    dto: { rating: number; starred: boolean },
+  ) {
+    const { rating, starred } = dto;
+
+    // ── STEP 1: Fetch the session from the DB ─────────────────────────────
+    //
+    // We use findUnique (not findFirst) because sessionId is a primary key —
+    // there can only ever be one result. findUnique is slightly faster because
+    // Prisma knows it can stop after finding the first match.
+    const session = await this.prisma.chatSession.findUnique({
+      where: { sessionId },
+    });
+
+    if (!session) {
+      throw new NotFoundException({
+        statusCode: 404,
+        error: 'session_not_found',
+        message: 'Session not found.',
+      });
+    }
+
+    // ── STEP 2: Verify the caller was actually IN this session ────────────
+    //
+    // A random user should not be able to rate someone else's session.
+    // Only the seeker or the volunteer who participated can rate it.
+    const isSeeker    = session.seekerId   === callerId;
+    const isListener  = session.listenerId === callerId;
+
+    if (!isSeeker && !isListener) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'not_a_participant',
+        message: 'You were not part of this session.',
+      });
+    }
+
+    // ── STEP 3: Session must be completed before rating ───────────────────
+    //
+    // You can only rate a session that has actually ended.
+    // Rating an active/waiting session makes no sense and is rejected with 400.
+    if (session.status !== 'completed') {
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'session_not_completed',
+        message: 'You can only rate a session after it has been completed.',
+      });
+    }
+
+    // ── STEP 4: Check if this person already rated ────────────────────────
+    //
+    // Each participant can only rate once. If their rating column is already
+    // filled in, return 409 Conflict.
+    if (isSeeker && session.userRating !== null) {
+      throw new ConflictException({
+        statusCode: 409,
+        error: 'already_rated',
+        message: 'You have already rated this session.',
+      });
+    }
+
+    if (isListener && session.volunteerRating !== null) {
+      throw new ConflictException({
+        statusCode: 409,
+        error: 'already_rated',
+        message: 'You have already rated this session.',
+      });
+    }
+
+    // ── STEP 5: Write the rating to the correct column ────────────────────
+    //
+    // chat_session has two separate rating columns:
+    //   user_rating      — filled in by the seeker
+    //   volunteer_rating — filled in by the volunteer
+    //
+    // We build the `data` object dynamically based on who is calling.
+    // The `starred` field only applies to seekers (starred_by_user column).
+    // If a volunteer sends starred=true, we just ignore it.
+    const updateData = isSeeker
+      ? {
+          userRating: rating,
+          starredByUser: starred, // only seekers can star a session
+        }
+      : {
+          volunteerRating: rating,
+          // starred is intentionally NOT set for volunteers
+        };
+
+    await this.prisma.chatSession.update({
+      where: { sessionId },
+      data: updateData,
+    });
+
+    this.logger.log(
+      `Session ${sessionId} rated ${rating}/5 by ${isSeeker ? 'seeker' : 'volunteer'} ${callerId}`,
+    );
+
+    // ── STEP 6: Return success ────────────────────────────────────────────
+    return { message: 'Rating saved' };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // getHistory() — the full logic for GET /session/history
+  //
+  // Returns a paginated list of past sessions for the calling user.
+  // Works for both seekers and volunteers — one query handles both
+  // by using OR across seekerId and listenerId columns.
+  // ─────────────────────────────────────────────────────────────────────────
+  async getHistory(callerId: string, query: { page: number; limit: number }) {
+    const { page, limit } = query;
+
+    // ── STEP 1: Calculate pagination offsets ──────────────────────────────
+    //
+    // SQL/Prisma pagination works with `skip` and `take`:
+    //   skip = how many rows to jump over (rows from previous pages)
+    //   take = how many rows to return (the page size)
+    //
+    // Example: page=2, limit=20 → skip=20, take=20
+    //   Skips the first 20 rows (page 1) and returns the next 20.
+    const skip = (page - 1) * limit;
+    const take = limit;
+
+    // ── STEP 2: Build the shared WHERE clause ─────────────────────────────
+    //
+    // The OR means: "give me sessions where I was either the seeker OR
+    // the volunteer." One query, one endpoint, works for everyone.
+    //
+    // We also exclude active/waiting sessions — those aren't history yet,
+    // they're live. Only ended sessions belong in the history list.
+    const where = {
+      OR: [
+        { seekerId: callerId },
+        { listenerId: callerId },
+      ],
+      status: { notIn: ['active', 'waiting'] },
+    };
+
+    // ── STEP 3: Fetch sessions + total count in parallel ─────────────────
+    //
+    // prisma.$transaction([query1, query2]) runs both DB queries at the
+    // same time and waits for both to finish before continuing.
+    // This is faster than running them one after the other.
+    //
+    //   findMany → the actual page of data
+    //   count    → the total matching rows (used by frontend for page controls)
+    const [sessions, total] = await this.prisma.$transaction([
+      this.prisma.chatSession.findMany({
+        where,
+        skip,
+        take,
+        // Newest sessions first — most relevant to the user.
+        orderBy: { startedAt: 'desc' },
+        // `include` tells Prisma to JOIN and return related rows.
+        // Without this, problem and category would be null/undefined.
+        include: {
+          problem: {
+            include: {
+              category: { select: { name: true } },
+            },
+          },
+        },
+      }),
+
+      this.prisma.chatSession.count({ where }),
+    ]);
+
+    // ── STEP 4: Map to the response shape ────────────────────────────────
+    //
+    // We never return raw Prisma objects directly — we pick only the fields
+    // the API spec defines. This prevents accidentally leaking internal
+    // fields like seekerId, listenerId, or problemId to the client.
+    const data = sessions.map((s) => ({
+      sessionId:       s.sessionId,
+      category:        s.problem?.category?.name ?? null,
+      startedAt:       s.startedAt,
+      endedAt:         s.endedAt,
+      status:          s.status,
+      closedReason:    s.closedReason,
+      userRating:      s.userRating,
+      volunteerRating: s.volunteerRating,
+      starredByUser:   s.starredByUser,
+    }));
+
+    // ── STEP 5: Return the pagination envelope ────────────────────────────
+    //
+    // The frontend uses `total`, `page`, and `limit` to render page controls
+    // e.g. "Showing 21–40 of 87 sessions" or "Page 2 of 5".
+    return { data, total, page, limit };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // getTickets() — the full logic for GET /session/tickets
+  //
+  // The thinnest method in Task 4. All the real logic already lives in
+  // TicketService.getRemaining() — this method just calls it and returns
+  // the result. SessionService is the public API, TicketService is the
+  // internal implementation detail.
+  //
+  // WHY delegate instead of writing the logic here?
+  // TicketService is also called by connect() (to reserve) and by BullMQ
+  // workers (to consume/release). Keeping all ticket logic in one place
+  // means if the ticket system ever changes, you only edit one file.
+  // ─────────────────────────────────────────────────────────────────────────
+  async getTickets(seekerId: string) {
+    // TicketService.getRemaining() reads from Redis and returns:
+    // { daily: 5, consumed: 2, reserved: 1, remaining: 2 }
+    return this.tickets.getRemaining(seekerId);
   }
 
   // ─── Helper: find offline volunteers for Path B push notifications ────
