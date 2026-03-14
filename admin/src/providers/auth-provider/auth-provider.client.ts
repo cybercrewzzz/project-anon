@@ -12,6 +12,18 @@ export const authProviderClient: AuthProvider = {
         password,
       });
 
+      // Check if user has admin role
+      const roles: string[] = data.account.roles || [];
+      if (!roles.includes("admin")) {
+        return {
+          success: false,
+          error: {
+            name: "LoginError",
+            message: "Access denied. Admin privileges required.",
+          },
+        };
+      }
+
       Cookies.set("accessToken", data.accessToken, { path: "/" });
       Cookies.set("refreshToken", data.refreshToken, { path: "/" });
       Cookies.set(
@@ -64,10 +76,34 @@ export const authProviderClient: AuthProvider = {
   check: async () => {
     const accessToken = Cookies.get("accessToken");
     const auth = Cookies.get("auth");
+
     if (accessToken && auth) {
-      return {
-        authenticated: true,
-      };
+      try {
+        const parsedUser = JSON.parse(auth);
+        const roles: string[] = parsedUser.roles || [];
+
+        // Verify user has admin role
+        if (!roles.includes("admin")) {
+          Cookies.remove("accessToken", { path: "/" });
+          Cookies.remove("refreshToken", { path: "/" });
+          Cookies.remove("auth", { path: "/" });
+          return {
+            authenticated: false,
+            logout: true,
+            redirectTo: "/login",
+            error: {
+              name: "Forbidden",
+              message: "Admin privileges required",
+            },
+          };
+        }
+
+        return {
+          authenticated: true,
+        };
+      } catch {
+        // Invalid auth cookie
+      }
     }
 
     return {

@@ -8,9 +8,25 @@ export const authProviderServer: Pick<AuthProvider, "check"> = {
     const auth = cookieStore.get("auth");
 
     if (accessToken && auth) {
-      return {
-        authenticated: true,
-      };
+      try {
+        const parsedUser = JSON.parse(auth.value);
+        const roles: string[] = parsedUser.roles || [];
+
+        // Verify user has admin role
+        if (!roles.includes("admin")) {
+          return {
+            authenticated: false,
+            logout: true,
+            redirectTo: "/login",
+          };
+        }
+
+        return {
+          authenticated: true,
+        };
+      } catch {
+        // Invalid auth cookie
+      }
     }
 
     return {
