@@ -1,5 +1,5 @@
 {
-  "name": "refine-project",
+  "name": "admin",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -20,8 +20,8 @@
     "@refinedev/core": "^5.0.8",
     "@refinedev/devtools": "^2.0.1",
     "@refinedev/kbar": "^2.0.0",
-    "@refinedev/nestjsx-crud": "^6.0.0",
     "@refinedev/nextjs-router": "^7.0.0",
+    "@refinedev/simple-rest": "^6.0.0",
     "antd": "^5.23.0",
     "js-cookie": "^3.0.5",
     "next": "^15.2.4",
@@ -39,6 +39,6 @@
     "typescript": "^5.8.3"
   },
   "refine": {
-    "projectId": "fatI3y-dOGV08-YzTIic"
+    "projectId": "7fsHuo-qrDnml-AgIy9A"
   }
 }

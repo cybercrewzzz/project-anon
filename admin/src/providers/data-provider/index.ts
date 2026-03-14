@@ -1,7 +1,7 @@
 "use client";
 
-import dataProviderNestjsxCrud from "@refinedev/nestjsx-crud";
+import dataProviderSimpleRest from "@refinedev/simple-rest";
 
-const API_URL = "https://api.nestjsx-crud.refine.dev";
+const API_URL = "https://api.fake-rest.refine.dev";
 
-export const dataProvider = dataProviderNestjsxCrud(API_URL);
+export const dataProvider = dataProviderSimpleRest(API_URL);

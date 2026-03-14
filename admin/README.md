@@ -1,4 +1,4 @@
-# refine-project
+# admin
 
 <div align="center" style="margin: 30px;">
     <a href="https://refine.dev">
@@ -20,28 +20,29 @@ Refine's hooks and components simplifies the development process and eliminates 
 ### Running the development server.
 
 ```bash
-    npm run dev
+    yarn dev
 ```
 
 ### Building for production.
 
 ```bash
-    npm run build
+    yarn build
 ```
 
 ### Running the production server.
 
 ```bash
-    npm run start
+    yarn start
 ```
 
 ## Learn More
 
 To learn more about **Refine**, please check out the [Documentation](https://refine.dev/docs)
 
-- **NestJS Data Provider** [Docs](https://refine.dev/docs/core/providers/data-provider/#overview)
+- **REST Data Provider** [Docs](https://refine.dev/docs/core/providers/data-provider/#overview)
 - **Ant Design** [Docs](https://refine.dev/docs/ui-frameworks/antd/tutorial/)
 - **Custom Auth Provider** [Docs](https://refine.dev/docs/core/providers/auth-provider/)
+
 
 ## License
 
