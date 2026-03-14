@@ -32,16 +32,16 @@ const OrbitingBubble = ({
 }) => {
   const style = useAnimatedStyle(() => {
     const t = lifeProgress.value;
-    
+
     // Smooth fade in for the whole system over the first 500ms
     const systemFade = interpolate(t, [0, 500], [0, 1], Extrapolation.CLAMP);
 
     // Orbit path around the big circle
     const angle = seed.baseAngle + (t / 1500) * Math.PI;
-    
+
     // Base radius (no spiral from center)
     const baseRadius = seed.baseR;
-    
+
     // Particle motion (wobble / drift)
     // Use different frequencies based on seed.index to make them look independent
     const driftX = Math.sin(t / 400 + seed.index * 2) * 6;
@@ -59,14 +59,14 @@ const OrbitingBubble = ({
     const explodeRMultiplier = interpolate(
       t,
       [DURATION - 1200, DURATION],
-      [1, 6], 
+      [1, 6],
       Extrapolation.CLAMP,
     );
 
     const explodeFade = interpolate(
       t,
       [DURATION - 800, DURATION],
-      [1, 0], 
+      [1, 0],
       Extrapolation.CLAMP,
     );
 
@@ -81,11 +81,7 @@ const OrbitingBubble = ({
       height: seed.size,
       borderRadius: seed.size / 2,
       backgroundColor: seed.color,
-      transform: [
-        { translateX },
-        { translateY },
-        { scale: popScale }, 
-      ],
+      transform: [{ translateX }, { translateY }, { scale: popScale }],
       opacity: popOpacity * explodeFade * systemFade,
     };
   });
@@ -126,7 +122,7 @@ export function SuccessAnimation() {
   useEffect(() => {
     lifeProgress.value = withTiming(DURATION, {
       duration: DURATION,
-      easing: Easing.linear, 
+      easing: Easing.linear,
     });
 
     // Circular gentle breathing
@@ -144,7 +140,7 @@ export function SuccessAnimation() {
     const explodeScale = interpolate(
       t,
       [DURATION - 1200, DURATION],
-      [1, 15], 
+      [1, 15],
       Extrapolation.CLAMP,
     );
 
