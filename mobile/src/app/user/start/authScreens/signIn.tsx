@@ -8,9 +8,11 @@ import OAuthSignIn from '@/components/oAuthSignIn';
 import Button from '@/components/button';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
+import { useUnistyles } from 'react-native-unistyles';
 
 const SignIn = () => {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const [credentials, setCredentials] = useState({
     email: '',
     password: '',
@@ -27,7 +29,7 @@ const SignIn = () => {
         <InputForm
           placeholder="Email"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={text =>
             setCredentials(prev => ({ ...prev, email: text }))
           }
@@ -37,7 +39,7 @@ const SignIn = () => {
         <InputForm
           placeholder="Password"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={text =>
             setCredentials(prev => ({ ...prev, password: text }))
           }

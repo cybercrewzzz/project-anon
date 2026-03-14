@@ -3,6 +3,7 @@ import { Pressable, TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
+import { FullWidthButton } from '@/components/FullWidthButton';
 
 interface OTPInputProps {
   value: string;
@@ -113,8 +114,7 @@ const OTPVerification = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <Pressable
-          style={styles.button}
+        <FullWidthButton
           onPress={() =>
             router.replace('/user/start/authScreens/ResetPassword' as any)
           }
@@ -123,7 +123,7 @@ const OTPVerification = () => {
             {' '}
             Create new Password{' '}
           </AppText>
-        </Pressable>
+        </FullWidthButton>
       </View>
     </View>
   );
@@ -137,31 +137,31 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: theme.surface.primary,
     paddingTop: rt.insets.top,
     paddingBottom: rt.insets.bottom,
-    paddingLeft: rt.insets.left + 16,
-    paddingRight: rt.insets.right + 16,
+    paddingLeft: rt.insets.left + theme.spacing.s4,
+    paddingRight: rt.insets.right + theme.spacing.s4,
   },
   contentContainer: {
     justifyContent: 'flex-start',
-    paddingTop: rt.insets.top + 30,
+    paddingTop: rt.insets.top + theme.spacing.s6,
   },
   buttonContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    paddingBottom: 64,
+    paddingBottom: theme.spacing.s8,
   },
   title: {
-    paddingLeft: 5,
+    paddingLeft: theme.spacing.s1,
   },
   description: {
     textAlign: 'left',
-    marginTop: 20,
-    marginLeft: 5,
-    paddingLeft: 5,
+    marginTop: theme.spacing.s5,
+    marginLeft: theme.spacing.s1,
+    paddingLeft: theme.spacing.s1,
   },
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    marginTop: theme.spacing.s6,
     paddingTop: rt.insets.top,
   },
   otpInput: {
@@ -170,21 +170,12 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderWidth: 2,
     borderColor: theme.border.default,
     backgroundColor: theme.surface.secondary,
-    borderRadius: 8,
+    borderRadius: theme.radius.sm,
     textAlign: 'center',
     fontSize: 24,
   },
   verifyText: {
-    marginTop: 25,
+    marginTop: theme.spacing.s5,
     textAlign: 'center',
-  },
-  button: {
-    alignItems: 'center',
-    paddingTop: 15,
-    paddingBottom: 15,
-    marginLeft: 10,
-    marginRight: 10,
-    borderRadius: 25,
-    backgroundColor: theme.action.secondary,
   },
 }));

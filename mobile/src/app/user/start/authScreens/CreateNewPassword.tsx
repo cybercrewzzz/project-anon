@@ -39,7 +39,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDFAFF',
+    backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.sm,
     paddingHorizontal: theme.spacing.s4,
     paddingVertical: theme.spacing.s3,
@@ -48,7 +48,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
     color: theme.text.primary,
     padding: 0,
   },

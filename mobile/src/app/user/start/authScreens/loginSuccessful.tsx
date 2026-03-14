@@ -61,11 +61,11 @@ export default LoginSuccessful;
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
-    backgroundColor: '#333333',
+    backgroundColor: theme.background.overlay,
     paddingTop: rt.insets.top,
     paddingBottom: rt.insets.bottom,
-    paddingLeft: rt.insets.left + 16,
-    paddingRight: rt.insets.right + 16,
+    paddingLeft: rt.insets.left + theme.spacing.s4,
+    paddingRight: rt.insets.right + theme.spacing.s4,
     justifyContent: 'center',
   },
 
@@ -73,8 +73,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.mdSoft,
     width: '100%',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    paddingVertical: theme.spacing.s7,
+    paddingHorizontal: theme.spacing.s5,
     alignItems: 'center',
     elevation: 10,
   },
@@ -82,7 +82,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   imageContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 32,
+    paddingBottom: theme.spacing.s6,
   },
 
   image: {
@@ -96,14 +96,14 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
 
   textLine2: {
-    paddingTop: 32,
+    paddingTop: theme.spacing.s6,
     justifyContent: 'center',
     textAlign: 'center',
   },
 
   textLine3: {
-    paddingTop: 8,
-    marginTop: 8,
+    paddingTop: theme.spacing.s3,
+    marginTop: theme.spacing.s3,
     justifyContent: 'center',
     textAlign: 'center',
   },

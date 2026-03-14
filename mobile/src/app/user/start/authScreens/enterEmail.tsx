@@ -5,9 +5,11 @@ import { StyleSheet } from 'react-native-unistyles';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
 import { useRouter } from 'expo-router';
+import { useUnistyles } from 'react-native-unistyles';
 
 const EnterEmail = () => {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const [email, setEmail] = useState('');
 
   return (
@@ -36,7 +38,7 @@ const EnterEmail = () => {
           <InputForm
             placeholder="Email"
             placeholderColor="subtle2"
-            formColor="#FDFAFF"
+            formColor={theme.surface.primary}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
