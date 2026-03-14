@@ -10,13 +10,11 @@ import Animated, {
   Extrapolation,
   SharedValue,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
 import { useUnistyles } from 'react-native-unistyles';
 
 const CIRCLE_COUNT = 20;
-const DURATION = 5000; // Expected to live for roughly 5 seconds
+const DURATION = 5000;
 
-// Types
 interface BubbleSeed {
   size: number;
   baseR: number;
@@ -24,10 +22,6 @@ interface BubbleSeed {
   color: string;
   index: number;
 }
-
-// ---------------------------------------------------------
-// Subcomponents isolated to avoid Hooks in callbacks
-// ---------------------------------------------------------
 
 const OrbitingBubble = ({
   seed,
@@ -38,30 +32,48 @@ const OrbitingBubble = ({
 }) => {
   const style = useAnimatedStyle(() => {
     const t = lifeProgress.value;
-    const emerge = interpolate(t, [0, 1500], [0, 1], Extrapolation.CLAMP);
+    
+    // Smooth fade in for the whole system over the first 500ms
+    const systemFade = interpolate(t, [0, 500], [0, 1], Extrapolation.CLAMP);
 
-    // Smooth orbit path
+    // Orbit path around the big circle
     const angle = seed.baseAngle + (t / 1500) * Math.PI;
-    const driftR = seed.baseR + Math.sin(t / 800 + seed.index) * 6;
+    
+    // Base radius (no spiral from center)
+    const baseRadius = seed.baseR;
+    
+    // Particle motion (wobble / drift)
+    // Use different frequencies based on seed.index to make them look independent
+    const driftX = Math.sin(t / 400 + seed.index * 2) * 6;
+    const driftY = Math.cos(t / 500 + seed.index * 3) * 6;
 
-    // Final explosion scale (radius jumps significantly while size zeroes out)
+    // Pop in and pop out effect (pulsing scale and opacity)
+    // We oscillate between 0 and 1
+    const popCycle = (Math.sin(t / 300 + seed.index) + 1) / 2;
+    // Scale goes from 0.4 to 1.2
+    const popScale = 0.4 + popCycle * 0.8;
+    // Opacity goes from 0.2 to 1.0 blending with the final fade out
+    const popOpacity = 0.2 + popCycle * 0.8;
+
+    // Explode outward at the very end
     const explodeRMultiplier = interpolate(
       t,
-      [DURATION - 1000, DURATION],
-      [1, 5], // Fly way out past the screen bounds
+      [DURATION - 1200, DURATION],
+      [1, 6], 
       Extrapolation.CLAMP,
     );
 
     const explodeFade = interpolate(
       t,
-      [DURATION - 1000, DURATION - 200],
-      [1, 0], // Fully fade out near end
+      [DURATION - 800, DURATION],
+      [1, 0], 
       Extrapolation.CLAMP,
     );
 
-    const currentR = driftR * emerge * explodeRMultiplier;
-    const translateX = Math.cos(angle) * currentR;
-    const translateY = Math.sin(angle) * currentR;
+    const currentR = baseRadius * explodeRMultiplier;
+    // Apply orbit + particle drift
+    const translateX = Math.cos(angle) * currentR + driftX;
+    const translateY = Math.sin(angle) * currentR + driftY;
 
     return {
       position: 'absolute',
@@ -72,18 +84,14 @@ const OrbitingBubble = ({
       transform: [
         { translateX },
         { translateY },
-        { scale: emerge * explodeFade }, // Shrink visually while fading
+        { scale: popScale }, 
       ],
-      opacity: 0.8 * explodeFade,
+      opacity: popOpacity * explodeFade * systemFade,
     };
   });
 
   return <Animated.View style={style} />;
 };
-
-// ---------------------------------------------------------
-// Main Component
-// ---------------------------------------------------------
 
 export function SuccessAnimation() {
   const { theme } = useUnistyles();
@@ -102,10 +110,10 @@ export function SuccessAnimation() {
     () =>
       Array.from({ length: CIRCLE_COUNT }).map((_, i) => ({
         index: i,
-        // Smaller circles: 4 to 12 variations
-        size: 4 + (i % 3) * 4,
+        // Varied sizes
+        size: 6 + (i % 3) * 4,
         // Distribute tightly and farther out in rings
-        baseR: 50 + (i % 4) * 15,
+        baseR: 60 + (i % 4) * 15,
         baseAngle: (i / CIRCLE_COUNT) * 2 * Math.PI,
         color: colors[i % colors.length],
       })),
@@ -113,43 +121,47 @@ export function SuccessAnimation() {
   );
 
   const lifeProgress = useSharedValue(0);
-  const heartScale = useSharedValue(1);
+  const breatheScale = useSharedValue(1);
 
   useEffect(() => {
     lifeProgress.value = withTiming(DURATION, {
       duration: DURATION,
-      easing: Easing.linear,
+      easing: Easing.linear, 
     });
 
-    // Smooth, calming "breathing" heart cycle
-    heartScale.value = withRepeat(
-      withTiming(1.3, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-      -1, // infinite loop
-      true, // Reverse continuously for inhale/exhale
+    // Circular gentle breathing
+    breatheScale.value = withRepeat(
+      withTiming(1.15, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
     );
-  }, [lifeProgress, heartScale]);
+  }, [lifeProgress, breatheScale]);
 
-  const heartStyle = useAnimatedStyle(() => {
+  const centralCircleStyle = useAnimatedStyle(() => {
     const t = lifeProgress.value;
 
-    // Explode outward (zoom-out blast with scale reduction)
+    // Smooth massive zoom in / explosion
     const explodeScale = interpolate(
       t,
-      [DURATION - 1000, DURATION],
-      [1, 0], // Heart shrinks into nothing at explosion phase
+      [DURATION - 1200, DURATION],
+      [1, 15], 
       Extrapolation.CLAMP,
     );
 
     const opacity = interpolate(
       t,
-      [0, 500, DURATION - 1000, DURATION - 200],
+      [0, 500, DURATION - 500, DURATION],
       [0, 1, 1, 0],
       Extrapolation.CLAMP,
     );
 
     return {
-      // Inherit the breathing loop * exploding termination
-      transform: [{ scale: heartScale.value * explodeScale }],
+      position: 'absolute',
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: theme.action.primary,
+      transform: [{ scale: breatheScale.value * explodeScale }],
       opacity,
       justifyContent: 'center',
       alignItems: 'center',
@@ -166,9 +178,7 @@ export function SuccessAnimation() {
         />
       ))}
 
-      <Animated.View style={heartStyle}>
-        <Ionicons name="heart" size={80} color={theme.action.primary} />
-      </Animated.View>
+      <Animated.View style={centralCircleStyle} />
     </View>
   );
 }
