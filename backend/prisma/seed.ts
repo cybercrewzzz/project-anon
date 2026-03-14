@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
+import * as argon2 from 'argon2';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -26,6 +27,11 @@ function seedUuid(name: string): string {
 }
 
 async function main() {
+  // Generate a real argon2id hash for all seeded accounts
+  // Test password: Password123!
+  const testPasswordHash = await argon2.hash('Password123!', {
+    type: argon2.argon2id,
+  });
   // ─── Languages ──────────────────────────────────────────────────────────────
   const english = await prisma.language.upsert({
     where: { code: 'en' },
@@ -64,10 +70,10 @@ async function main() {
     create: { name: 'volunteer', description: 'Volunteer listener' },
   });
 
-  const seekerRole = await prisma.role.upsert({
-    where: { name: 'seeker' },
+  const userRole = await prisma.role.upsert({
+    where: { name: 'user' },
     update: {},
-    create: { name: 'seeker', description: 'Help seeker' },
+    create: { name: 'user', description: 'Help seeker' },
   });
 
   // ─── Permissions ────────────────────────────────────────────────────────────
@@ -114,7 +120,7 @@ async function main() {
     'view_analytics',
   ];
   const volunteerPermissions = ['join_session'];
-  const seekerPermissions = ['create_problem'];
+  const userPermissions = ['create_problem'];
 
   for (const pName of adminPermissions) {
     await prisma.rolePermission.upsert({
@@ -148,17 +154,17 @@ async function main() {
     });
   }
 
-  for (const pName of seekerPermissions) {
+  for (const pName of userPermissions) {
     await prisma.rolePermission.upsert({
       where: {
         roleId_permissionId: {
-          roleId: seekerRole.roleId,
+          roleId: userRole.roleId,
           permissionId: permByName[pName].permissionId,
         },
       },
       update: {},
       create: {
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
         permissionId: permByName[pName].permissionId,
       },
     });
@@ -243,11 +249,9 @@ async function main() {
     update: {},
     create: {
       email: 'admin@example.com',
-      passwordHash: '$2b$10$placeholder_admin_hash',
+      passwordHash: testPasswordHash,
       name: 'Admin User',
       nickname: 'admin',
-      dateOfBirth: new Date('1990-01-15'),
-      gender: 'prefer_not_to_say',
       interfaceLanguageId: english.languageId,
       status: 'active',
     },
@@ -258,11 +262,9 @@ async function main() {
     update: {},
     create: {
       email: 'volunteer1@example.com',
-      passwordHash: '$2b$10$placeholder_volunteer1_hash',
+      passwordHash: testPasswordHash,
       name: 'Alice Volunteer',
       nickname: 'alice_v',
-      dateOfBirth: new Date('1998-05-20'),
-      gender: 'female',
       interfaceLanguageId: english.languageId,
       status: 'active',
     },
@@ -273,11 +275,9 @@ async function main() {
     update: {},
     create: {
       email: 'volunteer2@example.com',
-      passwordHash: '$2b$10$placeholder_volunteer2_hash',
+      passwordHash: testPasswordHash,
       name: 'Bob Volunteer',
       nickname: 'bob_v',
-      dateOfBirth: new Date('1997-08-10'),
-      gender: 'male',
       interfaceLanguageId: thai.languageId,
       status: 'active',
     },
@@ -288,11 +288,10 @@ async function main() {
     update: {},
     create: {
       email: 'seeker1@example.com',
-      passwordHash: '$2b$10$placeholder_seeker1_hash',
+      passwordHash: testPasswordHash,
       name: 'Charlie Seeker',
       nickname: 'charlie_s',
-      dateOfBirth: new Date('2000-03-25'),
-      gender: 'male',
+      ageRange: 'range_21_26',
       interfaceLanguageId: english.languageId,
       status: 'active',
     },
@@ -303,11 +302,10 @@ async function main() {
     update: {},
     create: {
       email: 'seeker2@example.com',
-      passwordHash: '$2b$10$placeholder_seeker2_hash',
+      passwordHash: testPasswordHash,
       name: 'Dana Seeker',
       nickname: 'dana_s',
-      dateOfBirth: new Date('2001-11-05'),
-      gender: 'female',
+      ageRange: 'range_16_20',
       interfaceLanguageId: thai.languageId,
       status: 'active',
     },
@@ -362,13 +360,13 @@ async function main() {
     where: {
       accountId_roleId: {
         accountId: seeker1.accountId,
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
       },
     },
     update: {},
     create: {
       accountId: seeker1.accountId,
-      roleId: seekerRole.roleId,
+      roleId: userRole.roleId,
     },
   });
 
@@ -376,13 +374,13 @@ async function main() {
     where: {
       accountId_roleId: {
         accountId: seeker2.accountId,
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
       },
     },
     update: {},
     create: {
       accountId: seeker2.accountId,
-      roleId: seekerRole.roleId,
+      roleId: userRole.roleId,
     },
   });
 

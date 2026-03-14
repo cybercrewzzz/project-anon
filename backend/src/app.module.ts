@@ -4,15 +4,17 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
-import { AccountsModule } from './accounts/accounts.module';
+import { AdminModule } from './admin/admin.module';
+import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     PrismaModule,
+    AdminModule,
+    AuthModule,
     RedisModule,
-    AccountsModule,
     ChatModule,
   ],
   controllers: [AppController],
