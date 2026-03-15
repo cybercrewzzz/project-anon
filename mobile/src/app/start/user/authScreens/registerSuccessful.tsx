@@ -11,7 +11,7 @@ const RegisterSuccessful = () => {
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
-      router.replace('/user/(tabs)/home' as any);
+      router.replace('/start/user/specialnotice' as any);
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -36,7 +36,7 @@ const RegisterSuccessful = () => {
             Please Wait
           </AppText>
           <AppText variant="subhead" color="primary" style={styles.textLine3}>
-            You will be directed to the homepage.
+            You will be directed to the next step.
           </AppText>
         </View>
       </View>

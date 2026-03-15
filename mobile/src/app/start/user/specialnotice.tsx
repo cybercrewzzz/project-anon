@@ -26,7 +26,7 @@ export default function TnS() {
         </AppText>
       </View>
 
-      <Pressable style={styles.textContainer} onPress={() => router.push('/')}>
+      <Pressable style={styles.textContainer} onPress={() => router.replace('/user/(tabs)/home' as any)}>
         <AppText style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>
           Got It !
         </AppText>
