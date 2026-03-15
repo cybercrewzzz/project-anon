@@ -1,73 +1,189 @@
 import { Injectable } from '@nestjs/common';
-import { RedisService } from '../redis/redis.service';
+import { RedisService } from '../redis/redis.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 const SESSION_TTL = 86400; // 24 hours
 const SOCKET_TTL = 86400; // match session TTL so stale mappings expire after a server crash
 const MAX_SESSION_MESSAGES = 1000;
+const VOLUNTEER_POOL_KEY = 'volunteer:pool';
+
+// Rate-limit windows in seconds
+const MSG_RATE_WINDOW_SEC = 60;
+const TYPING_RATE_WINDOW_SEC = 5;
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly redis: RedisService) {}
+  constructor(
+    private readonly redis: RedisService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   // ── Socket Mapping ──────────────────────────────────────────────
 
-  async mapSocket(socketId: string, userId: string): Promise<void> {
-    await this.redis.set(`socket:${socketId}`, userId);
+  async mapSocket(socketId: string, accountId: string): Promise<void> {
+    await this.redis.set(`socket:${socketId}`, accountId);
     await this.redis.expire(`socket:${socketId}`, SOCKET_TTL);
-    await this.redis.set(`user:${userId}:socket`, socketId);
-    await this.redis.expire(`user:${userId}:socket`, SOCKET_TTL);
+    await this.redis.set(`account:${accountId}:socket`, socketId);
+    await this.redis.expire(`account:${accountId}:socket`, SOCKET_TTL);
   }
 
-  async unmapSocket(socketId: string): Promise<void> {
-    const userId = await this.redis.get(`socket:${socketId}`);
+  /**
+   * Remove socket ↔ account mappings.
+   * Returns the accountId that was associated with this socket.
+   */
+  async unmapSocket(socketId: string): Promise<string | null> {
+    const accountId = await this.redis.get(`socket:${socketId}`);
     await this.redis.del(`socket:${socketId}`);
-    if (userId) {
-      // Only remove the user→socket mapping if it still points to this socket.
-      // A reconnect may have already replaced it with a new socket ID.
-      const currentSocketId = await this.redis.get(`user:${userId}:socket`);
+    if (accountId) {
+      // Only remove account→socket if it still points to this socket.
+      // A concurrent reconnect may have already replaced it.
+      const currentSocketId = await this.redis.get(
+        `account:${accountId}:socket`,
+      );
       if (currentSocketId === socketId) {
-        await this.redis.del(`user:${userId}:socket`);
+        await this.redis.del(`account:${accountId}:socket`);
       }
     }
+    return accountId;
   }
 
-  async getUserIdBySocket(socketId: string): Promise<string | null> {
+  async getAccountIdBySocket(socketId: string): Promise<string | null> {
     return this.redis.get(`socket:${socketId}`);
   }
 
-  async getSocketIdByUser(userId: string): Promise<string | null> {
-    return this.redis.get(`user:${userId}:socket`);
+  async getSocketIdByAccount(accountId: string): Promise<string | null> {
+    return this.redis.get(`account:${accountId}:socket`);
   }
 
-  // ── Session State ───────────────────────────────────────────────
+  // ── Account → Session Mapping ───────────────────────────────────
+
+  async setAccountSession(accountId: string, sessionId: string): Promise<void> {
+    await this.redis.set(`account:${accountId}:session`, sessionId);
+    await this.redis.expire(`account:${accountId}:session`, SESSION_TTL);
+  }
+
+  async getAccountSession(accountId: string): Promise<string | null> {
+    return this.redis.get(`account:${accountId}:session`);
+  }
+
+  async clearAccountSession(accountId: string): Promise<void> {
+    await this.redis.del(`account:${accountId}:session`);
+  }
+
+  // ── Volunteer Pool ───────────────────────────────────────────────
+
+  async addToPool(accountId: string): Promise<void> {
+    await this.redis.sadd(VOLUNTEER_POOL_KEY, accountId);
+  }
+
+  async removeFromPool(accountId: string): Promise<void> {
+    await this.redis.srem(VOLUNTEER_POOL_KEY, accountId);
+  }
 
   /**
-   * Validate that a session exists and the user is a participant.
-   *
-   * TODO: Replace with real validation when matchmaking is implemented.
-   * Real implementation should:
-   *  1. Check Postgres ChatSession exists and status is 'active'
-   *  2. Verify userId is either seekerId or listenerId
+   * Pick and atomically remove a random volunteer from the pool.
+   * Uses Redis SPOP so selection and removal are a single atomic
+   * operation, avoiding double-claims under concurrency.
    */
-  validateSession(sessionId: string, userId: string): Promise<boolean> {
-    // TODO: Replace with real validation when matchmaking is implemented.
-    // Real implementation should:
-    //  1. Check Postgres ChatSession exists and status is 'active'
-    //  2. Verify userId is either seekerId or listenerId
-    void sessionId;
-    void userId;
-    return Promise.resolve(true);
+  async claimVolunteer(): Promise<string | null> {
+    const volunteerId = await this.redis.spop(VOLUNTEER_POOL_KEY);
+    return volunteerId ?? null;
+  }
+
+  // ── Volunteer Eligibility ────────────────────────────────────────
+
+  /**
+   * A volunteer is eligible for the pool if their profile exists and
+   * isAvailable is true.
+   */
+  async isEligibleForPool(accountId: string): Promise<boolean> {
+    const profile = await this.prisma.volunteerProfile.findUnique({
+      where: { accountId },
+      select: { isAvailable: true },
+    });
+    return profile?.isAvailable === true;
+  }
+
+  /**
+   * Return the active ChatSession ID for an account (seeker or listener),
+   * or null if none.
+   */
+  async getActiveSessionId(accountId: string): Promise<string | null> {
+    const session = await this.prisma.chatSession.findFirst({
+      where: {
+        OR: [{ seekerId: accountId }, { listenerId: accountId }],
+        status: 'active',
+      },
+      select: { sessionId: true },
+    });
+    return session?.sessionId ?? null;
+  }
+
+  // ── Session Validation ───────────────────────────────────────────
+
+  private static readonly UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  async validateSession(
+    sessionId: string,
+    accountId: string,
+  ): Promise<boolean> {
+    // Reject non-UUID values immediately — avoids a DB error for test/dev ids
+    if (!ChatService.UUID_RE.test(sessionId)) return false;
+
+    const session = await this.prisma.chatSession.findUnique({
+      where: { sessionId },
+      select: { seekerId: true, listenerId: true, status: true },
+    });
+    if (!session || session.status !== 'active') return false;
+    return session.seekerId === accountId || session.listenerId === accountId;
+  }
+
+  // ── Session Hash (runtime state in Redis) ───────────────────────
+
+  async getSessionHash(
+    sessionId: string,
+  ): Promise<Record<string, string> | null> {
+    const hash = await this.redis.hgetall(`session:${sessionId}`);
+    return Object.keys(hash).length ? hash : null;
+  }
+
+  async updateSessionHash(
+    sessionId: string,
+    fields: Record<string, string>,
+  ): Promise<void> {
+    await this.redis.hset(`session:${sessionId}`, fields);
+    await this.redis.expire(`session:${sessionId}`, SESSION_TTL);
+  }
+
+  // ── Session Tear-down ────────────────────────────────────────────
+
+  async endSession(
+    sessionId: string,
+    status: 'completed' | 'cancelled_disconnect' | 'cancelled_timeout',
+  ): Promise<{ seekerId: string; listenerId: string | null } | null> {
+    const updated = await this.prisma.chatSession.updateMany({
+      where: { sessionId, status: 'active' },
+      data: { status, endedAt: new Date() },
+    });
+    if (updated.count === 0) return null;
+
+    const session = await this.prisma.chatSession.findUnique({
+      where: { sessionId },
+      select: { seekerId: true, listenerId: true },
+    });
+    return session;
   }
 
   // ── Key Exchange ────────────────────────────────────────────────
 
   async storePublicKey(
     sessionId: string,
-    userId: string,
+    accountId: string,
     publicKey: string,
   ): Promise<void> {
     const key = `session:${sessionId}:keys`;
-    await this.redis.hset(key, userId, publicKey);
+    await this.redis.hset(key, accountId, publicKey);
     await this.redis.expire(key, SESSION_TTL);
   }
 
@@ -86,7 +202,7 @@ export class ChatService {
     // Cap the buffer so a busy or malicious session can't exhaust Redis memory.
     await this.redis.ltrim(key, -MAX_SESSION_MESSAGES, -1);
     await this.redis.expire(key, SESSION_TTL);
-    return Math.min(length - 1, MAX_SESSION_MESSAGES - 1); // return 0-based index
+    return Math.min(length - 1, MAX_SESSION_MESSAGES - 1); // 0-based index
   }
 
   async getMessages(
@@ -99,5 +215,37 @@ export class ChatService {
       -1,
     );
     return raw.map((s) => JSON.parse(s) as Record<string, unknown>);
+  }
+
+  async purgeMessages(sessionId: string): Promise<void> {
+    await this.redis.del(`session:${sessionId}:msgs`);
+    await this.redis.del(`session:${sessionId}:keys`);
+    await this.redis.del(`session:${sessionId}`);
+  }
+
+  // ── Rate Limiting ────────────────────────────────────────────────
+
+  /**
+   * Increment a per-socket sliding-window counter.
+   * Returns true if the action is within the allowed limit.
+   *
+   *   message:send  → 30 per 60 s
+   *   typing:start  → 5  per 5 s
+   */
+  async checkRateLimit(
+    socketId: string,
+    event: 'message:send' | 'typing:start',
+  ): Promise<boolean> {
+    const [limit, windowSec] =
+      event === 'message:send'
+        ? [30, MSG_RATE_WINDOW_SEC]
+        : [5, TYPING_RATE_WINDOW_SEC];
+
+    const key = `rate:${socketId}:${event}`;
+    const count = await this.redis.incr(key);
+    if (count === 1) {
+      await this.redis.expire(key, windowSec);
+    }
+    return count <= limit;
   }
 }
