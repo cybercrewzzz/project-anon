@@ -3,8 +3,10 @@ import {
   ArrayUnique,
   IsArray,
   IsEmail,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
   IsUUID,
   MaxLength,
 } from 'class-validator';
@@ -12,6 +14,7 @@ import {
 export class ApplyVolunteerDTO {
   // account.name — stored on the account row
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   name: string;
 
@@ -22,20 +25,24 @@ export class ApplyVolunteerDTO {
 
   // volunteer_profile.institute_name
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   instituteName: string;
 
   // volunteer_profile.student_id
   @IsString()
+  @IsNotEmpty()
   @MaxLength(50)
   studentId: string;
 
   // volunteer_profile.institute_id_image_url
-  @IsString()
+  @IsUrl()
+  @MaxLength(2048)
   instituteIdImageUrl: string;
 
   // volunteer_profile.grade
   @IsString()
+  @IsNotEmpty()
   @MaxLength(20)
   grade: string;
 
