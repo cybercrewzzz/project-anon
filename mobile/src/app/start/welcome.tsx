@@ -1,21 +1,20 @@
 import { AppText } from '@/components/AppText';
 import { View, Pressable } from 'react-native';
-import { StyleSheet, withUnistyles } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Button from '@/components/button';
-
-const GradientColors = withUnistyles(LinearGradient, theme => ({
-  colors: theme.gradient.backgroundPrimary,
-}));
 
 export default function Welcome() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <GradientColors style={styles.gradient} />
+      <LinearGradient
+        colors={['#F6ECFF', '#F9FBFF', '#D2ECFE']}
+        style={styles.gradient}
+      />
 
       {/* Top*/}
       <AppText
@@ -41,7 +40,7 @@ export default function Welcome() {
           onPress={() => router.push('/start/user/selectLanguage' as any)}
         />
 
-        <Pressable onPress={() => router.push('/start/volunteer/welcome' as any)}>
+        <Pressable onPress={() => router.push('/start/volunteer/selectLanguage' as any)}>
           <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>
         </Pressable>
       </View>
@@ -75,7 +74,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   volunteerText: {
     textAlign: 'center',
     fontWeight: 'bold',
-    color: theme.text.primary,
+    color: '#1A1A1A',
     fontSize: 16,
   },
 }));
