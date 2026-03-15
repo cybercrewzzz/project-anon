@@ -92,12 +92,12 @@ export class VolunteerService {
       const { specialisationIds } = dto;
       try {
         await this.prisma.$transaction(async (tx) => {
-          await tx.volunteerProfile.update({
-            where: { accountId },
-            data: {
-              ...(dto.about !== undefined && { about: dto.about }),
-            },
-          });
+          if (dto.about !== undefined) {
+            await tx.volunteerProfile.update({
+              where: { accountId },
+              data: { about: dto.about },
+            });
+          }
           await tx.volunteerSpecialisation.deleteMany({
             where: { accountId },
           });
@@ -119,12 +119,10 @@ export class VolunteerService {
         }
         throw e;
       }
-    } else {
+    } else if (dto.about !== undefined) {
       await this.prisma.volunteerProfile.update({
         where: { accountId },
-        data: {
-          ...(dto.about !== undefined && { about: dto.about }),
-        },
+        data: { about: dto.about },
       });
     }
 
@@ -212,7 +210,6 @@ export class VolunteerService {
             volunteerId: accountId,
             documentUrl: dto.instituteIdImageUrl,
             status: 'pending',
-            submittedAt: new Date(),
           },
         });
         await tx.volunteerExperience.upsert({
