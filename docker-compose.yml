@@ -1,0 +1,36 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: anora-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: anora
+      POSTGRES_PASSWORD: anora1234
+      POSTGRES_DB: anora_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: anora-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: anora-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@anora.com
+      PGADMIN_DEFAULT_PASSWORD: admin1234
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
