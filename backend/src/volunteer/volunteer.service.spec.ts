@@ -290,13 +290,60 @@ describe('VolunteerService', () => {
       expect(db.$transaction).not.toHaveBeenCalled();
     });
 
-    it('throws NotFoundException when profile does not exist', async () => {
-      db.account.findUnique.mockResolvedValueOnce({ status: 'active' });
-      db.volunteerProfile.findUnique.mockResolvedValue(null);
-
-      await expect(service.updateProfile(accountId, updateDto)).rejects.toThrow(
-        NotFoundException,
+    it('skips all DB writes and returns profile when body is empty', async () => {
+      const tx = createMockTx();
+      db.account.findUnique
+        .mockResolvedValueOnce({ status: 'active' })
+        .mockResolvedValue(mockProfileResult);
+      db.volunteerProfile.findUnique.mockResolvedValue({ accountId });
+      db.$transaction.mockImplementation(
+        (fn: (tx: ReturnType<typeof createMockTx>) => unknown) => fn(tx),
       );
+
+      const result = await service.updateProfile(accountId, {});
+
+      expect(db.$transaction).not.toHaveBeenCalled();
+      expect(db.volunteerProfile.update).not.toHaveBeenCalled();
+      expect(tx.volunteerProfile.update).not.toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('skips volunteerProfile.update inside transaction when about is not provided', async () => {
+      const tx = createMockTx();
+      const dtoSpecialisationsOnly = { specialisationIds: ['spec-1'] };
+      db.account.findUnique
+        .mockResolvedValueOnce({ status: 'active' })
+        .mockResolvedValue(mockProfileResult);
+      db.volunteerProfile.findUnique.mockResolvedValue({ accountId });
+      db.$transaction.mockImplementation(
+        (fn: (tx: ReturnType<typeof createMockTx>) => unknown) => fn(tx),
+      );
+
+      await service.updateProfile(accountId, dtoSpecialisationsOnly);
+
+      expect(tx.volunteerProfile.update).not.toHaveBeenCalled();
+      expect(tx.volunteerSpecialisation.deleteMany).toHaveBeenCalled();
+      expect(tx.volunteerSpecialisation.createMany).toHaveBeenCalled();
+    });
+
+    it('returns the updated profile from getProfile', async () => {
+      const tx = createMockTx();
+      db.account.findUnique
+        .mockResolvedValueOnce({ status: 'active' })
+        .mockResolvedValue(mockProfileResult);
+      db.volunteerProfile.findUnique.mockResolvedValue({ accountId });
+      db.$transaction.mockImplementation(
+        (fn: (tx: ReturnType<typeof createMockTx>) => unknown) => fn(tx),
+      );
+
+      const result = await service.updateProfile(accountId, updateDto);
+
+      expect(result).toMatchObject({
+        accountId,
+        name: mockProfileResult.name,
+        verificationStatus:
+          mockProfileResult.volunteerProfile.verificationStatus,
+      });
     });
 
     it('throws ForbiddenException for suspended account', async () => {
@@ -379,6 +426,18 @@ describe('VolunteerService', () => {
       ).rejects.toThrow(ForbiddenException);
     });
 
+    it('throws ForbiddenException when verificationStatus is rejected', async () => {
+      db.account.findUnique.mockResolvedValue({ status: 'active' });
+      db.volunteerProfile.findUnique.mockResolvedValue({
+        accountId,
+        verificationStatus: 'rejected',
+      });
+
+      await expect(
+        service.updateStatus(accountId, { available: true }),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
     it('throws ForbiddenException for suspended account', async () => {
       db.account.findUnique.mockResolvedValue({ status: 'suspended' });
 
@@ -427,7 +486,30 @@ describe('VolunteerService', () => {
           status: { in: ['pending', 'approved'] },
         },
       });
-      expect(tx.volunteerProfile.upsert).toHaveBeenCalled();
+      expect(tx.volunteerProfile.upsert).toHaveBeenCalledWith({
+        where: { accountId },
+        update: {
+          instituteEmail: applyDto.instituteEmail,
+          instituteName: applyDto.instituteName,
+          studentId: applyDto.studentId,
+          instituteIdImageUrl: applyDto.instituteIdImageUrl,
+          grade: applyDto.grade,
+          about: applyDto.about,
+          verificationStatus: 'pending',
+          isAvailable: false,
+        },
+        create: {
+          accountId,
+          instituteEmail: applyDto.instituteEmail,
+          instituteName: applyDto.instituteName,
+          studentId: applyDto.studentId,
+          instituteIdImageUrl: applyDto.instituteIdImageUrl,
+          grade: applyDto.grade,
+          about: applyDto.about,
+          verificationStatus: 'pending',
+          isAvailable: false,
+        },
+      });
       expect(tx.volunteerSpecialisation.deleteMany).toHaveBeenCalledWith({
         where: { accountId },
       });
@@ -437,7 +519,13 @@ describe('VolunteerService', () => {
           { accountId, specialisationId: 'spec-2' },
         ],
       });
-      expect(tx.volunteerVerification.create).toHaveBeenCalled();
+      expect(tx.volunteerVerification.create).toHaveBeenCalledWith({
+        data: {
+          volunteerId: accountId,
+          documentUrl: applyDto.instituteIdImageUrl,
+          status: 'pending',
+        },
+      });
       expect(tx.volunteerExperience.upsert).toHaveBeenCalledWith({
         where: { accountId },
         update: {},
