@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
@@ -114,6 +115,12 @@ export class VolunteerService {
       throw new NotFoundException('Volunteer profile not found');
     }
 
+    if (existing.verificationStatus !== 'approved') {
+      throw new ForbiddenException(
+        'Only approved volunteers can change availability',
+      );
+    }
+
     const updated = await this.prisma.volunteerProfile.update({
       where: { accountId },
       data: { isAvailable: dto.available },
@@ -125,19 +132,18 @@ export class VolunteerService {
   // POST /volunteer/apply
 
   async applyAsVolunteer(accountId: string, dto: ApplyVolunteerDTO) {
-    const existingApplication =
-      await this.prisma.volunteerVerification.findFirst({
+    await this.prisma.$transaction(async (tx) => {
+      const existingApplication = await tx.volunteerVerification.findFirst({
         where: {
           volunteerId: accountId,
           status: { in: ['pending', 'approved'] },
         },
       });
 
-    if (existingApplication) {
-      throw new ConflictException('An active application already exists');
-    }
+      if (existingApplication) {
+        throw new ConflictException('An active application already exists');
+      }
 
-    await this.prisma.$transaction(async (tx) => {
       await tx.volunteerProfile.upsert({
         where: { accountId },
         update: {
