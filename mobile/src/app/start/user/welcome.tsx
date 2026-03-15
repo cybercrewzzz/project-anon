@@ -1,5 +1,5 @@
 import { AppText } from '@/components/AppText';
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -41,7 +41,9 @@ export default function Welcome() {
           onPress={() => router.push('/start/user/selectLanguage' as any)}
         />
 
-        <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>
+        <Pressable onPress={() => router.push('/start/volunteer/welcome' as any)}>
+          <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>
+        </Pressable>
       </View>
     </View>
   );

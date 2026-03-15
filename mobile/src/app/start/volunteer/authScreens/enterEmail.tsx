@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { AppText } from '@/components/AppText';
 import { View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
+import { useRouter } from 'expo-router';
 
 const EnterEmail = () => {
   const [email, setEmail] = useState('');
+  const { theme } = useUnistyles();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -34,7 +37,7 @@ const EnterEmail = () => {
           <InputForm
             placeholder="Email"
             placeholderColor="subtle2"
-            formColor="#FDFAFF"
+            formColor={theme.surface.primary}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -45,7 +48,7 @@ const EnterEmail = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton>
+        <FullWidthButton onPress={() => router.push('/start/volunteer/authScreens/OTPVerification' as any)}>
           <AppText variant="headline" color="secondary">
             Continue
           </AppText>

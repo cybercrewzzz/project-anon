@@ -31,6 +31,13 @@ const Groups = () => {
             })
           }
         />
+        <Button
+          text="Test Volunteer Auth Flow"
+          onPress={() =>
+            router.navigate('/start/volunteer/welcome' as any)
+          }
+          style={{ backgroundColor: '#FFD700', marginTop: 20 }}
+        />
       </View>
     </SafeAreaView>
   );

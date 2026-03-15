@@ -5,13 +5,13 @@ import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SuccessAnimation } from '@/components/SuccessAnimation';
 
-const RegisterSuccessful = () => {
+const VerificationSubmitSuccessful = () => {
   const router = useRouter();
 
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
-      router.replace('/start/volunteer/authScreens/verify' as any);
+      router.replace('/start/volunteer/specialnotice' as any);
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -30,13 +30,13 @@ const RegisterSuccessful = () => {
             emphasis="emphasized"
             style={styles.textLine1}
           >
-            Registration Successful!
+            Verification Submitted!
           </AppText>
           <AppText variant="subhead" color="primary" style={styles.textLine2}>
             Please Wait
           </AppText>
           <AppText variant="subhead" color="primary" style={styles.textLine3}>
-            You will be directed to the verification step.
+            Your information was sent for review.
           </AppText>
         </View>
       </View>
@@ -44,7 +44,7 @@ const RegisterSuccessful = () => {
   );
 };
 
-export default RegisterSuccessful;
+export default VerificationSubmitSuccessful;
 
 const styles = StyleSheet.create((theme, rt) => ({
   container: {

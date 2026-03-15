@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { FullWidthButton } from '@/components/FullWidthButton';
 
@@ -18,16 +18,23 @@ const OTPInput = ({
   inputRef,
   onKeyPress,
 }: OTPInputProps) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const { theme } = useUnistyles();
+
   return (
-    <TextInput
-      ref={inputRef}
-      style={styles.otpInput}
-      maxLength={1}
-      keyboardType="number-pad"
-      value={value}
-      onChangeText={onChangeText}
-      onKeyPress={onKeyPress}
-    />
+    <View style={styles.otpInputContainer(isFocused, theme)}>
+      <TextInput
+        ref={inputRef}
+        style={styles.otpInputText(theme)}
+        maxLength={1}
+        keyboardType="number-pad"
+        value={value}
+        onChangeText={onChangeText}
+        onKeyPress={onKeyPress}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+    </View>
   );
 };
 
@@ -164,16 +171,21 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginTop: theme.spacing.s6,
     paddingTop: rt.insets.top,
   },
-  otpInput: {
-    width: 80,
+  otpInputContainer: (isFocused: boolean, theme: any) => ({
+    width: 70,
     height: 64,
-    borderWidth: 2,
-    borderColor: theme.border.default,
-    backgroundColor: theme.surface.secondary,
+    justifyContent: 'center',
+    backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.sm,
+    borderWidth: isFocused ? 1.5 : 0,
+    borderColor: isFocused ? theme.text.accent : 'transparent',
+    boxShadow: theme.elevation.level3,
+  }),
+  otpInputText: (theme: any) => ({
     textAlign: 'center',
     fontSize: 24,
-  },
+    color: theme.text.primary,
+  }),
   verifyText: {
     marginTop: theme.spacing.s5,
     textAlign: 'center',

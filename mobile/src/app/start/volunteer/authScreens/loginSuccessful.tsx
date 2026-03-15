@@ -1,30 +1,30 @@
 import { AppText } from '@/components/AppText';
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { useRouter } from 'expo-router';
+import { SuccessAnimation } from '@/components/SuccessAnimation';
 
 const LoginSuccessful = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const { theme } = useUnistyles();
 
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
       setIsLoading(false);
-      // Add your navigation logic here
+      router.replace('/volunteer/(tabs)/home' as any);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <View style={styles.container}>
       <View style={styles.cardContainer}>
         <View style={styles.imageContainer}>
-          <Image
-            source={require('@/assets/images/loginSuccessful.webp')}
-            style={styles.image}
-          />
+          <SuccessAnimation />
         </View>
         <View>
           <AppText
@@ -46,7 +46,7 @@ const LoginSuccessful = () => {
         {/* Animated Loader */}
         {isLoading && (
           <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#9500FF" />
+            <ActivityIndicator size="large" color={theme.action.secondary} />
           </View>
         )}
       </View>
@@ -59,7 +59,7 @@ export default LoginSuccessful;
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
-    backgroundColor: '#333333',
+    backgroundColor: theme.background.overlay,
     paddingTop: rt.insets.top,
     paddingBottom: rt.insets.bottom,
     paddingLeft: rt.insets.left + 16,
@@ -71,8 +71,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.mdSoft,
     width: '100%',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    paddingVertical: theme.spacing.s7,
+    paddingHorizontal: theme.spacing.s5,
     alignItems: 'center',
     elevation: 10,
   },
@@ -80,12 +80,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   imageContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 32,
-  },
-
-  image: {
-    width: 200,
-    height: 185,
+    paddingBottom: theme.spacing.s6,
   },
 
   textLine1: {
@@ -94,14 +89,14 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
 
   textLine2: {
-    paddingTop: 32,
+    paddingTop: theme.spacing.s6,
     justifyContent: 'center',
     textAlign: 'center',
   },
 
   textLine3: {
-    paddingTop: 8,
-    marginTop: 8,
+    paddingTop: theme.spacing.s3,
+    marginTop: theme.spacing.s3,
     justifyContent: 'center',
     textAlign: 'center',
   },

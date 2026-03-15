@@ -1,12 +1,16 @@
 import { View, Pressable } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import InputForm from '@/components/inputForm';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useRouter } from 'expo-router';
 
 const Verify = () => {
+  const { theme } = useUnistyles();
+  const router = useRouter();
+  
   const [form, setForm] = useState({
     name: '',
     instituteEmail: '',
@@ -40,7 +44,7 @@ const Verify = () => {
         <InputForm
           placeholder="Name"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('name')}
           value={form.name}
           placeholderVariant="subhead"
@@ -48,7 +52,7 @@ const Verify = () => {
         <InputForm
           placeholder="Institute Email"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('instituteEmail')}
           value={form.instituteEmail}
           inputMode="email"
@@ -59,7 +63,7 @@ const Verify = () => {
         <InputForm
           placeholder="Grade"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('grade')}
           value={form.grade}
           placeholderVariant="subhead"
@@ -67,7 +71,7 @@ const Verify = () => {
         <InputForm
           placeholder="Institute Name"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('instituteName')}
           value={form.instituteName}
           placeholderVariant="subhead"
@@ -77,7 +81,7 @@ const Verify = () => {
           <InputForm
             placeholder="Institute ID"
             placeholderColor="subtle2"
-            formColor="#FDFAFF"
+            formColor={theme.surface.primary}
             onChangeText={updateField('instituteId')}
             value={form.instituteId}
             contentContainerStyle={styles.instituteIdInput}
@@ -93,7 +97,7 @@ const Verify = () => {
         <InputForm
           placeholder="About You :"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('aboutYou')}
           value={form.aboutYou}
           multiline
@@ -116,7 +120,11 @@ const Verify = () => {
         </AppText>
       </Pressable>
       <View style={styles.buttonWrapper}>
-        <FullWidthButton>
+        <FullWidthButton
+          onPress={() => {
+            router.replace('/start/volunteer/authScreens/VerificationSubmitSuccessful' as any);
+          }}
+        >
           <AppText variant="headline" color="secondary" emphasis="emphasized">
             Verify Me
           </AppText>
@@ -173,8 +181,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     width: 18,
     height: 18,
     borderWidth: 1.5,
-    borderColor: theme.text.muted,
-    borderRadius: 3,
+    borderColor: theme.border.default,
+    borderRadius: theme.radius.smSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -182,7 +190,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     width: 10,
     height: 10,
     backgroundColor: theme.action.secondary,
-    borderRadius: 2,
+    borderRadius: theme.radius.xs,
   },
   checkboxText: {
     flex: 1,

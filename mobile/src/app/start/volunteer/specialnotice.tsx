@@ -24,11 +24,11 @@ export default function TnS() {
           textAlign="center"
           style={{ marginTop: 100, borderRadius: theme.radius.sm }}
         >
-          Hide and Protect Your Data.
+          Follow the strictest guidelines when dealing with users and protect their data.
         </AppText>
       </View>
 
-      <Pressable style={styles.textContainer} onPress={() => router.replace('/user/(tabs)/home' as any)}>
+      <Pressable style={styles.textContainer} onPress={() => router.replace('/volunteer/(tabs)/home' as any)}>
         <AppText style={styles.buttonText}>
           Got It !
         </AppText>

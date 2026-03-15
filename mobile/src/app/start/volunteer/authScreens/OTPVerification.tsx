@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
-import { StyleSheet } from 'react-native-unistyles';
-//import { useRouter } from 'expo-router';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { useRouter } from 'expo-router';
 
 interface OTPInputProps {
   value: string;
@@ -17,21 +17,28 @@ const OTPInput = ({
   inputRef,
   onKeyPress,
 }: OTPInputProps) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const { theme } = useUnistyles();
+
   return (
-    <TextInput
-      ref={inputRef}
-      style={styles.otpInput}
-      maxLength={1}
-      keyboardType="number-pad"
-      value={value}
-      onChangeText={onChangeText}
-      onKeyPress={onKeyPress}
-    />
+    <View style={styles.otpInputContainer(isFocused, theme)}>
+      <TextInput
+        ref={inputRef}
+        style={styles.otpInputText(theme)}
+        maxLength={1}
+        keyboardType="number-pad"
+        value={value}
+        onChangeText={onChangeText}
+        onKeyPress={onKeyPress}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+    </View>
   );
 };
 
 const OTPVerification = () => {
-  //const router = useRouter();
+  const router = useRouter();
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = [
     useRef<TextInput>(null),
@@ -115,7 +122,7 @@ const OTPVerification = () => {
       <View style={styles.buttonContainer}>
         <Pressable
           style={styles.button}
-          //onPress={() => router.navigate('')}
+          onPress={() => router.navigate('/start/volunteer/authScreens/CreateNewPassword' as any)}
         >
           <AppText variant="headline" color="secondary">
             {' '}
@@ -148,41 +155,46 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: 64,
   },
   title: {
-    paddingLeft: 5,
+    paddingLeft: theme.spacing.s1,
   },
   description: {
     textAlign: 'left',
-    marginTop: 20,
-    marginLeft: 5,
-    paddingLeft: 5,
+    marginTop: theme.spacing.s4,
+    marginLeft: theme.spacing.s1,
+    paddingLeft: theme.spacing.s1,
   },
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    marginTop: theme.spacing.s6,
     paddingTop: rt.insets.top,
   },
-  otpInput: {
-    width: 80,
+  otpInputContainer: (isFocused: boolean, theme: any) => ({
+    width: 70,
     height: 64,
-    borderWidth: 2,
-    borderColor: theme.border.default,
-    backgroundColor: theme.surface.secondary,
-    borderRadius: 8,
+    justifyContent: 'center',
+    backgroundColor: theme.surface.primary,
+    borderRadius: theme.radius.sm,
+    borderWidth: isFocused ? 1.5 : 0,
+    borderColor: isFocused ? theme.text.accent : 'transparent',
+    boxShadow: theme.elevation.level3,
+  }),
+  otpInputText: (theme: any) => ({
     textAlign: 'center',
     fontSize: 24,
-  },
+    color: theme.text.primary,
+  }),
   verifyText: {
-    marginTop: 25,
+    marginTop: theme.spacing.s5,
     textAlign: 'center',
   },
   button: {
     alignItems: 'center',
-    paddingTop: 15,
-    paddingBottom: 15,
-    marginLeft: 10,
-    marginRight: 10,
-    borderRadius: 25,
+    paddingTop: theme.spacing.s3,
+    paddingBottom: theme.spacing.s3,
+    marginLeft: theme.spacing.s2,
+    marginRight: theme.spacing.s2,
+    borderRadius: theme.radius.xl,
     backgroundColor: theme.action.secondary,
   },
 }));

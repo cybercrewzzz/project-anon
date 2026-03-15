@@ -6,8 +6,12 @@ import InputForm from '@/components/inputForm';
 import OAuthSignIn from '@/components/oAuthSignIn';
 import Button from '@/components/button';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useUnistyles } from 'react-native-unistyles';
+import { useRouter } from 'expo-router';
 
 const SignUp = () => {
+  const router = useRouter();
+  const { theme } = useUnistyles();
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -39,14 +43,14 @@ const SignUp = () => {
         <InputForm
           placeholder="Name"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('name')}
           value={form.name}
         />
         <InputForm
           placeholder="Email"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('email')}
           value={form.email}
           inputMode="email"
@@ -56,7 +60,7 @@ const SignUp = () => {
         <InputForm
           placeholder="Password"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('password')}
           value={form.password}
           secureTextEntry={true}
@@ -64,7 +68,7 @@ const SignUp = () => {
         <InputForm
           placeholder="Confirm Password"
           placeholderColor="subtle2"
-          formColor="#FDFAFF"
+          formColor={theme.surface.primary}
           onChangeText={updateField('confirmPassword')}
           value={form.confirmPassword}
           secureTextEntry={true}
@@ -83,7 +87,7 @@ const SignUp = () => {
         </AppText>
       </Pressable>
 
-      <Button text="Create Account" />
+      <Button text="Create Account" onPress={() => router.push('/start/volunteer/authScreens/registerSuccessful' as any)} />
       <OAuthSignIn />
     </KeyboardAwareScrollView>
   );
@@ -126,8 +130,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     width: 18,
     height: 18,
     borderWidth: 1.5,
-    borderColor: theme.text.muted,
-    borderRadius: 3,
+    borderColor: theme.border.default,
+    borderRadius: theme.radius.smSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -135,7 +139,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     width: 10,
     height: 10,
     backgroundColor: theme.action.secondary,
-    borderRadius: 2,
+    borderRadius: theme.radius.xs,
   },
   checkboxText: {
     flex: 1,

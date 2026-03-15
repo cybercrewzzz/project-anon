@@ -3,9 +3,11 @@ import { View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
 import { AuthButton } from '@/components/AuthButton';
-//import { router } from 'expo-router';
+import { router } from 'expo-router';
+import { useUnistyles } from 'react-native-unistyles';
 
 const SignUpNLogin = () => {
+  const { theme } = useUnistyles();
   return (
     <View style={styles.container}>
       <View style={styles.screenTitleContainer}>
@@ -14,13 +16,21 @@ const SignUpNLogin = () => {
         </AppText>
       </View>
       <View style={styles.buttonContainer}>
-        <AuthButton label="Login" color="#00A9D3" />
+        <AuthButton
+          label="Login"
+          color={theme.action.secondary}
+          onPress={() => router.push('/start/volunteer/authScreens/signIn' as any)}
+        />
         <View style={styles.dividerText}>
           <AppText variant="headline" color="primary">
             OR
           </AppText>
         </View>
-        <AuthButton label="Sign Up" color="#0669B8" />
+        <AuthButton
+          label="Sign Up"
+          color={theme.action.primary}
+          onPress={() => router.push('/start/volunteer/authScreens/signUp' as any)}
+        />
       </View>
     </View>
   );
