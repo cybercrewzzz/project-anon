@@ -82,14 +82,12 @@ export class ChatService {
 
   /**
    * Pick and atomically remove a random volunteer from the pool.
-   * SRANDMEMBER + SREM is not strictly atomic but is safe for a
-   * single-instance deployment.
+   * Uses Redis SPOP so selection and removal are a single atomic
+   * operation, avoiding double-claims under concurrency.
    */
   async claimVolunteer(): Promise<string | null> {
-    const volunteerId = await this.redis.srandmember(VOLUNTEER_POOL_KEY);
-    if (!volunteerId) return null;
-    await this.redis.srem(VOLUNTEER_POOL_KEY, volunteerId);
-    return volunteerId;
+    const volunteerId = await this.redis.spop(VOLUNTEER_POOL_KEY);
+    return volunteerId ?? null;
   }
 
   // ── Volunteer Eligibility ────────────────────────────────────────

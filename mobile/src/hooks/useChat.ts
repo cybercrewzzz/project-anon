@@ -176,7 +176,7 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
         if (msg.senderId === userId) continue; // skip own messages
 
         const content = decrypt(msg.encryptedPayload, shared);
-        if (!content) continue;
+        if (content === null) continue;
 
         synced.push({
           id: msg.clientMsgId,

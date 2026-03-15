@@ -76,7 +76,11 @@ export class ChatGateway
 
     // Development-only fallback: accept a plain accountId from query params so
     // the mobile team can connect before the JWT auth flow is wired up.
-    if (!raw && process.env.NODE_ENV !== 'production') {
+    if (
+      !raw &&
+      (process.env.NODE_ENV === 'development' ||
+        process.env.NODE_ENV === 'test')
+    ) {
       const q = client.handshake.query?.userId;
       const queryUserId = Array.isArray(q) ? q[0] : q;
       if (queryUserId && UUID_RE.test(queryUserId)) {
@@ -231,9 +235,13 @@ export class ChatGateway
         afterIndex,
       );
       if (messages.length > 0) {
+        const messagesWithIndex = messages.map((msg, idx) => ({
+          ...msg,
+          msgIndex: afterIndex + idx,
+        }));
         client.emit('message:sync', {
           sessionId: payload.sessionId,
-          messages,
+          messages: messagesWithIndex,
         });
       }
 
