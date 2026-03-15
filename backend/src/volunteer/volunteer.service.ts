@@ -186,7 +186,7 @@ export class VolunteerService {
       await tx.volunteerExperience.upsert({
         where: { accountId },
         update: {},
-        create: { accountId, points: 0, level: 0 },
+        create: { accountId, points: 0 },
       });
       await tx.account.update({
         where: { accountId },
