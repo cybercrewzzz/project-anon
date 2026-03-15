@@ -121,7 +121,7 @@ export class ChatService {
     return session?.sessionId ?? null;
   }
 
-// ── Session Validation ───────────────────────────────────────────
+  // ── Session Validation ───────────────────────────────────────────
 
   private static readonly UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

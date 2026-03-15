@@ -18,8 +18,8 @@ import '@/api/client';
 // Fixed UUIDs (not random) so the socket and chat screens share the same
 // userId; Crypto.randomUUID() here caused divergence with the hardcoded
 // fallbacks in the chat screens, breaking sender/outgoing detection.
-const MOCK_USER_ID = 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
-const MOCK_VOLUNTEER_ID = '3e4ece8c-6115-4cae-87b8-20561283973f';
+const MOCK_USER_ID = '8806c4dd-358e-4fb6-a2cd-6f03a3f0ed10'; // seeker2
+const MOCK_VOLUNTEER_ID = '29ff5fe9-c7ce-4b26-af56-d4c02da32285'; // volunteer2
 
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({

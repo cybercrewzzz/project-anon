@@ -26,10 +26,15 @@ export default function Chat() {
 
   const account = useAuth(state => state.account);
   // TODO: Remove mock ID when auth is implemented.
-  const userId = account?.accountId || 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
+  const userId = account?.accountId || '8806c4dd-358e-4fb6-a2cd-6f03a3f0ed10';
 
-  const { messages, sendMessage, isEncryptionReady, isPeerConnected, isSessionEnded } =
-    useChat({ sessionId: chatId, userId });
+  const {
+    messages,
+    sendMessage,
+    isEncryptionReady,
+    isPeerConnected,
+    isSessionEnded,
+  } = useChat({ sessionId: chatId, userId });
 
   const [messageContent, setMessageContent] = useState('');
 
