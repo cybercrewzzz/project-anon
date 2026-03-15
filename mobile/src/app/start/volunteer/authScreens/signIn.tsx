@@ -106,8 +106,3 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: 'row',
   },
 }));
-
-/*
-
-
-*/
