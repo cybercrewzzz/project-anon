@@ -31,6 +31,7 @@ export default function Layout() {
   const isHydrated = useAuth(state => state.isHydrated);
   const hydrate = useAuth(state => state.hydrate);
   const account = useAuth(state => state.account);
+  const accessToken = useAuth(state => state.accessToken);
   const role = useRole(state => state.role);
 
   useEffect(() => {
@@ -44,12 +45,14 @@ export default function Layout() {
       account?.accountId ||
       (role === 'volunteer' ? MOCK_VOLUNTEER_ID : MOCK_USER_ID);
 
-    connectSocket(userId);
+    // Pass the JWT when available so the gateway can authenticate properly.
+    // When no token exists the gateway falls back to query.userId (dev only).
+    connectSocket(userId, accessToken ?? undefined);
 
     return () => {
       disconnectSocket();
     };
-  }, [account?.accountId, role]);
+  }, [account?.accountId, accessToken, role]);
 
   const onLayoutRootView = useCallback(async () => {
     if (isHydrated) {

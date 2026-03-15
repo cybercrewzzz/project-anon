@@ -1,6 +1,6 @@
 import { View, Pressable } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AppText } from '@/components/AppText';
 import { SessionDetail } from '@/api/schemas';
 import { LegendList } from '@legendapp/list';
@@ -14,9 +14,10 @@ import OutgoingMessage from '@/components/chat/outgoingMessage';
 import IncomingMessage from '@/components/chat/incomingMessage';
 import { useChat } from '@/hooks/useChat';
 
-const SESSION_TIME_SECONDS = 1800;
+const SESSION_TIME_SECONDS = 1800; // 30 minutes
 
 export default function Chat() {
+  const router = useRouter();
   const { chat: chatId } = useLocalSearchParams() as {
     chat?: SessionDetail['sessionId'];
   };
@@ -25,10 +26,14 @@ export default function Chat() {
   // TODO: Remove mock ID when auth is implemented.
   const userId = account?.accountId || 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
 
-  const { messages, sendMessage, isEncryptionReady } = useChat({
-    sessionId: chatId,
-    userId,
-  });
+  const {
+    messages,
+    sendMessage,
+    endSession,
+    isEncryptionReady,
+    isPeerConnected,
+    isSessionEnded,
+  } = useChat({ sessionId: chatId, userId });
 
   const [messageContent, setMessageContent] = useState('');
 
@@ -38,8 +43,11 @@ export default function Chat() {
     setMessageContent('');
   };
 
-  // Timer Handler
+  // ── 30-minute session timer ───────────────────────────────────────
+
   const [timeConsumed, setTimeConsumed] = useState(0);
+  const endSessionRef = useRef(endSession);
+  endSessionRef.current = endSession;
 
   useEffect(() => {
     const timerInterval = setInterval(() => {
@@ -54,6 +62,15 @@ export default function Chat() {
 
     return () => clearInterval(timerInterval);
   }, []);
+
+  // Emit session:end exactly once when the timer reaches its limit.
+  const timerEndedRef = useRef(false);
+  useEffect(() => {
+    if (timeConsumed >= SESSION_TIME_SECONDS && !timerEndedRef.current) {
+      timerEndedRef.current = true;
+      endSessionRef.current();
+    }
+  }, [timeConsumed]);
 
   if (!chatId) {
     return <AppText>We couldn&apos;t find this chat room 🥲</AppText>;
@@ -72,6 +89,16 @@ export default function Chat() {
           rating="4.5"
           roleTag="Volunteer"
         />
+
+        {/* Peer disconnected banner */}
+        {!isPeerConnected && !isSessionEnded && (
+          <View style={styles.peerDisconnectedBanner}>
+            <AppText variant="caption2" style={styles.bannerText}>
+              Volunteer disconnected — waiting for them to reconnect…
+            </AppText>
+          </View>
+        )}
+
         <LegendList
           data={messages}
           renderItem={({ item }) => {
@@ -114,7 +141,11 @@ export default function Chat() {
           />
           <Pressable
             onPress={handleSend}
-            disabled={messageContent.trim() === '' || !isEncryptionReady}
+            disabled={
+              messageContent.trim() === '' ||
+              !isEncryptionReady ||
+              isSessionEnded
+            }
           >
             <Image
               source={require('@/assets/icons/userSend.svg')}
@@ -127,6 +158,24 @@ export default function Chat() {
             Your messages are anonymous and confidential
           </AppText>
         </View>
+
+        {/* Session ended overlay — rendered on top of everything */}
+        {isSessionEnded && (
+          <View style={styles.sessionEndedOverlay}>
+            <AppText variant="title2" style={styles.sessionEndedTitle}>
+              Session Ended
+            </AppText>
+            <AppText variant="body" style={styles.sessionEndedBody}>
+              Your chat session has ended. Everything shared here remains
+              private and confidential.
+            </AppText>
+            <Pressable onPress={() => router.back()} style={styles.closeButton}>
+              <AppText variant="body" style={styles.closeButtonText}>
+                Close
+              </AppText>
+            </Pressable>
+          </View>
+        )}
       </View>
     </>
   );
@@ -164,5 +213,43 @@ const styles = StyleSheet.create((theme, rt) => ({
   footerNote: {
     alignItems: 'center',
     margin: theme.spacing.s2,
+  },
+  peerDisconnectedBanner: {
+    backgroundColor: theme.state.warning,
+    paddingVertical: theme.spacing.s2,
+    paddingHorizontal: theme.spacing.s4,
+    alignItems: 'center',
+  },
+  bannerText: {
+    color: '#fff',
+  },
+  sessionEndedOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: theme.background.default,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.s6,
+    gap: theme.spacing.s4,
+  },
+  sessionEndedTitle: {
+    textAlign: 'center',
+  },
+  sessionEndedBody: {
+    textAlign: 'center',
+    opacity: 0.7,
+  },
+  closeButton: {
+    marginTop: theme.spacing.s4,
+    paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s6,
+    backgroundColor: theme.action.secondary,
+    borderRadius: theme.radius.full,
+  },
+  closeButtonText: {
+    color: '#fff',
   },
 }));
