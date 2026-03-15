@@ -17,7 +17,7 @@ export interface AppTheme {
     readonly chatSurface: string;
     readonly chatBubbleIncoming: string;
     readonly chatTimerTrack: string;
-    readonly highlightedGradient: readonly string[];
+    readonly highlightedGradient: readonly [string, string, ...string[]];
   };
   readonly text: {
     readonly primary: string;
@@ -30,7 +30,7 @@ export interface AppTheme {
   };
   readonly border: {
     readonly default: string;
-    readonly focusGradient: readonly string[];
+    readonly focusGradient: readonly [string, string, ...string[]];
   };
   readonly action: {
     readonly primary: string;
@@ -45,11 +45,11 @@ export interface AppTheme {
     readonly info: string;
   };
   readonly gradient: {
-    readonly background: readonly string[];
-    readonly backgroundPrimary: readonly string[];
-    readonly backgroundSecondary: readonly string[];
-    readonly textGradient: readonly string[];
-    readonly callAction: readonly string[];
+    readonly background: readonly [string, string, ...string[]];
+    readonly backgroundPrimary: readonly [string, string, ...string[]];
+    readonly backgroundSecondary: readonly [string, string, ...string[]];
+    readonly textGradient: readonly [string, string, ...string[]];
+    readonly callAction: readonly [string, string, ...string[]];
   };
   readonly radius: typeof radius;
   readonly spacing: typeof spacing;
