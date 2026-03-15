@@ -9,17 +9,10 @@ import { queryClient } from '@/api/queryClient';
 import { useAuth } from '@/store/useAuth';
 import { useRole } from '@/store/useRole';
 import { connectSocket, disconnectSocket } from '@/api/socket';
+import { MOCK_USER_ID, MOCK_VOLUNTEER_ID } from '@/constants/mock-ids';
 
 // Side-effect import: registers axios interceptors
 import '@/api/client';
-
-// TODO: Remove mock IDs when JWT auth is implemented.
-// These are only used as fallbacks when account is null.
-// Fixed UUIDs (not random) so the socket and chat screens share the same
-// userId; Crypto.randomUUID() here caused divergence with the hardcoded
-// fallbacks in the chat screens, breaking sender/outgoing detection.
-const MOCK_USER_ID = 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
-const MOCK_VOLUNTEER_ID = '3e4ece8c-6115-4cae-87b8-20561283973f';
 
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
@@ -31,6 +24,7 @@ export default function Layout() {
   const isHydrated = useAuth(state => state.isHydrated);
   const hydrate = useAuth(state => state.hydrate);
   const account = useAuth(state => state.account);
+  const accessToken = useAuth(state => state.accessToken);
   const role = useRole(state => state.role);
 
   useEffect(() => {
@@ -44,12 +38,14 @@ export default function Layout() {
       account?.accountId ||
       (role === 'volunteer' ? MOCK_VOLUNTEER_ID : MOCK_USER_ID);
 
-    connectSocket(userId);
+    // Pass the JWT when available so the gateway can authenticate properly.
+    // When no token exists the gateway falls back to query.userId (dev only).
+    connectSocket(userId, accessToken ?? undefined);
 
     return () => {
       disconnectSocket();
     };
-  }, [account?.accountId, role]);
+  }, [account?.accountId, accessToken, role]);
 
   const onLayoutRootView = useCallback(async () => {
     if (isHydrated) {

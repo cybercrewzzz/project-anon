@@ -41,7 +41,10 @@ interface UseChatOptions {
 interface UseChatReturn {
   messages: Message[];
   sendMessage: (content: string) => void;
+  endSession: () => void;
   isEncryptionReady: boolean;
+  isPeerConnected: boolean;
+  isSessionEnded: boolean;
 }
 
 // Secret key is stored under this key prefix in expo-secure-store.
@@ -53,6 +56,8 @@ const SK_STORE_KEY = (sessionId: string) => `chat_sk_${sessionId}`;
 export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isEncryptionReady, setIsEncryptionReady] = useState(false);
+  const [isPeerConnected, setIsPeerConnected] = useState(true);
+  const [isSessionEnded, setIsSessionEnded] = useState(false);
 
   // Bumped each time the socket connects so the setup effect re-runs when
   // the socket wasn't ready on the initial render (child effects run before
@@ -81,15 +86,13 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
 
     const onKeyExchange = (payload: {
       sessionId: string;
-      userId: string;
+      accountId: string; // server field — was incorrectly "userId" in old code
       publicKey: string;
     }) => {
-      if (payload.userId === userId) return;
+      if (payload.accountId === userId) return; // own key reflected back
       if (!keyPairRef.current) return; // init hasn't finished yet (extremely unlikely but safe)
 
       const peerPublicKey = base64ToBytes(payload.publicKey);
-      // Store in a local const so TypeScript can narrow out null and the
-      // value is stable for the rest of this handler.
       const shared = deriveSharedSecret(
         keyPairRef.current.secretKey,
         peerPublicKey,
@@ -128,8 +131,6 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
         payload.msgIndex,
       );
 
-      // Read into a local const so TS can narrow out null and the value
-      // is stable between the guard and the decrypt call.
       const shared = sharedSecretRef.current;
       if (!shared) {
         pendingDecryptRef.current.push(payload);
@@ -153,8 +154,68 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       ]);
     };
 
+    // Server pushes missed messages after a reconnect (triggered by the
+    // lastMsgIndex we pass to room:join — no client-emitted request needed).
+    const onMessageSync = (payload: {
+      sessionId: string;
+      messages: {
+        encryptedPayload: string;
+        clientMsgId: string;
+        senderId: string;
+        timestamp: number;
+        msgIndex?: number;
+      }[];
+    }) => {
+      if (payload.sessionId !== sessionId) return;
+
+      const shared = sharedSecretRef.current;
+      if (!shared || !payload.messages?.length) return;
+
+      const synced: Message[] = [];
+      for (const msg of payload.messages) {
+        if (msg.senderId === userId) continue; // skip own messages
+
+        const content = decrypt(msg.encryptedPayload, shared);
+        if (content === null) continue;
+
+        synced.push({
+          id: msg.clientMsgId,
+          content,
+          senderId: msg.senderId,
+          timestamp: msg.timestamp,
+        });
+
+        if (typeof msg.msgIndex === 'number') {
+          lastMsgIndexRef.current = Math.max(
+            lastMsgIndexRef.current,
+            msg.msgIndex,
+          );
+        }
+      }
+
+      if (synced.length > 0) {
+        setMessages(prev => {
+          const existingIds = new Set(prev.map(m => m.id));
+          const newMsgs = synced.filter(m => !existingIds.has(m.id));
+          return newMsgs.length > 0 ? [...prev, ...newMsgs] : prev;
+        });
+      }
+    };
+
+    const onPeerDisconnected = () => setIsPeerConnected(false);
+    const onPeerReconnected = () => setIsPeerConnected(true);
+
+    const onSessionEnded = () => {
+      setIsSessionEnded(true);
+      setIsPeerConnected(false);
+    };
+
+    // Socket.IO internal reconnect: re-join room and re-broadcast our key.
+    // We pass lastMsgIndex so the server knows which messages to sync.
     const onReconnect = () => {
-      joinRoom(sessionId);
+      const lastIndex =
+        lastMsgIndexRef.current >= 0 ? lastMsgIndexRef.current + 1 : undefined;
+      joinRoom(sessionId, lastIndex);
 
       if (keyPairRef.current) {
         socket.emit('key:exchange', {
@@ -162,58 +223,17 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
           publicKey: bytesToBase64(keyPairRef.current.publicKey),
         });
       }
-
-      if (lastMsgIndexRef.current >= 0) {
-        socket.emit(
-          'message:sync',
-          { sessionId, lastMsgIndex: lastMsgIndexRef.current + 1 },
-          (response: { messages: Record<string, unknown>[] }) => {
-            const shared = sharedSecretRef.current;
-            if (!shared || !response?.messages) return;
-
-            const synced: Message[] = [];
-            for (const msg of response.messages) {
-              const senderId = msg.senderId as string;
-              if (senderId === userId) continue;
-
-              const content = decrypt(msg.encryptedPayload as string, shared);
-              if (!content) continue;
-
-              const clientMsgId = msg.clientMsgId as string;
-              synced.push({
-                id: clientMsgId,
-                content,
-                senderId,
-                timestamp: msg.timestamp as number,
-              });
-
-              if (typeof msg.msgIndex === 'number') {
-                lastMsgIndexRef.current = Math.max(
-                  lastMsgIndexRef.current,
-                  msg.msgIndex,
-                );
-              }
-            }
-
-            if (synced.length > 0) {
-              setMessages(prev => {
-                const existingIds = new Set(prev.map(m => m.id));
-                const newMsgs = synced.filter(m => !existingIds.has(m.id));
-                return newMsgs.length > 0 ? [...prev, ...newMsgs] : prev;
-              });
-            }
-          },
-        );
-      }
     };
 
     socket.on('key:exchange', onKeyExchange);
     socket.on('message:receive', onMessageReceive);
+    socket.on('message:sync', onMessageSync);
+    socket.on('peer:disconnected', onPeerDisconnected);
+    socket.on('peer:reconnected', onPeerReconnected);
+    socket.on('session:ended', onSessionEnded);
     socket.io.on('reconnect', onReconnect);
 
     // ── Async init: get or generate key pair, then join room ─────────
-    // Handlers are already registered above so no events are missed
-    // during the SecureStore read (~5ms, well under any network RTT).
 
     let cancelled = false;
 
@@ -221,8 +241,6 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       const stored = await SecureStore.getItemAsync(SK_STORE_KEY(sessionId));
       if (cancelled) return;
 
-      // Store the result in a local const so TypeScript knows it is non-null
-      // for the rest of this function, without relying on ref narrowing.
       const keyPair = stored ? keyPairFromSecretKey(stored) : generateKeyPair();
       keyPairRef.current = keyPair;
 
@@ -235,10 +253,10 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
 
       if (cancelled) return;
 
-      // Join room (server will emit any stored peer keys back to us)
+      // Join room — server echoes back any stored peer keys for late joiners
       joinRoom(sessionId);
 
-      // Send our public key — same key whether new or restored
+      // Broadcast our public key so the peer can derive the shared secret
       socket.emit('key:exchange', {
         sessionId,
         publicKey: bytesToBase64(keyPair.publicKey),
@@ -251,6 +269,10 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
       cancelled = true;
       socket.off('key:exchange', onKeyExchange);
       socket.off('message:receive', onMessageReceive);
+      socket.off('message:sync', onMessageSync);
+      socket.off('peer:disconnected', onPeerDisconnected);
+      socket.off('peer:reconnected', onPeerReconnected);
+      socket.off('session:ended', onSessionEnded);
       socket.io.off('reconnect', onReconnect);
       leaveRoom(sessionId);
 
@@ -271,8 +293,6 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
     (content: string) => {
       if (!sessionId || content.trim() === '') return;
 
-      // Read into a local const so TS can narrow out null and the value
-      // can't change between the guard and the encrypt call.
       const shared = sharedSecretRef.current;
       if (!shared) return;
 
@@ -304,5 +324,23 @@ export function useChat({ sessionId, userId }: UseChatOptions): UseChatReturn {
     [sessionId, userId],
   );
 
-  return { messages, sendMessage, isEncryptionReady };
+  // ── End Session ───────────────────────────────────────────────────
+
+  const endSession = useCallback(() => {
+    if (!sessionId) return;
+    const socket = getSocket();
+    if (!socket) return;
+    socket.emit('session:end', { sessionId });
+    // Optimistically mark as ended locally — server will confirm via session:ended
+    setIsSessionEnded(true);
+  }, [sessionId]);
+
+  return {
+    messages,
+    sendMessage,
+    endSession,
+    isEncryptionReady,
+    isPeerConnected,
+    isSessionEnded,
+  };
 }
