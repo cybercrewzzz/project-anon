@@ -5,6 +5,7 @@
  * Uses the cyan palette instead of purple for brand colors.
  */
 
+import { AppTheme } from '@/theme/appTheme';
 import { colors } from '@/theme/palettes/colors';
 import { common } from '@/theme/palettes/common';
 import { cyan } from '@/theme/palettes/cyan';
@@ -64,6 +65,4 @@ export const volunteerLightTheme = {
   radius,
   spacing,
   elevation,
-} as const;
-
-export type VolunteerTheme = typeof volunteerLightTheme;
+} as const satisfies AppTheme;

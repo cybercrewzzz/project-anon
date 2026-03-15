@@ -1,11 +1,12 @@
 import { StyleSheet } from 'react-native-unistyles';
-import { AppTheme, userLightTheme } from './roles/user/light';
-import { VolunteerTheme, volunteerLightTheme } from './roles/volunteer/light';
+import { userLightTheme } from './roles/user/light';
+import { volunteerLightTheme } from './roles/volunteer/light';
+import { AppTheme } from './appTheme';
 
 declare module 'react-native-unistyles' {
   export interface UnistylesThemes {
     userLight: AppTheme;
-    volunteerLight: VolunteerTheme;
+    volunteerLight: AppTheme;
   }
 }
 
