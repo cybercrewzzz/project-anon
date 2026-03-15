@@ -1,9 +1,12 @@
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, Pressable, Text } from 'react-native';
 import React from 'react';
 import { AppText, AppTextProps } from '@/components/AppText';
 import { Image, ImageSource } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/store/useAuth';
+import { logout } from '@/api/auth';
 
 interface XpCardProps {
   text: string;
@@ -63,6 +66,22 @@ const MenuItem = ({
 };
 
 const Home = () => {
+  const router = useRouter();
+  const refreshToken = useAuth(state => state.refreshToken);
+  const signOut = useAuth(state => state.signOut);
+
+  // TODO: Remove this temp button when permanent logout UI is built
+  const handleLogout = async () => {
+    try {
+      if (refreshToken) await logout(refreshToken);
+    } catch {
+      // Ignore API errors — still sign out locally
+    } finally {
+      await signOut();
+      router.replace('/start/welcome' as any);
+    }
+  };
+
   return (
     <View style={styles.screen}>
       <LinearGradient
@@ -200,6 +219,22 @@ const Home = () => {
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
         </View>
+        {/* TODO: Remove this temp button when permanent logout UI is built */}
+        <Pressable
+          onPress={handleLogout}
+          style={{
+            backgroundColor: '#DC2626',
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            marginTop: 8,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+            🚪 Logout (Dev)
+          </Text>
+        </Pressable>
       </ScrollView>
     </View>
   );
