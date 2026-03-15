@@ -71,6 +71,7 @@ export class VolunteerService {
     }
 
     if (dto.specialisationIds !== undefined) {
+      const { specialisationIds } = dto;
       await this.prisma.$transaction(async (tx) => {
         await tx.volunteerProfile.update({
           where: { accountId },
@@ -81,9 +82,9 @@ export class VolunteerService {
         await tx.volunteerSpecialisation.deleteMany({
           where: { accountId },
         });
-        if (dto.specialisationIds.length > 0) {
+        if (specialisationIds.length > 0) {
           await tx.volunteerSpecialisation.createMany({
-            data: dto.specialisationIds.map((specialisationId) => ({
+            data: specialisationIds.map((specialisationId) => ({
               accountId,
               specialisationId,
             })),

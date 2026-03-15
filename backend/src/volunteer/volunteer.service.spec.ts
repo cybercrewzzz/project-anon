@@ -190,7 +190,9 @@ describe('VolunteerService', () => {
 
     it('updates profile and returns result of getProfile', async () => {
       db.volunteerProfile.findUnique.mockResolvedValue({ accountId });
-      db.$transaction.mockImplementation((fn) => fn(db));
+      db.$transaction.mockImplementation((fn: (tx: typeof db) => unknown) =>
+        fn(db),
+      );
       db.account.findUnique.mockResolvedValue({
         name: 'John Doe',
         volunteerProfile: {
@@ -257,7 +259,9 @@ describe('VolunteerService', () => {
 
     it('runs specialisation delete+create in a transaction', async () => {
       db.volunteerProfile.findUnique.mockResolvedValue({ accountId });
-      db.$transaction.mockImplementation((fn) => fn(db));
+      db.$transaction.mockImplementation((fn: (tx: typeof db) => unknown) =>
+        fn(db),
+      );
       db.account.findUnique.mockResolvedValue({
         name: 'John Doe',
         volunteerProfile: { accountId },
@@ -335,7 +339,9 @@ describe('VolunteerService', () => {
 
     it('creates application and returns submitted message', async () => {
       db.volunteerVerification.findFirst.mockResolvedValue(null);
-      db.$transaction.mockImplementation((fn) => fn(db));
+      db.$transaction.mockImplementation((fn: (tx: typeof db) => unknown) =>
+        fn(db),
+      );
 
       const result = await service.applyAsVolunteer(accountId, applyDto);
 
@@ -386,7 +392,9 @@ describe('VolunteerService', () => {
       };
 
       db.volunteerVerification.findFirst.mockResolvedValue(null);
-      db.$transaction.mockImplementation((fn) => fn(db));
+      db.$transaction.mockImplementation((fn: (tx: typeof db) => unknown) =>
+        fn(db),
+      );
 
       const result = await service.applyAsVolunteer(
         accountId,
