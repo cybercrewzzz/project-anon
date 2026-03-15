@@ -19,6 +19,9 @@ import { ChatServerService } from './chat-server.service.js';
 // The BullMQ queue name — must match BullModule.registerQueue in chat.module.ts
 export const RECONNECT_QUEUE = 'chat-reconnect';
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // Typed socket.data — avoids unsafe `any` access in handlers
 interface SocketData {
   accountId?: string;
@@ -66,6 +69,17 @@ export class ChatGateway
     client: AuthSocket,
   ): Promise<{ accountId: string; roles: string[] } | null> {
     const raw = client.handshake.auth?.token as string | undefined;
+
+    // Development-only fallback: accept a plain accountId from query params so
+    // the mobile team can connect before the JWT auth flow is wired up.
+    if (!raw && process.env.NODE_ENV !== 'production') {
+      const q = client.handshake.query?.userId;
+      const queryUserId = Array.isArray(q) ? q[0] : q;
+      if (queryUserId && UUID_RE.test(queryUserId)) {
+        return { accountId: queryUserId, roles: [] };
+      }
+    }
+
     if (!raw) return null;
     const token = raw.startsWith('Bearer ') ? raw.slice(7) : raw;
     try {
