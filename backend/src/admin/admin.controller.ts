@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { TakeActionDto } from './dto/take-action.dto';
@@ -16,13 +17,16 @@ import { FindReportsQueryDto } from './dto/find-reports-query.dto';
 import { FindVolunteerApplicationsQueryDto } from './dto/find-volunteer-applications-query.dto';
 import { FindAccountsQueryDto } from './dto/find-accounts-query.dto';
 import { FindSessionsQueryDto } from './dto/find-sessions-query.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
-
-  // TODO: Replace with real admin ID from JWT when auth is implemented.
-  private adminId = '07e78a03-c194-4140-a73a-ba4a1cb57998';
 
   // ── Reports ─────────────────────────────────────────────────────
 
@@ -44,10 +48,11 @@ export class AdminController {
   takeAction(
     @Param('reportId', ParseUUIDPipe) reportId: string,
     @Body() body: TakeActionDto,
+    @CurrentUser('accountId') adminId: string,
   ) {
     return this.adminService.takeAction(
       reportId,
-      this.adminId,
+      adminId,
       body.actionType,
       body.reason,
       body.expiresAt,
@@ -71,15 +76,20 @@ export class AdminController {
     );
   }
 
+  @Get('volunteer-applications/:requestId')
+  getVolunteerApplication(
+    @Param('requestId', ParseUUIDPipe) requestId: string,
+  ) {
+    return this.adminService.getVolunteerApplication(requestId);
+  }
+
   @Patch('volunteer-applications/:requestId/approve')
   @HttpCode(200)
   approveVolunteerApplication(
     @Param('requestId', ParseUUIDPipe) requestId: string,
+    @CurrentUser('accountId') adminId: string,
   ) {
-    return this.adminService.approveVolunteerApplication(
-      requestId,
-      this.adminId,
-    );
+    return this.adminService.approveVolunteerApplication(requestId, adminId);
   }
 
   @Patch('volunteer-applications/:requestId/reject')
@@ -87,10 +97,11 @@ export class AdminController {
   rejectVolunteerApplication(
     @Param('requestId', ParseUUIDPipe) requestId: string,
     @Body() body: RejectApplicationDto,
+    @CurrentUser('accountId') adminId: string,
   ) {
     return this.adminService.rejectVolunteerApplication(
       requestId,
-      this.adminId,
+      adminId,
       body.adminNotes,
     );
   }
@@ -117,10 +128,11 @@ export class AdminController {
   takeAccountAction(
     @Param('accountId', ParseUUIDPipe) accountId: string,
     @Body() body: TakeActionDto,
+    @CurrentUser('accountId') adminId: string,
   ) {
     return this.adminService.takeAccountAction(
       accountId,
-      this.adminId,
+      adminId,
       body.actionType,
       body.reason,
       body.expiresAt,

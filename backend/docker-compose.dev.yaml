@@ -12,5 +12,15 @@ services:
     volumes:
       - dev-db-data:/var/lib/postgresql
 
+  dev-redis:
+    image: redis:8.6-alpine
+    container_name: anora_dev_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - dev-redis-data:/data
+
 volumes:
   dev-db-data:
+  dev-redis-data:

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type Role = 'user' | 'volunteer';
+type Role = 'user' | 'volunteer' | undefined;
 
 interface RoleState {
   role: Role;
@@ -8,7 +8,9 @@ interface RoleState {
 }
 
 const parseRole = (value?: string): Role =>
-  value === 'volunteer' ? 'volunteer' : 'user';
+  value === 'volunteer' ? 'volunteer'
+  : value === 'user' ? 'user'
+  : undefined;
 
 export const useRole = create<RoleState>()(set => ({
   role: parseRole(process.env.EXPO_PUBLIC_ROLE),
