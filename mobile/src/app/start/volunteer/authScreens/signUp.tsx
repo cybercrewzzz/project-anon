@@ -1,17 +1,21 @@
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import InputForm from '@/components/inputForm';
 import OAuthSignIn from '@/components/oAuthSignIn';
 import Button from '@/components/button';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { useUnistyles } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { registerVolunteer } from '@/api/auth';
+import { useAuth } from '@/store/useAuth';
+import { parseApiError } from '@/api/errors';
 
 const SignUp = () => {
   const router = useRouter();
   const { theme } = useUnistyles();
+  const signIn = useAuth(state => state.signIn);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -23,6 +27,23 @@ const SignUp = () => {
   const updateField = (field: keyof typeof form) => (text: string) => {
     setForm(prev => ({ ...prev, [field]: text }));
   };
+
+  const registerMutation = useMutation({
+    mutationFn: () =>
+      registerVolunteer({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      }),
+    onSuccess: async data => {
+      await signIn(data.accessToken, data.refreshToken, data.account);
+      router.push('/start/volunteer/authScreens/registerSuccessful' as any);
+    },
+    onError: error => {
+      const apiError = parseApiError(error);
+      Alert.alert('Registration Failed', apiError.message);
+    },
+  });
 
   return (
     <KeyboardAwareScrollView
@@ -88,10 +109,11 @@ const SignUp = () => {
       </Pressable>
 
       <Button
-        text="Create Account"
-        onPress={() =>
-          router.push('/start/volunteer/authScreens/registerSuccessful' as any)
+        text={
+          registerMutation.isPending ? 'Creating Account...' : 'Create Account'
         }
+        onPress={() => registerMutation.mutate()}
+        disabled={registerMutation.isPending}
       />
       <OAuthSignIn />
     </KeyboardAwareScrollView>
