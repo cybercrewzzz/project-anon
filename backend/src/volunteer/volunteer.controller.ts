@@ -56,7 +56,7 @@ export class VolunteerController {
   // ── POST /volunteer/apply ────────────────────────────────────────
 
   @Post('apply')
-  @Roles('user')
+  @Roles('user', 'volunteer')
   @HttpCode(HttpStatus.CREATED)
   applyAsVolunteer(
     @CurrentUser('accountId') accountId: string,
