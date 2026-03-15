@@ -101,14 +101,12 @@ export class VolunteerService {
           await tx.volunteerSpecialisation.deleteMany({
             where: { accountId },
           });
-          if (specialisationIds.length > 0) {
-            await tx.volunteerSpecialisation.createMany({
-              data: specialisationIds.map((specialisationId) => ({
-                accountId,
-                specialisationId,
-              })),
-            });
-          }
+          await tx.volunteerSpecialisation.createMany({
+            data: specialisationIds.map((specialisationId) => ({
+              accountId,
+              specialisationId,
+            })),
+          });
         });
       } catch (e) {
         if (
