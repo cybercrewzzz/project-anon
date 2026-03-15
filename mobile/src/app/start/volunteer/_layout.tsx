@@ -11,7 +11,6 @@ const StartLayout = () => {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="welcome" />
       <Stack.Screen name="selectLanguage" />
       <Stack.Screen name="authScreens" />
     </Stack>
