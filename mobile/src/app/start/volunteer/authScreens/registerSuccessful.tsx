@@ -64,7 +64,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingVertical: theme.spacing.s7,
     paddingHorizontal: theme.spacing.s5,
     alignItems: 'center',
-    elevation: 10,
+    boxShadow: theme.elevation.level3,
   },
 
   imageContainer: {
