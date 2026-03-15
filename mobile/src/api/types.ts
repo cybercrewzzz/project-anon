@@ -8,6 +8,9 @@ export interface ApiErrorResponse {
 /** Account roles */
 export type AccountRole = 'user' | 'volunteer' | 'admin';
 
+/** Age range enum — matches backend AgeRange Prisma enum */
+export type AgeRange = 'range_16_20' | 'range_21_26' | 'range_27_plus';
+
 /** Account object returned inside auth responses */
 export interface Account {
   accountId: string;

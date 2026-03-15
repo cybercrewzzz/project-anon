@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Account } from '@/api/types';
+import type { Account, AccountRole } from '@/api/types';
 import {
   getAccessToken,
   getRefreshToken,
@@ -13,6 +13,9 @@ interface AuthState {
   account: Account | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
+
+  /** Derived role from account.roles — 'volunteer' if roles include it, else 'user' */
+  userRole: AccountRole | null;
 
   /** Persist tokens + set in-memory state after login/register */
   signIn: (
@@ -34,12 +37,19 @@ interface AuthState {
   hydrate: () => Promise<void>;
 }
 
+/** Derive the primary role from the account's roles array */
+function deriveRole(roles: string[]): AccountRole {
+  if (roles.includes('volunteer')) return 'volunteer';
+  return 'user';
+}
+
 const initialState = {
   accessToken: null,
   refreshToken: null,
   account: null,
   isAuthenticated: false,
   isHydrated: false,
+  userRole: null,
 };
 
 export const useAuth = create<AuthState>()(set => ({
@@ -47,7 +57,13 @@ export const useAuth = create<AuthState>()(set => ({
 
   signIn: async (accessToken, refreshToken, account) => {
     await persistTokens(accessToken, refreshToken);
-    set({ accessToken, refreshToken, account, isAuthenticated: true });
+    set({
+      accessToken,
+      refreshToken,
+      account,
+      isAuthenticated: true,
+      userRole: deriveRole(account.roles),
+    });
   },
 
   setTokens: (accessToken, refreshToken) => {
@@ -73,6 +89,8 @@ export const useAuth = create<AuthState>()(set => ({
           accessToken,
           refreshToken,
           isAuthenticated: true,
+          // Note: account and userRole remain null until a full login
+          // or profile fetch. Token presence is enough for the gatekeeper.
         });
       }
     } catch {

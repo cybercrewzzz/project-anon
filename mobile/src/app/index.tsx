@@ -1,16 +1,29 @@
 import React from 'react';
 import { Redirect } from 'expo-router';
+import { useAuth } from '@/store/useAuth';
 import { useRole } from '@/store/useRole';
 
+const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+
 const Index = () => {
-  const role = useRole(state => state.role);
-  if (role === 'user') return <Redirect href="/user/home" />;
-  if (role === 'volunteer') return <Redirect href="/volunteer/home" />;
-  if (!role) {
-    console.log(
-      'Add EXPO_PUBLIC_ROLE=user or EXPO_PUBLIC_ROLE=volunteer to mobile/.env file',
-    );
+  const isAuthenticated = useAuth(state => state.isAuthenticated);
+  const userRole = useAuth(state => state.userRole);
+  const envRole = useRole(state => state.role);
+
+  // ── Dev bypass: use EXPO_PUBLIC_ROLE to skip auth ──
+  if (AUTH_BYPASS) {
+    if (envRole === 'volunteer') return <Redirect href="/volunteer/home" />;
+    return <Redirect href="/user/home" />;
   }
+
+  // ── Production: auth-aware routing ──
+  if (isAuthenticated && userRole) {
+    if (userRole === 'volunteer') return <Redirect href="/volunteer/home" />;
+    return <Redirect href="/user/home" />;
+  }
+
+  // Not authenticated → start flow
+  return <Redirect href="/start/welcome" />;
 };
 
 export default Index;

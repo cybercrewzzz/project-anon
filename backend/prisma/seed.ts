@@ -32,6 +32,12 @@ async function main() {
   const testPasswordHash = await argon2.hash('Password123!', {
     type: argon2.argon2id,
   });
+
+  // Dev-testing accounts for mobile auth flow testing
+  // Password: Admin@123
+  const devPasswordHash = await argon2.hash('Admin@123', {
+    type: argon2.argon2id,
+  });
   // ─── Languages ──────────────────────────────────────────────────────────────
   const english = await prisma.language.upsert({
     where: { code: 'en' },
@@ -384,6 +390,35 @@ async function main() {
     },
   });
 
+  // ─── Dev-Testing Accounts (for mobile auth flow testing) ──────────────────
+  // Password: Admin@123
+  const devVolunteer = await prisma.account.upsert({
+    where: { email: 'admin.v@anora-app.com' },
+    update: {},
+    create: {
+      email: 'admin.v@anora-app.com',
+      passwordHash: devPasswordHash,
+      name: 'Dev Volunteer',
+      nickname: 'dev_volunteer',
+      interfaceLanguageId: english.languageId,
+      status: 'active',
+    },
+  });
+
+  const devUser = await prisma.account.upsert({
+    where: { email: 'admin.u@anora-app.com' },
+    update: {},
+    create: {
+      email: 'admin.u@anora-app.com',
+      passwordHash: devPasswordHash,
+      name: 'Dev User',
+      nickname: 'dev_user',
+      ageRange: 'range_21_26',
+      interfaceLanguageId: english.languageId,
+      status: 'active',
+    },
+  });
+
   // ─── Account Roles ──────────────────────────────────────────────────────────
   await prisma.accountRole.upsert({
     where: {
@@ -526,6 +561,36 @@ async function main() {
       accountId: volunteer4.accountId,
       roleId: volunteerRole.roleId,
       assignedBy: adminAccount.accountId,
+    },
+  });
+
+  // Dev-testing account roles
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: devVolunteer.accountId,
+        roleId: volunteerRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: devVolunteer.accountId,
+      roleId: volunteerRole.roleId,
+      assignedBy: adminAccount.accountId,
+    },
+  });
+
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: devUser.accountId,
+        roleId: userRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: devUser.accountId,
+      roleId: userRole.roleId,
     },
   });
 

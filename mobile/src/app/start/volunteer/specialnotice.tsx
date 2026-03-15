@@ -33,7 +33,7 @@ export default function TnS() {
         style={styles.textContainer}
         onPress={() => router.replace('/volunteer/(tabs)/home' as any)}
       >
-        <AppText style={styles.buttonText}>Got it!</AppText>
+        <AppText style={styles.buttonText}>Got It !</AppText>
       </Pressable>
     </View>
   );

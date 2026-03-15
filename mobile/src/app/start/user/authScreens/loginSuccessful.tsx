@@ -4,18 +4,24 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SuccessAnimation } from '@/components/SuccessAnimation';
+import { useAuth } from '@/store/useAuth';
 
 const LoginSuccessful = () => {
   const router = useRouter();
+  const userRole = useAuth(state => state.userRole);
 
   useEffect(() => {
-    // Stop loading after 5 seconds
     const timer = setTimeout(() => {
-      router.replace('/user/(tabs)/home' as any);
+      // Route based on the user's actual role from the auth response
+      const target =
+        userRole === 'volunteer' ?
+          '/volunteer/(tabs)/home'
+        : '/user/(tabs)/home';
+      router.replace(target as any);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [router]);
+  }, [router, userRole]);
 
   return (
     <View style={styles.container}>

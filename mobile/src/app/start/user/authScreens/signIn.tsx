@@ -1,4 +1,4 @@
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
@@ -8,13 +8,30 @@ import OAuthSignIn from '@/components/oAuthSignIn';
 import Button from '@/components/button';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { login } from '@/api/auth';
+import { useAuth } from '@/store/useAuth';
+import { parseApiError } from '@/api/errors';
 
 const SignIn = () => {
   const router = useRouter();
   const { theme } = useUnistyles();
+  const signIn = useAuth(state => state.signIn);
   const [credentials, setCredentials] = useState({
     email: '',
     password: '',
+  });
+
+  const loginMutation = useMutation({
+    mutationFn: () => login(credentials.email, credentials.password),
+    onSuccess: async data => {
+      await signIn(data.accessToken, data.refreshToken, data.account);
+      router.replace('/start/user/authScreens/loginSuccessful' as any);
+    },
+    onError: error => {
+      const apiError = parseApiError(error);
+      Alert.alert('Login Failed', apiError.message);
+    },
   });
 
   return (
@@ -56,10 +73,9 @@ const SignIn = () => {
         </Pressable>
       </View>
       <Button
-        text="Sign In"
-        onPress={() =>
-          router.replace('/start/user/authScreens/loginSuccessful' as any)
-        }
+        text={loginMutation.isPending ? 'Signing In...' : 'Sign In'}
+        onPress={() => loginMutation.mutate()}
+        disabled={loginMutation.isPending}
       />
       <OAuthSignIn />
       <Pressable
@@ -104,8 +120,3 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: 'row',
   },
 }));
-
-/*
-
-
-*/

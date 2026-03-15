@@ -1,4 +1,4 @@
-import { AppTheme } from '@/theme/roles/user/light';
+import { AppTheme } from '@/theme/appTheme';
 import {
   TextEmphasis,
   TextVariant,

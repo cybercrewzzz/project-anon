@@ -26,8 +26,7 @@ Register a new user (seeker) account.
 {
   "email": "user@example.com",
   "password": "securePass123",
-  "dateOfBirth": "2000-01-15",
-  "gender": "male" // optional, default: "prefer_not_to_say"
+  "ageRange": "range_21_26" // "range_16_20" | "range_21_26" | "range_27_plus"
 }
 ```
 
@@ -42,6 +41,45 @@ Register a new user (seeker) account.
     "email": "user@example.com",
     "nickname": "BlueFox42",
     "roles": ["user"]
+  }
+}
+```
+
+**Errors:** `409` email taken, `400` validation
+
+---
+
+### `POST /auth/register/volunteer`
+
+Register a new volunteer account.
+
+|           |      |
+| --------- | ---- |
+| **Auth**  | None |
+| **Roles** | None |
+
+**Request Body:**
+
+```json
+{
+  "name": "John Doe",
+  "email": "volunteer@example.com",
+  "password": "securePass123"
+}
+```
+
+**Response `201`:**
+
+```json
+{
+  "accessToken": "eyJ...",
+  "refreshToken": "eyJ...",
+  "account": {
+    "accountId": "uuid",
+    "email": "volunteer@example.com",
+    "nickname": "GreenOwl77",
+    "name": "John Doe",
+    "roles": ["volunteer"]
   }
 }
 ```

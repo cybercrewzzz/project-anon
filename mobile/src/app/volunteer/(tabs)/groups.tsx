@@ -9,20 +9,6 @@ const Groups = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Button
-          text="Verify"
-          onPress={() => router.navigate('/volunteer/getStarted/verify')}
-        />
-        <Button
-          text="Sign Up"
-          onPress={() => router.navigate('/volunteer/getStarted/signUp')}
-        />
-        <Button
-          text="Select Language"
-          onPress={() =>
-            router.navigate('/volunteer/getStarted/selectLanguage')
-          }
-        />
-        <Button
           text="Chat Session"
           onPress={() =>
             router.navigate({

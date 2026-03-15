@@ -1,24 +1,27 @@
 import { AppText } from '@/components/AppText';
-import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import React, { useEffect } from 'react';
+import { View } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SuccessAnimation } from '@/components/SuccessAnimation';
+import { useAuth } from '@/store/useAuth';
 
 const LoginSuccessful = () => {
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const { theme } = useUnistyles();
+  const userRole = useAuth(state => state.userRole);
 
   useEffect(() => {
-    // Stop loading after 5 seconds
     const timer = setTimeout(() => {
-      setIsLoading(false);
-      router.replace('/volunteer/(tabs)/home' as any);
+      // Route based on the user's actual role from the auth response
+      const target =
+        userRole === 'volunteer' ?
+          '/volunteer/(tabs)/home'
+        : '/user/(tabs)/home';
+      router.replace(target as any);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [router]);
+  }, [router, userRole]);
 
   return (
     <View style={styles.container}>
@@ -42,13 +45,6 @@ const LoginSuccessful = () => {
             You will be directed to the homepage.
           </AppText>
         </View>
-
-        {/* Animated Loader */}
-        {isLoading && (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color={theme.action.secondary} />
-          </View>
-        )}
       </View>
     </View>
   );
@@ -99,12 +95,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginTop: theme.spacing.s3,
     justifyContent: 'center',
     textAlign: 'center',
-  },
-
-  loaderContainer: {
-    marginTop: theme.spacing.s6,
-    paddingTop: theme.spacing.s4,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 }));
