@@ -28,10 +28,11 @@ export default function TnS() {
         </AppText>
       </View>
 
-      <Pressable style={styles.textContainer} onPress={() => router.replace('/user/(tabs)/home' as any)}>
-        <AppText style={styles.buttonText}>
-          Got It !
-        </AppText>
+      <Pressable
+        style={styles.textContainer}
+        onPress={() => router.replace('/user/(tabs)/home' as any)}
+      >
+        <AppText style={styles.buttonText}>Got It !</AppText>
       </Pressable>
     </View>
   );

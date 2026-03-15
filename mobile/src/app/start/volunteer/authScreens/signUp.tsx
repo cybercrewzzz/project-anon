@@ -87,7 +87,12 @@ const SignUp = () => {
         </AppText>
       </Pressable>
 
-      <Button text="Create Account" onPress={() => router.push('/start/volunteer/authScreens/registerSuccessful' as any)} />
+      <Button
+        text="Create Account"
+        onPress={() =>
+          router.push('/start/volunteer/authScreens/registerSuccessful' as any)
+        }
+      />
       <OAuthSignIn />
     </KeyboardAwareScrollView>
   );

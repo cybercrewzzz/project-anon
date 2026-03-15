@@ -12,7 +12,6 @@ const ProTalk = () => {
         ProTalk
       </AppText>
       <View style={styles.buttonsContainer}>
-
         <Button
           text="Open Peer to Peer"
           onPress={() => router.push('/volunteer/P2p-And/p2p-and')}

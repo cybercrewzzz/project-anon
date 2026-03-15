@@ -122,7 +122,11 @@ const OTPVerification = () => {
       <View style={styles.buttonContainer}>
         <Pressable
           style={styles.button}
-          onPress={() => router.navigate('/start/volunteer/authScreens/CreateNewPassword' as any)}
+          onPress={() =>
+            router.navigate(
+              '/start/volunteer/authScreens/CreateNewPassword' as any,
+            )
+          }
         >
           <AppText variant="headline" color="secondary">
             {' '}

@@ -21,7 +21,9 @@ const SelectLanguage = () => {
       <HeroImage source={require('@/assets/images/hero.webp')} />
       <LanguageSelection />
       <FullWidthButton
-        onPress={() => router.push('/start/volunteer/authScreens/signupNlogin' as any)}
+        onPress={() =>
+          router.push('/start/volunteer/authScreens/signupNlogin' as any)
+        }
       >
         <AppText variant="headline" color="secondary">
           Continue

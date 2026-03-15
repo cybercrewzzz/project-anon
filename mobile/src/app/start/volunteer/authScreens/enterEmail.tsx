@@ -48,7 +48,11 @@ const EnterEmail = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton onPress={() => router.push('/start/volunteer/authScreens/OTPVerification' as any)}>
+        <FullWidthButton
+          onPress={() =>
+            router.push('/start/volunteer/authScreens/OTPVerification' as any)
+          }
+        >
           <AppText variant="headline" color="secondary">
             Continue
           </AppText>

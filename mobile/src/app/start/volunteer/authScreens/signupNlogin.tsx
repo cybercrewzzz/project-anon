@@ -19,7 +19,9 @@ const SignUpNLogin = () => {
         <AuthButton
           label="Login"
           color={theme.action.secondary}
-          onPress={() => router.push('/start/volunteer/authScreens/signIn' as any)}
+          onPress={() =>
+            router.push('/start/volunteer/authScreens/signIn' as any)
+          }
         />
         <View style={styles.dividerText}>
           <AppText variant="headline" color="primary">
@@ -29,7 +31,9 @@ const SignUpNLogin = () => {
         <AuthButton
           label="Sign Up"
           color={theme.action.primary}
-          onPress={() => router.push('/start/volunteer/authScreens/signUp' as any)}
+          onPress={() =>
+            router.push('/start/volunteer/authScreens/signUp' as any)
+          }
         />
       </View>
     </View>

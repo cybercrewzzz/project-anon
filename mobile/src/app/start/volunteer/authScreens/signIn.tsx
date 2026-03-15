@@ -63,7 +63,9 @@ const SignIn = () => {
       />
       <OAuthSignIn />
       <Pressable
-        onPress={() => router.push('/start/volunteer/authScreens/signUp' as any)}
+        onPress={() =>
+          router.push('/start/volunteer/authScreens/signUp' as any)
+        }
         style={styles.signUp}
       >
         <AppText variant="callout" color="subtle1">

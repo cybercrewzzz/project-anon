@@ -1,7 +1,7 @@
 /**
  * Cyan color palette.
  *
- * This file defines the raw cyan color scale used across the app, 
+ * This file defines the raw cyan color scale used across the app,
  * specifically targeted for the Volunteer roles.
  *
  * Scale anchor points matching lightness of purple palette:

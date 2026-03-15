@@ -24,14 +24,16 @@ export default function TnS() {
           textAlign="center"
           style={{ marginTop: 100, borderRadius: theme.radius.sm }}
         >
-          Follow the strictest guidelines when dealing with users and protect their data.
+          Follow the strictest guidelines when dealing with users and protect
+          their data.
         </AppText>
       </View>
 
-      <Pressable style={styles.textContainer} onPress={() => router.replace('/volunteer/(tabs)/home' as any)}>
-        <AppText style={styles.buttonText}>
-          Got It !
-        </AppText>
+      <Pressable
+        style={styles.textContainer}
+        onPress={() => router.replace('/volunteer/(tabs)/home' as any)}
+      >
+        <AppText style={styles.buttonText}>Got It !</AppText>
       </Pressable>
     </View>
   );

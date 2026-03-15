@@ -40,8 +40,12 @@ export default function Welcome() {
           onPress={() => router.push('/start/user/selectLanguage' as any)}
         />
 
-        <Pressable onPress={() => router.push('/start/volunteer/selectLanguage' as any)}>
-          <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>
+        <Pressable
+          onPress={() => router.push('/start/volunteer/selectLanguage' as any)}
+        >
+          <AppText style={styles.volunteerText}>
+            Continue as a Volunteer
+          </AppText>
         </Pressable>
       </View>
     </View>

@@ -10,7 +10,7 @@ import { useRouter } from 'expo-router';
 const Verify = () => {
   const { theme } = useUnistyles();
   const router = useRouter();
-  
+
   const [form, setForm] = useState({
     name: '',
     instituteEmail: '',
@@ -122,7 +122,9 @@ const Verify = () => {
       <View style={styles.buttonWrapper}>
         <FullWidthButton
           onPress={() => {
-            router.replace('/start/volunteer/authScreens/VerificationSubmitSuccessful' as any);
+            router.replace(
+              '/start/volunteer/authScreens/VerificationSubmitSuccessful' as any,
+            );
           }}
         >
           <AppText variant="headline" color="secondary" emphasis="emphasized">
