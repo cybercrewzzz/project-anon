@@ -4,7 +4,6 @@ import {
   type ApplyVolunteerBody,
 } from '@/api/volunteer-apply-api';
 
-
 // =============================================================================
 // TESTING MODE FLAG — POST /volunteer/apply
 // Set USE_MOCK = true  → fake submission, no backend needed
@@ -18,8 +17,9 @@ const SIMULATE_APPLY_ERROR = false;
 export function useApplyAsVolunteer() {
   // ── POST /volunteer/apply ──────────────────────────────────────────────────
   return useMutation({
-    mutationFn: USE_MOCK
-      ? async (body: ApplyVolunteerBody) => {
+    mutationFn:
+      USE_MOCK ?
+        async (body: ApplyVolunteerBody) => {
           // Logs the full payload so you can verify every field is
           // correctly mapped from the form before hitting the real backend
           console.log('=== POST /volunteer/apply MOCK PAYLOAD ===');

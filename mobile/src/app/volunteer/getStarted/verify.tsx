@@ -20,8 +20,8 @@ const Verify = () => {
     instituteEmail: '',
     grade: '',
     instituteName: '',
-    instituteId: '',   // maps to studentId in the API
-    aboutYou: '',      // maps to about in the API (optional)
+    instituteId: '', // maps to studentId in the API
+    aboutYou: '', // maps to about in the API (optional)
   });
   const [confirmed, setConfirmed] = useState(false);
 
@@ -161,7 +161,11 @@ const Verify = () => {
 
       {/* ── Error message ── */}
       {error && (
-        <AppText variant="caption1" textAlign="center" style={styles.errorMessage}>
+        <AppText
+          variant="caption1"
+          textAlign="center"
+          style={styles.errorMessage}
+        >
           {(error as any)?.message ?? 'Submission failed. Please try again.'}
         </AppText>
       )}
@@ -234,7 +238,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     minHeight: 80,
   },
   errorMessage: {
-    color: theme.state.error
+    color: theme.state.error,
   },
   checkboxRow: {
     flexDirection: 'row',
