@@ -121,12 +121,18 @@ export class ChatService {
     return session?.sessionId ?? null;
   }
 
-  // ── Session Validation ───────────────────────────────────────────
+// ── Session Validation ───────────────────────────────────────────
+
+  private static readonly UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   async validateSession(
     sessionId: string,
     accountId: string,
   ): Promise<boolean> {
+    // Reject non-UUID values immediately — avoids a DB error for test/dev ids
+    if (!ChatService.UUID_RE.test(sessionId)) return false;
+
     const session = await this.prisma.chatSession.findUnique({
       where: { sessionId },
       select: { seekerId: true, listenerId: true, status: true },

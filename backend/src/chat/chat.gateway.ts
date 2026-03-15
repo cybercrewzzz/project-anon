@@ -18,6 +18,7 @@ import { ChatServerService } from './chat-server.service.js';
 
 // The BullMQ queue name — must match BullModule.registerQueue in chat.module.ts
 export const RECONNECT_QUEUE = 'chat-reconnect';
+export const SESSION_TIMEOUT_QUEUE = 'chat-timeout';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -36,6 +37,8 @@ type AuthSocket = Socket<
 
 // How long (ms) to wait for a reconnect before ending the session
 const RECONNECT_WINDOW_MS = 60_000;
+// Authoritative session time limit — 30 minutes
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway
@@ -49,6 +52,7 @@ export class ChatGateway
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     @InjectQueue(RECONNECT_QUEUE) private readonly reconnectQueue: Queue,
+    @InjectQueue(SESSION_TIMEOUT_QUEUE) private readonly timeoutQueue: Queue,
   ) {}
 
   // ── Lifecycle ────────────────────────────────────────────────────
@@ -254,6 +258,20 @@ export class ChatGateway
       }
     }
 
+    // Start the 30-minute authoritative timer exactly once per session.
+    // Keyed by sessionId so both participants racing to join are idempotent.
+    if (!sessionHash?.timerStarted) {
+      const jobId = `timeout-${payload.sessionId}`;
+      await this.timeoutQueue.add(
+        'session-timeout',
+        { sessionId: payload.sessionId },
+        { delay: SESSION_TIMEOUT_MS, jobId, removeOnComplete: true },
+      );
+      await this.chatService.updateSessionHash(payload.sessionId, {
+        timerStarted: '1',
+      });
+    }
+
     console.log(
       `[WS] Room join  accountId=${accountId} session=${payload.sessionId}`,
     );
@@ -424,7 +442,26 @@ export class ChatGateway
     this.server.to(payload.sessionId).emit('session:ended', {
       sessionId: payload.sessionId,
       endedBy: accountId,
+      reason: 'user_ended',
     });
+
+    // Cancel the server-side 30-minute timeout (no-op if already fired)
+    const timeoutJob = await this.timeoutQueue.getJob(
+      `timeout-${payload.sessionId}`,
+    );
+    await timeoutJob?.remove();
+
+    // Cancel any pending reconnect-expire jobs for both participants
+    const seekerReconnectJob = await this.reconnectQueue.getJob(
+      `reconnect-${participants.seekerId}-${payload.sessionId}`,
+    );
+    await seekerReconnectJob?.remove();
+    if (participants.listenerId) {
+      const listenerReconnectJob = await this.reconnectQueue.getJob(
+        `reconnect-${participants.listenerId}-${payload.sessionId}`,
+      );
+      await listenerReconnectJob?.remove();
+    }
 
     // Clean up Redis
     await this.chatService.clearAccountSession(participants.seekerId);

@@ -1,5 +1,5 @@
 import { View, Pressable } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AppText } from '@/components/AppText';
 import { SessionDetail } from '@/api/schemas';
@@ -15,6 +15,8 @@ import IncomingMessage from '@/components/chat/incomingMessage';
 import { useChat } from '@/hooks/useChat';
 
 const SESSION_TIME_SECONDS = 1800; // 30 minutes
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function Chat() {
   const router = useRouter();
@@ -26,14 +28,8 @@ export default function Chat() {
   // TODO: Remove mock ID when auth is implemented.
   const userId = account?.accountId || 'f3430b6a-7fde-4777-868b-fb6fffb813ac';
 
-  const {
-    messages,
-    sendMessage,
-    endSession,
-    isEncryptionReady,
-    isPeerConnected,
-    isSessionEnded,
-  } = useChat({ sessionId: chatId, userId });
+  const { messages, sendMessage, isEncryptionReady, isPeerConnected, isSessionEnded } =
+    useChat({ sessionId: chatId, userId });
 
   const [messageContent, setMessageContent] = useState('');
 
@@ -43,11 +39,9 @@ export default function Chat() {
     setMessageContent('');
   };
 
-  // ── 30-minute session timer ───────────────────────────────────────
+  // ── 30-minute visual timer (display only — backend is the authoritative timer) ──
 
   const [timeConsumed, setTimeConsumed] = useState(0);
-  const endSessionRef = useRef(endSession);
-  endSessionRef.current = endSession;
 
   useEffect(() => {
     const timerInterval = setInterval(() => {
@@ -63,16 +57,7 @@ export default function Chat() {
     return () => clearInterval(timerInterval);
   }, []);
 
-  // Emit session:end exactly once when the timer reaches its limit.
-  const timerEndedRef = useRef(false);
-  useEffect(() => {
-    if (timeConsumed >= SESSION_TIME_SECONDS && !timerEndedRef.current) {
-      timerEndedRef.current = true;
-      endSessionRef.current();
-    }
-  }, [timeConsumed]);
-
-  if (!chatId) {
+  if (!chatId || !UUID_RE.test(chatId)) {
     return <AppText>We couldn&apos;t find this chat room 🥲</AppText>;
   }
 
