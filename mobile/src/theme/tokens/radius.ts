@@ -31,6 +31,9 @@ const ios = {
   xxl: 38,
   xxlSoft: 38,
   full: 999,
+  // Chat bubble radii are design-specific and consistent across platforms.
+  messageBubble: 17,
+  messageBubbleTail: 4,
 } as const;
 
 const android = {
@@ -46,6 +49,9 @@ const android = {
   xxl: 26,
   xxlSoft: 30,
   full: 999,
+  // Chat bubble radii are design-specific and consistent across platforms.
+  messageBubble: 17,
+  messageBubbleTail: 4,
 } as const;
 
 /**
