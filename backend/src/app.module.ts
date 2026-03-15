@@ -13,7 +13,7 @@ import { LookupModule } from './lookup/lookup.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     // BullMQ global connection — all feature queues share this Redis pool
     BullModule.forRootAsync({
       imports: [ConfigModule],
