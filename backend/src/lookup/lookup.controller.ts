@@ -2,6 +2,9 @@ import { Controller, UseGuards, Get } from '@nestjs/common';
 import { LookupService } from './lookup.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
+// RolesGuard is intentionally omitted — lookup endpoints are read-only reference
+// data (specialisations, categories) that any authenticated user needs regardless
+// of role, e.g. a user fetching specialisation options before applying.
 @Controller('lookup')
 @UseGuards(JwtAuthGuard)
 export class LookupController {

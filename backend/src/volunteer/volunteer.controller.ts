@@ -34,6 +34,7 @@ export class VolunteerController {
 
   @Patch('profile')
   @Roles('volunteer')
+  @HttpCode(HttpStatus.OK)
   updateProfile(
     @CurrentUser('accountId') accountId: string,
     @Body() body: UpdateProfileDto,
