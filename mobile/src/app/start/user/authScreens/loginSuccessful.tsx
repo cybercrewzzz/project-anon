@@ -14,9 +14,9 @@ const LoginSuccessful = () => {
     const timer = setTimeout(() => {
       // Route based on the user's actual role from the auth response
       const target =
-        userRole === 'volunteer'
-          ? '/volunteer/(tabs)/home'
-          : '/user/(tabs)/home';
+        userRole === 'volunteer' ?
+          '/volunteer/(tabs)/home'
+        : '/user/(tabs)/home';
       router.replace(target as any);
     }, 5000);
 

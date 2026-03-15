@@ -22,7 +22,14 @@ const Settings = () => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+      }}
+    >
       <Text>Settings</Text>
       <Pressable
         onPress={handleLogout}

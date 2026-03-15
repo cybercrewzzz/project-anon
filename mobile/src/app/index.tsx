@@ -18,8 +18,7 @@ const Index = () => {
 
   // ── Production: auth-aware routing ──
   if (isAuthenticated && userRole) {
-    if (userRole === 'volunteer')
-      return <Redirect href="/volunteer/home" />;
+    if (userRole === 'volunteer') return <Redirect href="/volunteer/home" />;
     return <Redirect href="/user/home" />;
   }
 

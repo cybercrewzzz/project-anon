@@ -23,10 +23,7 @@ export async function registerUser(body: {
   password: string;
   ageRange: string;
 }): Promise<AuthResponse> {
-  const { data } = await apiClient.post<AuthResponse>(
-    '/auth/register',
-    body,
-  );
+  const { data } = await apiClient.post<AuthResponse>('/auth/register', body);
   return data;
 }
 
