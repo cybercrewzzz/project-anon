@@ -13,6 +13,7 @@ import ChatScreenHeader from '@/components/chat/chatScreenHeader';
 import OutgoingMessage from '@/components/chat/outgoingMessage';
 import IncomingMessage from '@/components/chat/incomingMessage';
 import { useChat } from '@/hooks/useChat';
+import { MOCK_VOLUNTEER_ID } from '@/constants/mock-ids';
 
 const SESSION_TIME_SECONDS = 1800;
 
@@ -23,7 +24,7 @@ export default function Chat() {
 
   const account = useAuth(state => state.account);
   // TODO: Remove mock ID when auth is implemented.
-  const userId = account?.accountId || '3e4ece8c-6115-4cae-87b8-20561283973f';
+  const userId = account?.accountId || MOCK_VOLUNTEER_ID;
 
   const { messages, sendMessage, isEncryptionReady } = useChat({
     sessionId: chatId,
