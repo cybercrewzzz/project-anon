@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { useRole } from '@/store/useRole';
 
-const UserLayout = () => {
+const StartLayout = () => {
   const setRole = useRole(state => state.setRole);
 
   useEffect(() => {
@@ -11,14 +11,11 @@ const UserLayout = () => {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen
-        name="WaitingScreen"
-        options={{ presentation: 'transparentModal', animation: 'fade' }}
-      />
-      <Stack.Screen name="session" />
+      <Stack.Screen name="welcome" />
+      <Stack.Screen name="selectLanguage" />
+      <Stack.Screen name="authScreens" />
     </Stack>
   );
 };
 
-export default UserLayout;
+export default StartLayout;
