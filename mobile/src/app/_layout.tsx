@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { useCallback, useEffect } from 'react';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { UnistylesRuntime } from 'react-native-unistyles';
 import { queryClient } from '@/api/queryClient';
 import { useAuth } from '@/store/useAuth';
 import { useRole } from '@/store/useRole';
@@ -30,6 +31,12 @@ export default function Layout() {
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    UnistylesRuntime.setTheme(
+      role === 'volunteer' ? 'volunteerLight' : 'userLight',
+    );
+  }, [role]);
 
   useEffect(() => {
     // TODO: When auth is implemented, remove the mock fallback
