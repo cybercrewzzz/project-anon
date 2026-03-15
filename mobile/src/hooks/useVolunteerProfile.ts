@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import {
   applyAsVolunteer,
   type ApplyVolunteerBody,
-} from '@/api/volunteer-apply-api';
+} from '@/api/volunteer-api';
 
 // =============================================================================
 // TESTING MODE FLAG — POST /volunteer/apply
