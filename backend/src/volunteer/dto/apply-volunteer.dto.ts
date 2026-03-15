@@ -11,7 +11,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class ApplyVolunteerDTO {
+export class ApplyVolunteerDto {
   // account.name — stored on the account row
   @IsString()
   @IsNotEmpty()

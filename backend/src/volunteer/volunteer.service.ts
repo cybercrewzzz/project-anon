@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateProfileDTO } from './dto/update-profile.dto';
-import { UpdateStatusDTO } from './dto/update-status.dto';
-import { ApplyVolunteerDTO } from './dto/apply-volunteer.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { ApplyVolunteerDto } from './dto/apply-volunteer.dto';
 
 @Injectable()
 export class VolunteerService {
@@ -77,7 +77,7 @@ export class VolunteerService {
 
   // PATCH /volunteer/profile
 
-  async updateProfile(accountId: string, dto: UpdateProfileDTO) {
+  async updateProfile(accountId: string, dto: UpdateProfileDto) {
     await this.assertAccountActive(accountId);
 
     const existing = await this.prisma.volunteerProfile.findUnique({
@@ -131,7 +131,7 @@ export class VolunteerService {
 
   // PATCH /volunteer/status
 
-  async updateStatus(accountId: string, dto: UpdateStatusDTO) {
+  async updateStatus(accountId: string, dto: UpdateStatusDto) {
     await this.assertAccountActive(accountId);
 
     const existing = await this.prisma.volunteerProfile.findUnique({
@@ -158,7 +158,7 @@ export class VolunteerService {
 
   // POST /volunteer/apply
 
-  async applyAsVolunteer(accountId: string, dto: ApplyVolunteerDTO) {
+  async applyAsVolunteer(accountId: string, dto: ApplyVolunteerDto) {
     await this.assertAccountActive(accountId);
 
     try {
