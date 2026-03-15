@@ -15,4 +15,7 @@ StyleSheet.configure({
     userLight: userLightTheme,
     volunteerLight: volunteerLightTheme,
   },
+  settings: {
+    initialTheme: () => 'userLight',
+  },
 });
