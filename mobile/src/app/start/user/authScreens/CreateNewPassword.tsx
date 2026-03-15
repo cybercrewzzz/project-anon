@@ -86,7 +86,7 @@ const CreateNewPassword = () => {
       <View style={styles.buttonContainer}>
         <FullWidthButton
           onPress={() =>
-            router.push('/user/start/authScreens/ResetPassword' as any)
+            router.push('/start/user/authScreens/ResetPassword' as any)
           }
         >
           <AppText variant="headline" color="secondary">

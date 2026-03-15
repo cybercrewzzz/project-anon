@@ -47,7 +47,7 @@ const SignIn = () => {
         />
         <Pressable
           onPress={() =>
-            router.push('/user/start/authScreens/enterEmail' as any)
+            router.push('/start/user/authScreens/enterEmail' as any)
           }
         >
           <AppText variant="footnote" color="accent">
@@ -58,12 +58,12 @@ const SignIn = () => {
       <Button
         text="Sign In"
         onPress={() =>
-          router.replace('/user/start/authScreens/loginSuccessful' as any)
+          router.replace('/start/user/authScreens/loginSuccessful' as any)
         }
       />
       <OAuthSignIn />
       <Pressable
-        onPress={() => router.push('/user/start/authScreens/signUp' as any)}
+        onPress={() => router.push('/start/user/authScreens/signUp' as any)}
         style={styles.signUp}
       >
         <AppText variant="callout" color="subtle1">

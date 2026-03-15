@@ -19,7 +19,7 @@ const SignUpNLogin = () => {
         <AuthButton
           label="Login"
           color="#9500FF"
-          onPress={() => router.push('/user/start/authScreens/signIn' as any)}
+          onPress={() => router.push('/start/user/authScreens/signIn' as any)}
         />
         <View style={styles.dividerText}>
           <AppText variant="headline" color="primary">
@@ -29,7 +29,7 @@ const SignUpNLogin = () => {
         <AuthButton
           label="Sign Up"
           color="#570096"
-          onPress={() => router.push('/user/start/authScreens/signUp' as any)}
+          onPress={() => router.push('/start/user/authScreens/signUp' as any)}
         />
       </View>
     </View>

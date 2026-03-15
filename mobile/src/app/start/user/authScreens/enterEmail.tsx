@@ -50,7 +50,7 @@ const EnterEmail = () => {
       <View style={styles.buttonContainer}>
         <FullWidthButton
           onPress={() =>
-            router.push('/user/start/authScreens/OTPVerification' as any)
+            router.push('/start/user/authScreens/OTPVerification' as any)
           }
         >
           <AppText variant="headline" color="secondary">

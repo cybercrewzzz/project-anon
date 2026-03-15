@@ -102,7 +102,7 @@ const SignUp = () => {
       <View style={styles.buttonContainer}>
         <FullWidthButton
           onPress={() =>
-            router.replace('/user/start/authScreens/registerSuccessful' as any)
+            router.replace('/start/user/authScreens/registerSuccessful' as any)
           }
         >
           <AppText variant="headline" color="secondary">
@@ -110,7 +110,7 @@ const SignUp = () => {
           </AppText>
         </FullWidthButton>
         <Pressable
-          onPress={() => router.push('/user/start/authScreens/signIn' as any)}
+          onPress={() => router.push('/start/user/authScreens/signIn' as any)}
           style={styles.loginLink}
         >
           <AppText variant="body" color="primary">

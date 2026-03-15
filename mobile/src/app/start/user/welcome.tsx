@@ -38,7 +38,7 @@ export default function Welcome() {
       <View style={styles.bottom}>
         <Button
           text="Get Started"
-          onPress={() => router.push('/user/start/selectLanguage' as any)}
+          onPress={() => router.push('/start/user/selectLanguage' as any)}
         />
 
         <AppText style={styles.volunteerText}>Continue as a Volunteer</AppText>

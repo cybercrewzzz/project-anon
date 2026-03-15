@@ -116,7 +116,7 @@ const OTPVerification = () => {
       <View style={styles.buttonContainer}>
         <FullWidthButton
           onPress={() =>
-            router.push('/user/start/authScreens/CreateNewPassword' as any)
+            router.push('/start/user/authScreens/CreateNewPassword' as any)
           }
         >
           <AppText variant="headline" color="secondary">

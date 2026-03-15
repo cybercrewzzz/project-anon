@@ -11,7 +11,7 @@ const ResetPassword = () => {
   useEffect(() => {
     // Stop loading after 5 seconds
     const timer = setTimeout(() => {
-      router.replace('/user/start/authScreens/signIn' as any);
+      router.replace('/start/user/authScreens/signIn' as any);
     }, 5000);
 
     return () => clearTimeout(timer);
