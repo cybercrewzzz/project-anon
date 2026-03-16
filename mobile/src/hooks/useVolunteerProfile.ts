@@ -1,4 +1,4 @@
-import { useQuery} from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 //import { queryClient } from '@/api/queryClient';
 import { queryKeys } from '@/api/keys';
 import {
@@ -51,4 +51,3 @@ export function useVolunteerProfile() {
       : fetchVolunteerProfile, // ← real API call when USE_MOCK = false
   });
 }
-

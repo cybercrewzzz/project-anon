@@ -267,7 +267,6 @@ const SettingsScreen = () => {
 
 export default SettingsScreen;
 
-
 const styles = StyleSheet.create((theme, rt) => ({
   screen: {
     flex: 1,
