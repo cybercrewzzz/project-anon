@@ -9,7 +9,7 @@ import {
   Pressable,
 } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
-import { AppText, AppTextProps } from './AppText';
+import { AppTextProps } from './AppText';
 import { StyleSheet } from 'react-native-unistyles';
 import { typography } from '@/theme/tokens/typography';
 import { Image } from 'expo-image';
