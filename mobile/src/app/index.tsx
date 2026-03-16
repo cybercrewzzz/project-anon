@@ -9,6 +9,7 @@ const Index = () => {
   const isAuthenticated = useAuth(state => state.isAuthenticated);
   const userRole = useAuth(state => state.userRole);
   const envRole = useRole(state => state.role);
+  const resolvedRole = userRole || envRole;
 
   // ── Dev bypass: use EXPO_PUBLIC_ROLE to skip auth ──
   if (AUTH_BYPASS) {
@@ -17,8 +18,9 @@ const Index = () => {
   }
 
   // ── Production: auth-aware routing ──
-  if (isAuthenticated && userRole) {
-    if (userRole === 'volunteer') return <Redirect href="/volunteer/home" />;
+  if (isAuthenticated && resolvedRole) {
+    if (resolvedRole === 'volunteer')
+      return <Redirect href="/volunteer/home" />;
     return <Redirect href="/user/home" />;
   }
 
