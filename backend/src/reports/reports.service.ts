@@ -22,7 +22,9 @@ export class ReportsService {
       !session ||
       (session.seekerId !== accountId && session.listenerId !== accountId)
     ) {
-      throw new BadRequestException('You were not a participant in this session.');
+      throw new BadRequestException(
+        'You were not a participant in this session.',
+      );
     }
 
     // Prevent reporting yourself
