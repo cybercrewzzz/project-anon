@@ -7,6 +7,8 @@ import {
   clearTokens,
 } from '@/api/tokenStorage';
 
+type MobileRole = Extract<AccountRole, 'user' | 'volunteer'>;
+
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
@@ -15,7 +17,7 @@ interface AuthState {
   isHydrated: boolean;
 
   /** Derived role from account.roles — 'volunteer' if roles include it, else 'user' */
-  userRole: AccountRole | null;
+  userRole: MobileRole | null;
 
   /** Persist tokens + set in-memory state after login/register */
   signIn: (
@@ -38,7 +40,7 @@ interface AuthState {
 }
 
 /** Derive the primary role from the account's roles array */
-function deriveRole(roles: string[]): AccountRole {
+function deriveRole(roles: AccountRole[]): MobileRole {
   if (roles.includes('volunteer')) return 'volunteer';
   return 'user';
 }
