@@ -9,7 +9,7 @@ import {
 // Set USE_MOCK = true  → fake submission, no backend needed
 // Set USE_MOCK = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
 // =============================================================================
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 // Change to true to test the error state on verify.tsx
 const SIMULATE_APPLY_ERROR = false;
