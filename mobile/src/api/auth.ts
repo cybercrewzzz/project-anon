@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { AuthResponse } from './types';
+import type { AuthResponse, AgeRange } from './types';
 
 /**
  * POST /auth/login — Login for all roles (user, volunteer, admin).
@@ -21,7 +21,7 @@ export async function login(
 export async function registerUser(body: {
   email: string;
   password: string;
-  ageRange: string;
+  ageRange: AgeRange;
 }): Promise<AuthResponse> {
   const { data } = await apiClient.post<AuthResponse>('/auth/register', body);
   return data;
