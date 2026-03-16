@@ -34,8 +34,9 @@ export function useVolunteerStatus() {
   // GET /volunteer/profile — only used to read isAvailable on screen load
   return useQuery({
     queryKey: queryKeys.volunteer.profile(),
-    queryFn: USE_MOCK
-      ? async () => {
+    queryFn:
+      USE_MOCK ?
+        async () => {
           await new Promise(resolve => setTimeout(resolve, 400));
           // Returns a minimal profile shape — only isAvailable matters here
           return {
@@ -62,8 +63,9 @@ export function useVolunteerStatus() {
 export function useUpdateVolunteerStatus() {
   // PATCH /volunteer/status
   return useMutation({
-    mutationFn: USE_MOCK
-      ? async (available: boolean) => {
+    mutationFn:
+      USE_MOCK ?
+        async (available: boolean) => {
           // Logs payload so you can verify the correct boolean is sent
           console.log('=== PATCH /volunteer/status MOCK PAYLOAD ===');
           console.log(JSON.stringify({ available }, null, 2));
@@ -92,7 +94,7 @@ export function useUpdateVolunteerStatus() {
       );
       queryClient.setQueryData<VolunteerProfile>(
         queryKeys.volunteer.profile(),
-        (old) => (old ? { ...old, isAvailable: available } : old),
+        old => (old ? { ...old, isAvailable: available } : old),
       );
       return { previous };
     },

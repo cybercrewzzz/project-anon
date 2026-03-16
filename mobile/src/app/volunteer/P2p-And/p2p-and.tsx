@@ -45,8 +45,8 @@ export default function Index() {
   // Added: replaces direct setSelectedOption calls on the toggle buttons
   const handleToggle = (option: 'Offline' | 'Active') => {
     const available = option === 'Active';
-    setSelectedOption(option);     // update local UI immediately
-    updateStatus(available);       // fire PATCH /volunteer/status
+    setSelectedOption(option); // update local UI immediately
+    updateStatus(available); // fire PATCH /volunteer/status
   };
   // ───────────────────────────────────────────────────────────────────────────
 
