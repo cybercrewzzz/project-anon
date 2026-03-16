@@ -69,9 +69,14 @@ const Home = () => {
   const router = useRouter();
   const refreshToken = useAuth(state => state.refreshToken);
   const signOut = useAuth(state => state.signOut);
+  const showDevUI = process.env.EXPO_PUBLIC_SHOW_DEV_UI === 'true';
 
-  // TODO: Remove this temp button when permanent logout UI is built
+  // Dev-only temporary logout handler; gated behind EXPO_PUBLIC_SHOW_DEV_UI
   const handleLogout = async () => {
+    if (!showDevUI) {
+      return;
+    }
+
     try {
       if (refreshToken) await logout(refreshToken);
     } catch {
