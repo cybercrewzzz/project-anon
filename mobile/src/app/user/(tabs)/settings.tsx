@@ -9,7 +9,7 @@ const Settings = () => {
   const refreshToken = useAuth(state => state.refreshToken);
   const signOut = useAuth(state => state.signOut);
 
-  // TODO: Remove this temp button when permanent logout UI is built
+  // TODO: Remove this temp button when permanent logout UI is built ;)
   const handleLogout = async () => {
     try {
       if (refreshToken) await logout(refreshToken);
