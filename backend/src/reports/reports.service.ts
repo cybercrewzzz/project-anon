@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ReportStatus } from '../generated/prisma/client';
 import { CreateReportDto } from './dto/create-report.dto';
 
 @Injectable()
@@ -51,7 +52,7 @@ export class ReportsService {
         reportedId,
         category,
         description,
-        status: 'pending',
+        status: ReportStatus.pending,
       },
     });
 

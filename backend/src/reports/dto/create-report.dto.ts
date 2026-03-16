@@ -10,7 +10,7 @@ export enum ReportCategory {
   HARASSMENT = 'harassment',
   SPAM = 'spam',
   INAPPROPRIATE_CONTENT = 'inappropriate_content',
-  ABUSIVE_BEHAVIOR = 'abusive_behavior',
+  IMPERSONATION = 'impersonation',
   OTHER = 'other',
 }
 
