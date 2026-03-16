@@ -14,7 +14,7 @@ import type { VolunteerProfile } from '@/api/schemas';
 // Set USE_MOCK = true  → fake data, no backend needed
 // Set USE_MOCK = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
 // =============================================================================
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 const MOCK_PROFILE: VolunteerProfile = {
   accountId: 'test-account-id',
