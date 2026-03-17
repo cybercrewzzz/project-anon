@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+
 > ⚠️ **Note: This architecture is subject to change without prior notice and may be outdated or not relevant as development progresses.**
 
 # REST API Endpoints
@@ -995,7 +996,9 @@ Check how many tickets the seeker has left today.
 | POST   | `/admin/accounts/:id/action`                | admin          | Direct action            |
 | GET    | `/admin/sessions`                           | admin          | Search sessions          |
 | GET    | `/admin/dashboard/stats`                    | admin          | Dashboard stats          |
+
 =======
+
 > ⚠️ **Note: This architecture is subject to change without prior notice and may be outdated or not relevant as development progresses.**
 
 # REST API Endpoints
@@ -2030,4 +2033,5 @@ Check how many tickets the seeker has left today.
 | POST   | `/admin/accounts/:id/action`                | admin          | Direct action            |
 | GET    | `/admin/sessions`                           | admin          | Search sessions          |
 | GET    | `/admin/dashboard/stats`                    | admin          | Dashboard stats          |
->>>>>>> main
+
+> > > > > > > main
