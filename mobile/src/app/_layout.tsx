@@ -1,4 +1,4 @@
-import { Slot } from 'expo-router';
+import { Slot, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { View } from 'react-native';
@@ -9,7 +9,12 @@ import { UnistylesRuntime } from 'react-native-unistyles';
 import { queryClient } from '@/api/queryClient';
 import { useAuth } from '@/store/useAuth';
 import { useRole } from '@/store/useRole';
-import { connectSocket, disconnectSocket } from '@/api/socket';
+import {
+  connectSocket,
+  disconnectSocket,
+  getSocket,
+  subscribeToConnect,
+} from '@/api/socket';
 import { MOCK_USER_ID, MOCK_VOLUNTEER_ID } from '@/constants/mock-ids';
 
 // Side-effect import: registers axios interceptors
@@ -24,6 +29,7 @@ SplashScreen.setOptions({
 });
 
 export default function Layout() {
+  const router = useRouter();
   const isHydrated = useAuth(state => state.isHydrated);
   const hydrate = useAuth(state => state.hydrate);
   const account = useAuth(state => state.account);
@@ -66,6 +72,34 @@ export default function Layout() {
       disconnectSocket();
     };
   }, [account?.accountId, accessToken, role]);
+
+  // Volunteers receive session:matched when a seeker is waiting.
+  // Attach the handler whenever the socket connects so the volunteer is
+  // always ready to navigate — regardless of which tab they're on.
+  useEffect(() => {
+    const isVolunteer =
+      userRole === 'volunteer' || (AUTH_BYPASS && role === 'volunteer');
+    if (!isVolunteer) return;
+
+    const onSessionMatched = ({ sessionId }: { sessionId: string }) => {
+      router.push(`/volunteer/session/${sessionId}`);
+    };
+
+    const attachListener = () => {
+      const socket = getSocket();
+      if (!socket) return;
+      // Remove first to prevent duplicate listeners on reconnect
+      socket.off('session:matched', onSessionMatched);
+      socket.on('session:matched', onSessionMatched);
+    };
+
+    const unsub = subscribeToConnect(attachListener);
+
+    return () => {
+      unsub();
+      getSocket()?.off('session:matched', onSessionMatched);
+    };
+  }, [userRole, role, router]);
 
   const onLayoutRootView = useCallback(async () => {
     if (isHydrated) {

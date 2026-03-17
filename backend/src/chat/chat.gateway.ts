@@ -136,8 +136,12 @@ export class ChatGateway
     client.data.accountId = accountId;
     client.data.roles = roles;
 
-    // 5. Add volunteer to pool if eligible (has volunteer role, isAvailable, no active session)
+    // 5. Volunteer pool management
     if (roles.includes('volunteer')) {
+      // Always track the volunteer as online (regardless of availability/session)
+      await this.chatService.addToOnlinePool(accountId);
+
+      // Add to available (matchable) pool only if eligible and not already in a session
       const eligible = await this.chatService.isEligibleForPool(accountId);
       if (eligible) {
         const activeSessionId =
@@ -162,8 +166,11 @@ export class ChatGateway
 
     if (!accountId) return;
 
-    // Remove from volunteer pool (no-op if not in pool)
+    // Remove from volunteer pools (both no-ops if not a member)
     await this.chatService.removeFromPool(accountId);
+    if (client.data.roles?.includes('volunteer')) {
+      await this.chatService.removeFromOnlinePool(accountId);
+    }
 
     // Check whether this account was in an active session
     const sessionId = await this.chatService.getAccountSession(accountId);
@@ -186,6 +193,98 @@ export class ChatGateway
     }
 
     console.log(`[WS] Disconnected accountId=${accountId} socket=${client.id}`);
+  }
+
+  // ── Session Matching ─────────────────────────────────────────────
+
+  /**
+   * Emitted by a seeker to request a chat session.
+   *
+   * Flow:
+   *  1. Validate the seeker is not already in a session.
+   *  2. Validate the UserProblem belongs to the seeker and is still 'waiting'.
+   *  3. Loop: SPOP a volunteer, verify their socket is alive, skip stale entries.
+   *  4. Create the ChatSession in Postgres (guarded updateMany prevents double-match).
+   *  5. Emit `session:matched` to the volunteer; return { status, sessionId } to seeker.
+   *     On DB failure, return the volunteer to the pool and ack an error to the seeker.
+   */
+  @SubscribeMessage('session:request')
+  async handleSessionRequest(
+    @MessageBody() payload: { problemId: string },
+    @ConnectedSocket() client: AuthSocket,
+  ) {
+    const accountId = client.data.accountId;
+    if (!accountId) return { status: 'error', message: 'Not authenticated' };
+
+    // Reject if the seeker already has an active session in the DB
+    const existingSession =
+      await this.chatService.getActiveSessionId(accountId);
+    if (existingSession) {
+      return { status: 'error', message: 'Already in a session' };
+    }
+
+    // Validate the problem is owned by this seeker and still waiting
+    const problemValid = await this.chatService.validateProblemForSeeker(
+      payload.problemId,
+      accountId,
+    );
+    if (!problemValid) {
+      return { status: 'error', message: 'Invalid or unavailable problem' };
+    }
+
+    // Loop over the available pool until we find a volunteer whose socket is
+    // still alive, skipping stale entries left by disconnect races or crashes.
+    let volunteerId: string | null;
+    let volSocket: Socket | undefined;
+
+    while (true) {
+      volunteerId = await this.chatService.claimVolunteer();
+      if (!volunteerId) {
+        return { status: 'no_volunteer' };
+      }
+
+      const volSocketId =
+        await this.chatService.getSocketIdByAccount(volunteerId);
+      volSocket = volSocketId
+        ? this.server.sockets.sockets.get(volSocketId)
+        : undefined;
+
+      if (volSocket) break;
+
+      // Stale pool entry — purge the stale socket mapping and try the next candidate
+      if (volSocketId) await this.chatService.unmapSocket(volSocketId);
+    }
+
+    // volunteerId and volSocket are both non-null/defined from here.
+    // Wrap session creation so a DB failure returns the volunteer to the pool.
+    try {
+      const sessionId = await this.chatService.createSession(
+        accountId,
+        volunteerId,
+        payload.problemId,
+      );
+
+      // Notify the volunteer — they will call room:join after receiving this
+      volSocket.emit('session:matched', { sessionId });
+
+      console.log(
+        `[WS] Matched  seeker=${accountId} listener=${volunteerId} session=${sessionId}`,
+      );
+
+      // Return sessionId to the seeker via ack — they will also call room:join
+      return { status: 'matched', sessionId };
+    } catch (err) {
+      console.error(
+        `[WS] Session creation failed seeker=${accountId} listener=${volunteerId}`,
+        err,
+      );
+      // Return the volunteer to the available pool if they're still connected
+      await this.chatService.reAddVolunteerToPoolIfEligible(volunteerId);
+      return {
+        status: 'error',
+        message: 'Failed to start session. Please try again.',
+      };
+    }
   }
 
   // ── Room Management ─────────────────────────────────────────────
@@ -477,6 +576,13 @@ export class ChatGateway
       await this.chatService.clearAccountSession(participants.listenerId);
     }
     await this.chatService.purgeMessages(payload.sessionId);
+
+    // If the volunteer is still online and available, return them to the pool
+    if (participants.listenerId) {
+      await this.chatService.reAddVolunteerToPoolIfEligible(
+        participants.listenerId,
+      );
+    }
 
     return { status: 'ok' };
   }
