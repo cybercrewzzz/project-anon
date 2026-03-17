@@ -199,6 +199,6 @@ const styles = StyleSheet.create(theme => ({
     borderRadius: theme.radius.full,
   },
   actionButtonText: {
-    color: '#fff',
+    color: theme.action.secondary,
   },
 }));

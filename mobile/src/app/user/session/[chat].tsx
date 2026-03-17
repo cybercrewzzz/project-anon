@@ -210,7 +210,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
   },
   bannerText: {
-    color: '#fff',
+    color: theme.state.warning,
   },
   sessionEndedOverlay: {
     position: 'absolute',
@@ -239,6 +239,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderRadius: theme.radius.full,
   },
   closeButtonText: {
-    color: '#fff',
+    color: theme.action.secondary,
   },
 }));
