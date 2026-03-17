@@ -64,6 +64,10 @@ export default function Chat() {
     return <AppText>We couldn&apos;t find this chat room 🥲</AppText>;
   }
 
+  if (!userId) {
+    return <AppText>Not authenticated</AppText>;
+  }
+
   return (
     <>
       <View style={styles.screen}>
@@ -81,7 +85,7 @@ export default function Chat() {
         {/* Peer disconnected banner */}
         {!isPeerConnected && !isSessionEnded && (
           <View style={styles.peerDisconnectedBanner}>
-            <AppText variant="caption2" style={styles.bannerText}>
+            <AppText variant="caption2" color="secondary">
               User disconnected — waiting for them to reconnect…
             </AppText>
           </View>
@@ -158,7 +162,7 @@ export default function Chat() {
               private and confidential.
             </AppText>
             <Pressable onPress={() => router.back()} style={styles.closeButton}>
-              <AppText variant="body" style={styles.closeButtonText}>
+              <AppText variant="body" color="secondary">
                 Close
               </AppText>
             </Pressable>
@@ -208,9 +212,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.spacing.s4,
     alignItems: 'center',
   },
-  bannerText: {
-    color: '#fff',
-  },
   sessionEndedOverlay: {
     position: 'absolute',
     top: 0,
@@ -236,8 +237,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.spacing.s6,
     backgroundColor: theme.action.secondary,
     borderRadius: theme.radius.full,
-  },
-  closeButtonText: {
-    color: '#fff',
   },
 }));
