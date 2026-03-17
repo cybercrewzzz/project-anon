@@ -203,10 +203,10 @@ export class ChatGateway
    * Flow:
    *  1. Validate the seeker is not already in a session.
    *  2. Validate the UserProblem belongs to the seeker and is still 'waiting'.
-   *  3. Atomically claim a volunteer from the available pool (SPOP).
-   *  4. Verify the claimed volunteer is still connected.
-   *  5. Create the ChatSession in Postgres (problem status → 'matched').
-   *  6. Emit `session:matched` to the volunteer; return { status, sessionId } to seeker.
+   *  3. Loop: SPOP a volunteer, verify their socket is alive, skip stale entries.
+   *  4. Create the ChatSession in Postgres (guarded updateMany prevents double-match).
+   *  5. Emit `session:matched` to the volunteer; return { status, sessionId } to seeker.
+   *     On DB failure, return the volunteer to the pool and ack an error to the seeker.
    */
   @SubscribeMessage('session:request')
   async handleSessionRequest(
@@ -232,41 +232,59 @@ export class ChatGateway
       return { status: 'error', message: 'Invalid or unavailable problem' };
     }
 
-    // Atomically claim a volunteer from the available pool (SPOP)
-    const volunteerId = await this.chatService.claimVolunteer();
-    if (!volunteerId) {
-      return { status: 'no_volunteer' };
+    // Loop over the available pool until we find a volunteer whose socket is
+    // still alive, skipping stale entries left by disconnect races or crashes.
+    let volunteerId: string | null;
+    let volSocket: Socket | undefined;
+
+    while (true) {
+      volunteerId = await this.chatService.claimVolunteer();
+      if (!volunteerId) {
+        return { status: 'no_volunteer' };
+      }
+
+      const volSocketId =
+        await this.chatService.getSocketIdByAccount(volunteerId);
+      volSocket = volSocketId
+        ? this.server.sockets.sockets.get(volSocketId)
+        : undefined;
+
+      if (volSocket) break;
+
+      // Stale pool entry — purge the stale socket mapping and try the next candidate
+      if (volSocketId) await this.chatService.unmapSocket(volSocketId);
     }
 
-    // Verify the claimed volunteer is still connected
-    const volSocketId =
-      await this.chatService.getSocketIdByAccount(volunteerId);
-    const volSocket = volSocketId
-      ? this.server.sockets.sockets.get(volSocketId)
-      : undefined;
+    // volunteerId and volSocket are both non-null/defined from here.
+    // Wrap session creation so a DB failure returns the volunteer to the pool.
+    try {
+      const sessionId = await this.chatService.createSession(
+        accountId,
+        volunteerId,
+        payload.problemId,
+      );
 
-    if (!volSocket) {
-      // Volunteer disconnected between pool entry and claim — clean up stale entry
-      await this.chatService.removeFromOnlinePool(volunteerId);
-      return { status: 'no_volunteer' };
+      // Notify the volunteer — they will call room:join after receiving this
+      volSocket.emit('session:matched', { sessionId });
+
+      console.log(
+        `[WS] Matched  seeker=${accountId} listener=${volunteerId} session=${sessionId}`,
+      );
+
+      // Return sessionId to the seeker via ack — they will also call room:join
+      return { status: 'matched', sessionId };
+    } catch (err) {
+      console.error(
+        `[WS] Session creation failed seeker=${accountId} listener=${volunteerId}`,
+        err,
+      );
+      // Return the volunteer to the available pool if they're still connected
+      await this.chatService.reAddVolunteerToPoolIfEligible(volunteerId);
+      return {
+        status: 'error',
+        message: 'Failed to start session. Please try again.',
+      };
     }
-
-    // Create the session in Postgres (atomic: ChatSession + UserProblem status update)
-    const sessionId = await this.chatService.createSession(
-      accountId,
-      volunteerId,
-      payload.problemId,
-    );
-
-    // Notify the volunteer — they will call room:join after receiving this
-    volSocket.emit('session:matched', { sessionId });
-
-    console.log(
-      `[WS] Matched  seeker=${accountId} listener=${volunteerId} session=${sessionId}`,
-    );
-
-    // Return sessionId to the seeker via ack — they will also call room:join
-    return { status: 'matched', sessionId };
   }
 
   // ── Room Management ─────────────────────────────────────────────

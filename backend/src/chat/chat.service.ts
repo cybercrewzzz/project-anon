@@ -7,8 +7,9 @@ const SOCKET_TTL = 86400; // match session TTL so stale mappings expire after a 
 const MAX_SESSION_MESSAGES = 1000;
 /** Available pool — online volunteers who are isAvailable=true and not in a session. */
 const VOLUNTEER_POOL_KEY = 'volunteer:pool';
-/** Online pool — every volunteer currently connected via WebSocket, regardless of session/availability status. */
-const VOLUNTEER_ONLINE_KEY = 'volunteer:online';
+// NOTE: "Online" presence is derived from the account:<id>:socket key (set/cleared by
+// mapSocket/unmapSocket, TTL = SOCKET_TTL). A separate Redis SET would have no per-member
+// TTL and would retain stale entries after a server crash where handleDisconnect never runs.
 
 // Rate-limit windows in seconds
 const MSG_RATE_WINDOW_SEC = 60;
@@ -95,19 +96,28 @@ export class ChatService {
 
   // ── Volunteer Online Pool ─────────────────────────────────────────
 
-  /** Add a volunteer to the online tracking pool on WS connect. */
-  async addToOnlinePool(accountId: string): Promise<void> {
-    await this.redis.sadd(VOLUNTEER_ONLINE_KEY, accountId);
-  }
+  /**
+   * No-op: online presence is encoded by the account:<id>:socket mapping
+   * that `mapSocket` maintains with a TTL.  Keeping this method so the
+   * gateway call sites don't need to change.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async addToOnlinePool(_accountId: string): Promise<void> {}
 
-  /** Remove a volunteer from the online tracking pool on WS disconnect. */
-  async removeFromOnlinePool(accountId: string): Promise<void> {
-    await this.redis.srem(VOLUNTEER_ONLINE_KEY, accountId);
-  }
+  /**
+   * No-op: socket mapping is cleared by `unmapSocket` in handleDisconnect.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async removeFromOnlinePool(_accountId: string): Promise<void> {}
 
+  /**
+   * A volunteer is "online" if a socket mapping exists for their account.
+   * The mapping is written by `mapSocket` on connect and deleted by
+   * `unmapSocket` on disconnect; it expires after SOCKET_TTL on crash.
+   */
   async isInOnlinePool(accountId: string): Promise<boolean> {
-    const result = await this.redis.sismember(VOLUNTEER_ONLINE_KEY, accountId);
-    return result === 1;
+    const socketId = await this.redis.get(`account:${accountId}:socket`);
+    return socketId !== null;
   }
 
   /**
@@ -166,23 +176,33 @@ export class ChatService {
   /**
    * Atomically create a ChatSession and mark the associated UserProblem
    * as matched.  Returns the new sessionId.
+   *
+   * The `updateMany` on UserProblem is guarded by `{ accountId: seekerId,
+   * status: 'waiting' }` so that concurrent `session:request` calls for
+   * the same problem both pass `validateProblemForSeeker` (which is a
+   * read-only check) but only one can flip the status to 'matched' —
+   * the other will see count === 0 and the transaction rolls back.
    */
   async createSession(
     seekerId: string,
     volunteerId: string,
     problemId: string,
   ): Promise<string> {
-    const [session] = await this.prisma.$transaction([
-      this.prisma.chatSession.create({
+    return this.prisma.$transaction(async (tx) => {
+      // Guard: only proceed if the problem is still in 'waiting' state for this seeker
+      const { count } = await tx.userProblem.updateMany({
+        where: { problemId, accountId: seekerId, status: 'waiting' },
+        data: { status: 'matched' },
+      });
+      if (count === 0) {
+        throw new Error('Problem is no longer available for matching');
+      }
+      const session = await tx.chatSession.create({
         data: { seekerId, listenerId: volunteerId, problemId },
         select: { sessionId: true },
-      }),
-      this.prisma.userProblem.update({
-        where: { problemId },
-        data: { status: 'matched' },
-      }),
-    ]);
-    return session.sessionId;
+      });
+      return session.sessionId;
+    });
   }
 
   // ── Session Validation ───────────────────────────────────────────
