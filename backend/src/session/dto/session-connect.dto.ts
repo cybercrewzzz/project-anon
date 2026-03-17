@@ -36,7 +36,9 @@ export const ConnectSessionSchema = z.object({
   // The idempotency key lets the server detect "I already processed this"
   // and return the original result instead of creating a duplicate session.
   // Stored in Redis with a 5-minute TTL.
-  idempotencyKey: z.string().uuid({ message: 'idempotencyKey must be a valid UUID' }),
+  idempotencyKey: z
+    .string()
+    .uuid({ message: 'idempotencyKey must be a valid UUID' }),
 });
 
 // Extract the TypeScript type from the Zod schema automatically.

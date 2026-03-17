@@ -78,7 +78,9 @@ export class SessionService {
     const existingResult = await this.redis.client.get(idempotencyRedisKey);
 
     if (existingResult) {
-      this.logger.log(`Idempotency hit for key ${idempotencyKey} — returning cached result`);
+      this.logger.log(
+        `Idempotency hit for key ${idempotencyKey} — returning cached result`,
+      );
       // The stored result is a JSON string. Parse and return it as-is.
       return JSON.parse(existingResult);
     }
@@ -118,7 +120,8 @@ export class SessionService {
       throw new ForbiddenException({
         statusCode: 403,
         error: 'no_tickets_remaining',
-        message: 'You have used all your sessions for today. Please try again tomorrow.',
+        message:
+          'You have used all your sessions for today. Please try again tomorrow.',
       });
     }
 
@@ -171,7 +174,9 @@ export class SessionService {
 
     // ── STEP 7A: PATH A — Match found ────────────────────────────────────
     if (matchedVolunteerId) {
-      this.logger.log(`Match found: seeker ${seekerId} → volunteer ${matchedVolunteerId}`);
+      this.logger.log(
+        `Match found: seeker ${seekerId} → volunteer ${matchedVolunteerId}`,
+      );
 
       // Create the ChatSession row in the DB.
       // This is the official record of the conversation (no messages stored here).
@@ -212,7 +217,10 @@ export class SessionService {
 
       // Set an empty messages list key with TTL so Redis auto-cleans it.
       // The WebSocket gateway will RPUSH messages to session:{id}:msgs.
-      await this.redis.client.expire(`session:${session.sessionId}:msgs`, SESSION_TIMEOUT_MS / 1000);
+      await this.redis.client.expire(
+        `session:${session.sessionId}:msgs`,
+        SESSION_TIMEOUT_MS / 1000,
+      );
 
       // Schedule BullMQ jobs:
       //
@@ -244,7 +252,12 @@ export class SessionService {
       };
 
       // Store the result in Redis for idempotency (5-minute TTL).
-      await this.redis.client.set(idempotencyRedisKey, JSON.stringify(result), 'EX', 300);
+      await this.redis.client.set(
+        idempotencyRedisKey,
+        JSON.stringify(result),
+        'EX',
+        300,
+      );
 
       return result;
     }
@@ -255,7 +268,9 @@ export class SessionService {
     // We create a "waiting" ChatSession and push notifications to offline
     // volunteers (those with is_available=true in DB but not currently
     // connected via WebSocket).
-    this.logger.log(`No match for seeker ${seekerId} — queuing push notifications`);
+    this.logger.log(
+      `No match for seeker ${seekerId} — queuing push notifications`,
+    );
 
     const session = await this.prisma.chatSession.create({
       data: {
@@ -279,7 +294,10 @@ export class SessionService {
 
     // Find offline volunteers who could help (available in DB but not in pool).
     // We look for volunteers with matching specialisations.
-    const offlineVolunteers = await this.findOfflineVolunteers(categoryId, seekerId);
+    const offlineVolunteers = await this.findOfflineVolunteers(
+      categoryId,
+      seekerId,
+    );
 
     if (offlineVolunteers.length > 0) {
       // Queue a push notification job.
@@ -310,7 +328,12 @@ export class SessionService {
     };
 
     // Store for idempotency.
-    await this.redis.client.set(idempotencyRedisKey, JSON.stringify(result), 'EX', 300);
+    await this.redis.client.set(
+      idempotencyRedisKey,
+      JSON.stringify(result),
+      'EX',
+      300,
+    );
 
     // Throw an HttpException with 202 status.
     // NestJS doesn't have a built-in 202 exception, so we throw a generic one.
@@ -325,7 +348,6 @@ export class SessionService {
   // Only the first one wins — Redis HSETNX guarantees this atomically.
   // ─────────────────────────────────────────────────────────────────────────
   async accept(sessionId: string, volunteerId: string) {
-
     // ── STEP 1: Check the session exists in Redis ─────────────────────────
     //
     // We check Redis first (not the DB) because it's faster and the session
@@ -395,7 +417,7 @@ export class SessionService {
       where: {
         OR: [
           { blockerId: volunteerId, blockedId: seekerId },
-          { blockerId: seekerId,    blockedId: volunteerId },
+          { blockerId: seekerId, blockedId: volunteerId },
         ],
       },
     });
@@ -442,7 +464,9 @@ export class SessionService {
     //
     // BullMQ jobs can be cancelled by their jobId if they haven't fired yet.
     try {
-      const timeoutJob = await this.sessionQueue.getJob(`match-timeout:${sessionId}`);
+      const timeoutJob = await this.sessionQueue.getJob(
+        `match-timeout:${sessionId}`,
+      );
       if (timeoutJob) {
         await timeoutJob.remove();
         this.logger.log(`Cancelled match:timeout job for session ${sessionId}`);
@@ -478,7 +502,9 @@ export class SessionService {
     // The WebSocket gateway is Thusirui's code (Task 6). We call it via
     // a shared service or event emitter so we don't import the whole ChatModule.
     // For now we log it — wire up the actual emit when Task 6 is merged.
-    const seekerSocketId = await this.redis.client.get(`account:${seekerId}:socket`);
+    const seekerSocketId = await this.redis.client.get(
+      `account:${seekerId}:socket`,
+    );
 
     if (seekerSocketId) {
       // TODO: call ChatGateway.emitToSocket(seekerSocketId, 'session:matched', payload)
@@ -490,7 +516,9 @@ export class SessionService {
       // Seeker disconnected between connecting and now. The reconnect logic
       // in the WebSocket gateway handles this case — it reads the Redis session
       // hash on reconnect and sees status='active'.
-      this.logger.warn(`Seeker ${seekerId} has no active socket — they may have disconnected`);
+      this.logger.warn(
+        `Seeker ${seekerId} has no active socket — they may have disconnected`,
+      );
     }
 
     // ── STEP 8: Return the response to the volunteer ──────────────────────
@@ -539,8 +567,8 @@ export class SessionService {
     //
     // A random user should not be able to rate someone else's session.
     // Only the seeker or the volunteer who participated can rate it.
-    const isSeeker    = session.seekerId   === callerId;
-    const isListener  = session.listenerId === callerId;
+    const isSeeker = session.seekerId === callerId;
+    const isListener = session.listenerId === callerId;
 
     if (!isSeeker && !isListener) {
       throw new ForbiddenException({
@@ -643,10 +671,7 @@ export class SessionService {
     // We also exclude active/waiting sessions — those aren't history yet,
     // they're live. Only ended sessions belong in the history list.
     const where = {
-      OR: [
-        { seekerId: callerId },
-        { listenerId: callerId },
-      ],
+      OR: [{ seekerId: callerId }, { listenerId: callerId }],
       status: { notIn: ['active', 'waiting'] },
     };
 
@@ -685,15 +710,15 @@ export class SessionService {
     // the API spec defines. This prevents accidentally leaking internal
     // fields like seekerId, listenerId, or problemId to the client.
     const data = sessions.map((s) => ({
-      sessionId:       s.sessionId,
-      category:        s.problem?.category?.name ?? null,
-      startedAt:       s.startedAt,
-      endedAt:         s.endedAt,
-      status:          s.status,
-      closedReason:    s.closedReason,
-      userRating:      s.userRating,
+      sessionId: s.sessionId,
+      category: s.problem?.category?.name ?? null,
+      startedAt: s.startedAt,
+      endedAt: s.endedAt,
+      status: s.status,
+      closedReason: s.closedReason,
+      userRating: s.userRating,
       volunteerRating: s.volunteerRating,
-      starredByUser:   s.starredByUser,
+      starredByUser: s.starredByUser,
     }));
 
     // ── STEP 5: Return the pagination envelope ────────────────────────────

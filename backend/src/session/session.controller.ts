@@ -84,7 +84,8 @@ export class SessionController {
 
     // @Param() extracts the :sessionId from the URL path.
     // ZodValidationPipe validates it is a proper UUID before anything runs.
-    @Param(new ZodValidationPipe(AcceptSessionParamsSchema)) params: { sessionId: string },
+    @Param(new ZodValidationPipe(AcceptSessionParamsSchema))
+    params: { sessionId: string },
   ) {
     return this.sessionService.accept(params.sessionId, user.sub);
   }
@@ -104,10 +105,16 @@ export class SessionController {
   @HttpCode(HttpStatus.OK)
   async rate(
     @CurrentUser() user: JwtPayload,
-    @Param(new ZodValidationPipe(RateSessionParamsSchema)) params: { sessionId: string },
+    @Param(new ZodValidationPipe(RateSessionParamsSchema))
+    params: { sessionId: string },
     @Body(new ZodValidationPipe(RateSessionBodySchema)) dto: RateSessionBodyDto,
   ) {
-    return this.sessionService.rate(params.sessionId, user.sub, user.roles, dto);
+    return this.sessionService.rate(
+      params.sessionId,
+      user.sub,
+      user.roles,
+      dto,
+    );
   }
 
   // ─── GET /session/history ──────────────────────────────────────────────
@@ -133,7 +140,8 @@ export class SessionController {
 
     // @Query() extracts URL query parameters (?page=1&limit=20).
     // ZodValidationPipe validates and coerces them from strings to numbers.
-    @Query(new ZodValidationPipe(SessionHistoryQuerySchema))query: SessionHistoryQueryDto,
+    @Query(new ZodValidationPipe(SessionHistoryQuerySchema))
+    query: SessionHistoryQueryDto,
   ) {
     return this.sessionService.getHistory(user.sub, query);
   }

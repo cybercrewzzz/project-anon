@@ -43,7 +43,7 @@ import { TicketService } from './ticket.service';
     // SessionService. The actual workers that PROCESS these jobs also live
     // in this module (you'll add them as providers when you build the workers).
     BullModule.registerQueue(
-      { name: 'sessions' },      // for session:grace-end, session:timeout, match:timeout
+      { name: 'sessions' }, // for session:grace-end, session:timeout, match:timeout
       { name: 'notifications' }, // for notify:volunteers (processed by Thusirui's worker)
     ),
     // PrismaModule and RedisModule are global modules registered in AppModule.
