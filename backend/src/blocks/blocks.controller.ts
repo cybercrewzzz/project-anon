@@ -10,12 +10,12 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { BlocksService } from './blocks.service';
 import { CreateBlockDto } from './dto/create-block.dto';
-import { JwtAuthGuard } from '../accounts/guards/jwt-auth.guard';
-import { RolesGuard } from '../accounts/guards/roles.guard';
-import { Roles } from '../accounts/decorators/roles.decorator';
-import { CurrentUser } from '../accounts/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('user', 'volunteer')
