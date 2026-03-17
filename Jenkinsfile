@@ -19,6 +19,11 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
+    environment {
+        YARN_CACHE_FOLDER = '/opt/yarn-cache'
+        DOCKER_BUILDKIT = '1'
+    }
+
     stages {
         stage('Determine Changes') {
             steps {
@@ -104,44 +109,62 @@ pipeline {
             }
         }
 
-        stage('Build & Push Images') {
+        stage('Docker Login') {
             when { branch 'main' }
             steps {
                 script {
-                    withChecks('Build & Push Images') {
-                        def gitSha = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    env.GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
 
-                        withCredentials([
-                            usernamePassword(credentialsId: 'registry-credentials', usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')
-                        ]) {
-                            sh "docker login registry.anora-app.com -u \"\$REG_USER\" -p \"\$REG_PASS\""
+                    withCredentials([
+                        usernamePassword(credentialsId: 'registry-credentials', usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')
+                    ]) {
+                        sh "echo \"\$REG_PASS\" | docker login registry.anora-app.com -u \"\$REG_USER\" --password-stdin"
+                    }
+                }
+            }
+        }
 
-                            sh """
-                                docker build -f backend/Dockerfile \
-                                    -t registry.anora-app.com/backend:${gitSha} \
-                                    -t registry.anora-app.com/backend:latest \
-                                    .
-                            """
-
-                            sh """
-                                docker build -f admin/Dockerfile \
-                                    --build-arg NEXT_PUBLIC_API_URL=https://api.anora-app.com/v1 \
-                                    -t registry.anora-app.com/admin:${gitSha} \
-                                    -t registry.anora-app.com/admin:latest \
-                                    .
-                            """
-
-                            sh """
-                                docker push registry.anora-app.com/backend:${gitSha}
-                                docker push registry.anora-app.com/backend:latest
-                                docker push registry.anora-app.com/admin:${gitSha}
-                                docker push registry.anora-app.com/admin:latest
-                            """
-
-                            sh """
-                                docker rmi registry.anora-app.com/backend:${gitSha} registry.anora-app.com/backend:latest \
-                                    registry.anora-app.com/admin:${gitSha} registry.anora-app.com/admin:latest || true
-                            """
+        stage('Build & Push Images') {
+            when { branch 'main' }
+            parallel {
+                stage('Backend Image') {
+                    steps {
+                        script {
+                            withChecks('Build & Push: Backend') {
+                                sh "docker pull registry.anora-app.com/backend:latest || true"
+                                sh """
+                                    docker build -f backend/Dockerfile \
+                                        --build-arg BUILDKIT_INLINE_CACHE=1 \
+                                        --cache-from registry.anora-app.com/backend:latest \
+                                        -t registry.anora-app.com/backend:${env.GIT_SHA} \
+                                        -t registry.anora-app.com/backend:latest \
+                                        .
+                                    docker push registry.anora-app.com/backend:${env.GIT_SHA}
+                                    docker push registry.anora-app.com/backend:latest
+                                    docker rmi registry.anora-app.com/backend:${env.GIT_SHA} registry.anora-app.com/backend:latest || true
+                                """
+                            }
+                        }
+                    }
+                }
+                stage('Admin Image') {
+                    steps {
+                        script {
+                            withChecks('Build & Push: Admin') {
+                                sh "docker pull registry.anora-app.com/admin:latest || true"
+                                sh """
+                                    docker build -f admin/Dockerfile \
+                                        --build-arg BUILDKIT_INLINE_CACHE=1 \
+                                        --build-arg NEXT_PUBLIC_API_URL=https://api.anora-app.com/v1 \
+                                        --cache-from registry.anora-app.com/admin:latest \
+                                        -t registry.anora-app.com/admin:${env.GIT_SHA} \
+                                        -t registry.anora-app.com/admin:latest \
+                                        .
+                                    docker push registry.anora-app.com/admin:${env.GIT_SHA}
+                                    docker push registry.anora-app.com/admin:latest
+                                    docker rmi registry.anora-app.com/admin:${env.GIT_SHA} registry.anora-app.com/admin:latest || true
+                                """
+                            }
                         }
                     }
                 }
@@ -153,7 +176,7 @@ pipeline {
             steps {
                 script {
                     withChecks('Deploy') {
-                        build job: 'project-anon-infra/main', wait: true
+                        build job: 'Project Anon Infra/main', wait: true
                     }
                 }
             }
