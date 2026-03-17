@@ -84,16 +84,14 @@ export class MatchingService {
           );
 
         return {
-          const overlapLanguages = candidate.account.accountLanguages.filter(
-            (l) => seekerLanguageIds.includes(l.languageId),
-          ).length;
+          volunteerId: candidate.accountId,
+          score: overlapLanguages + (hasMatchingSpecialisation ? 5 : 0),
+        };
+      })
+      .sort((a, b) => b.score - a.score);
 
-          const hasMatchingSpecialisation =
-            candidate.account.volunteerSpecialisations.some(
-              (entry) =>
-                entry.specialisation.name.toLowerCase() ===
-                category.name.toLowerCase(),
-            );
+    for (const candidate of scored) {
+      const removedCount = await this.redis.srem(
         'volunteer:pool',
         candidate.volunteerId,
       );
