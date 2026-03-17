@@ -14,7 +14,7 @@ pipeline {
     agent { label 'jenkins-agent-node' }
 
     options {
-        timeout(time: 15, unit: 'MINUTES')
+        timeout(time: 30, unit: 'MINUTES')
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
@@ -104,13 +104,56 @@ pipeline {
             }
         }
 
-        stage('Build Backend') {
+        stage('Build & Push Images') {
             when { branch 'main' }
             steps {
                 script {
-                    withChecks('Build: Backend') {
-                        // WIP
-                        echo "Build in progress..."
+                    withChecks('Build & Push Images') {
+                        def gitSha = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+
+                        withCredentials([
+                            usernamePassword(credentialsId: 'registry-credentials', usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')
+                        ]) {
+                            sh "docker login registry.anora-app.com -u \"\$REG_USER\" -p \"\$REG_PASS\""
+
+                            sh """
+                                docker build -f backend/Dockerfile \
+                                    -t registry.anora-app.com/backend:${gitSha} \
+                                    -t registry.anora-app.com/backend:latest \
+                                    .
+                            """
+
+                            sh """
+                                docker build -f admin/Dockerfile \
+                                    --build-arg NEXT_PUBLIC_API_URL=https://api.anora-app.com/v1 \
+                                    -t registry.anora-app.com/admin:${gitSha} \
+                                    -t registry.anora-app.com/admin:latest \
+                                    .
+                            """
+
+                            sh """
+                                docker push registry.anora-app.com/backend:${gitSha}
+                                docker push registry.anora-app.com/backend:latest
+                                docker push registry.anora-app.com/admin:${gitSha}
+                                docker push registry.anora-app.com/admin:latest
+                            """
+
+                            sh """
+                                docker rmi registry.anora-app.com/backend:${gitSha} registry.anora-app.com/backend:latest \
+                                    registry.anora-app.com/admin:${gitSha} registry.anora-app.com/admin:latest || true
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when { branch 'main' }
+            steps {
+                script {
+                    withChecks('Deploy') {
+                        build job: 'project-anon-infra/main', wait: true
                     }
                 }
             }
