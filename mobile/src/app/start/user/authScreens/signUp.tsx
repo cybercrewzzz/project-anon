@@ -1,4 +1,4 @@
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
@@ -7,12 +7,25 @@ import InputForm from '@/components/inputForm';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { registerUser } from '@/api/auth';
+import { useAuth } from '@/store/useAuth';
+import { parseApiError } from '@/api/errors';
+import type { AgeRange } from '@/api/types';
 
-const AGE_RANGES = ['16 -20', '21 -26', '27+'] as const;
+/** Map display labels to backend AgeRange enum values */
+const AGE_RANGE_MAP: Record<string, AgeRange> = {
+  '16 -20': 'range_16_20',
+  '21 -26': 'range_21_26',
+  '27+': 'range_27_plus',
+} as const;
+
+const AGE_RANGES = Object.keys(AGE_RANGE_MAP);
 
 const SignUp = () => {
   const router = useRouter();
   const { theme } = useUnistyles();
+  const signIn = useAuth(state => state.signIn);
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -24,6 +37,23 @@ const SignUp = () => {
   const updateField = (field: keyof typeof form) => (text: string) => {
     setForm(prev => ({ ...prev, [field]: text }));
   };
+
+  const registerMutation = useMutation({
+    mutationFn: () =>
+      registerUser({
+        email: form.email,
+        password: form.password,
+        ageRange: AGE_RANGE_MAP[selectedAge],
+      }),
+    onSuccess: async data => {
+      await signIn(data.accessToken, data.refreshToken, data.account);
+      router.replace('/start/user/authScreens/registerSuccessful' as any);
+    },
+    onError: error => {
+      const apiError = parseApiError(error);
+      Alert.alert('Registration Failed', apiError.message);
+    },
+  });
 
   return (
     <KeyboardAwareScrollView
@@ -101,12 +131,11 @@ const SignUp = () => {
 
       <View style={styles.buttonContainer}>
         <FullWidthButton
-          onPress={() =>
-            router.replace('/start/user/authScreens/registerSuccessful' as any)
-          }
+          onPress={() => registerMutation.mutate()}
+          disabled={registerMutation.isPending}
         >
           <AppText variant="headline" color="secondary">
-            Sign Up
+            {registerMutation.isPending ? 'Creating Account...' : 'Sign Up'}
           </AppText>
         </FullWidthButton>
         <Pressable

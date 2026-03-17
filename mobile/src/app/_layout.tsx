@@ -15,6 +15,8 @@ import { MOCK_USER_ID, MOCK_VOLUNTEER_ID } from '@/constants/mock-ids';
 // Side-effect import: registers axios interceptors
 import '@/api/client';
 
+const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
   duration: 400,
@@ -26,11 +28,21 @@ export default function Layout() {
   const hydrate = useAuth(state => state.hydrate);
   const account = useAuth(state => state.account);
   const accessToken = useAuth(state => state.accessToken);
+  const userRole = useAuth(state => state.userRole);
   const role = useRole(state => state.role);
+  const setRole = useRole(state => state.setRole);
 
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  // Sync useRole store from auth state when account is available
+  // so that theme switching works correctly after login
+  useEffect(() => {
+    if (userRole && !AUTH_BYPASS) {
+      setRole(userRole === 'volunteer' ? 'volunteer' : 'user');
+    }
+  }, [userRole, setRole]);
 
   useEffect(() => {
     UnistylesRuntime.setTheme(
@@ -39,15 +51,16 @@ export default function Layout() {
   }, [role]);
 
   useEffect(() => {
-    // TODO: When auth is implemented, remove the mock fallback
-    // and only connect when account?.accountId is available.
-    const userId =
-      account?.accountId ||
-      (role === 'volunteer' ? MOCK_VOLUNTEER_ID : MOCK_USER_ID);
-
-    // Pass the JWT when available so the gateway can authenticate properly.
-    // When no token exists the gateway falls back to query.userId (dev only).
-    connectSocket(userId, accessToken ?? undefined);
+    if (AUTH_BYPASS) {
+      // Dev mode: use mock IDs when no real account exists
+      const userId =
+        account?.accountId ||
+        (role === 'volunteer' ? MOCK_VOLUNTEER_ID : MOCK_USER_ID);
+      connectSocket(userId, accessToken ?? undefined);
+    } else if (account?.accountId && accessToken) {
+      // Production: only connect when authenticated
+      connectSocket(account.accountId, accessToken);
+    }
 
     return () => {
       disconnectSocket();
