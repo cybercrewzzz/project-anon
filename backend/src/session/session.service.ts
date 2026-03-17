@@ -10,11 +10,18 @@ import {
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import {
+  AccountStatus,
+  SessionStatus,
+  UserProblemStatus,
+  VerificationStatus,
+  type Prisma,
+} from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { MatchingService } from './matching.service';
 import { TicketService } from './ticket.service';
-import { ConnectSessionDto } from './dto/connect-session.dto';
+import type { ConnectSessionDto } from './dto/session-connect.dto';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WHAT IS THE SESSION SERVICE?
@@ -37,6 +44,22 @@ const SESSION_TIMEOUT_MS = 45 * 60 * 1000; // 45 minutes
 
 // How long (ms) the grace period is before a ticket is consumed.
 const GRACE_END_MS = 3 * 60 * 1000; // 3 minutes
+
+type ConnectResult =
+  | {
+      sessionId: string;
+      volunteerId: string;
+      wsRoom: string;
+      turnCredentials: {
+        urls: string[];
+        username: string;
+        credential: string;
+      };
+    }
+  | {
+      status: 'waiting';
+      sessionId: string;
+    };
 
 @Injectable()
 export class SessionService {
@@ -75,14 +98,15 @@ export class SessionService {
     //
     // This protects against: network retries, double-taps, browser refreshes.
     const idempotencyRedisKey = `idempotency:${idempotencyKey}`;
-    const existingResult = await this.redis.client.get(idempotencyRedisKey);
+    const existingResult = await this.redis.get(idempotencyRedisKey);
 
     if (existingResult) {
       this.logger.log(
         `Idempotency hit for key ${idempotencyKey} — returning cached result`,
       );
       // The stored result is a JSON string. Parse and return it as-is.
-      return JSON.parse(existingResult);
+      const parsed = JSON.parse(existingResult) as unknown;
+      return parsed as ConnectResult;
     }
 
     // ── STEP 2: Concurrent session check ────────────────────────────────
@@ -95,7 +119,7 @@ export class SessionService {
     const activeSession = await this.prisma.chatSession.findFirst({
       where: {
         seekerId,
-        status: { in: ['active', 'waiting'] },
+        status: SessionStatus.active,
       },
     });
 
@@ -103,7 +127,7 @@ export class SessionService {
       throw new ConflictException({
         statusCode: 409,
         error: 'already_in_session',
-        message: 'You already have an active or waiting session',
+        message: 'You already have an active session',
         sessionId: activeSession.sessionId,
       });
     }
@@ -138,7 +162,7 @@ export class SessionService {
           categoryId,
           customCategoryLabel: customLabel ?? null,
           feelingLevel,
-          status: 'waiting', // Will be updated to 'matched' or 'expired'
+          status: UserProblemStatus.waiting,
         },
       });
     } catch (error) {
@@ -185,7 +209,7 @@ export class SessionService {
           seekerId,
           listenerId: matchedVolunteerId,
           problemId: problem.problemId,
-          status: 'active',
+          status: SessionStatus.active,
           startedAt: new Date(),
         },
       });
@@ -193,7 +217,7 @@ export class SessionService {
       // Update the UserProblem status to 'matched'.
       await this.prisma.userProblem.update({
         where: { problemId: problem.problemId },
-        data: { status: 'matched' },
+        data: { status: UserProblemStatus.matched },
       });
 
       // Store session state in Redis Hash.
@@ -208,7 +232,7 @@ export class SessionService {
       //   listenerId  — so the gateway knows who the volunteer is
       //   status      — 'active', used to validate room joins
       //   startedAt   — ISO string timestamp
-      await this.redis.client.hset(`session:${session.sessionId}`, {
+      await this.redis.hset(`session:${session.sessionId}`, {
         seekerId,
         listenerId: matchedVolunteerId,
         status: 'active',
@@ -217,7 +241,7 @@ export class SessionService {
 
       // Set an empty messages list key with TTL so Redis auto-cleans it.
       // The WebSocket gateway will RPUSH messages to session:{id}:msgs.
-      await this.redis.client.expire(
+      await this.redis.expire(
         `session:${session.sessionId}:msgs`,
         SESSION_TIMEOUT_MS / 1000,
       );
@@ -252,7 +276,7 @@ export class SessionService {
       };
 
       // Store the result in Redis for idempotency (5-minute TTL).
-      await this.redis.client.set(
+      await this.redis.set(
         idempotencyRedisKey,
         JSON.stringify(result),
         'EX',
@@ -277,7 +301,7 @@ export class SessionService {
         seekerId,
         listenerId: null, // Not yet assigned — filled in when a volunteer accepts
         problemId: problem.problemId,
-        status: 'waiting',
+        status: SessionStatus.active,
         startedAt: new Date(),
       },
     });
@@ -285,7 +309,7 @@ export class SessionService {
     // Store a waiting session hash in Redis.
     // The `listenerId` field is intentionally empty — the /accept endpoint
     // will use HSETNX to atomically fill it in (only one volunteer can win).
-    await this.redis.client.hset(`session:${session.sessionId}`, {
+    await this.redis.hset(`session:${session.sessionId}`, {
       seekerId,
       listenerId: '',
       status: 'waiting',
@@ -328,7 +352,7 @@ export class SessionService {
     };
 
     // Store for idempotency.
-    await this.redis.client.set(
+    await this.redis.set(
       idempotencyRedisKey,
       JSON.stringify(result),
       'EX',
@@ -353,7 +377,7 @@ export class SessionService {
     // We check Redis first (not the DB) because it's faster and the session
     // hash was written there when the seeker connected in Path B.
     // If the key doesn't exist, the session has already expired or never existed.
-    const sessionHash = await this.redis.client.hgetall(`session:${sessionId}`);
+    const sessionHash = await this.redis.hgetall(`session:${sessionId}`);
 
     if (!sessionHash || Object.keys(sessionHash).length === 0) {
       throw new NotFoundException({
@@ -387,7 +411,7 @@ export class SessionService {
     // HSET would overwrite any existing value — two volunteers could both
     // think they won. HSETNX is atomic: only one caller can ever get a `1`.
     // This is the core of the race-condition protection for Path B.
-    const claimed = await this.redis.client.hsetnx(
+    const claimed = await this.redis.hsetnx(
       `session:${sessionId}`,
       'listenerId',
       volunteerId,
@@ -404,7 +428,7 @@ export class SessionService {
 
     // We won the race. Update the session status in Redis immediately
     // so any subsequent accept calls hit the status check in Step 2.
-    await this.redis.client.hset(`session:${sessionId}`, 'status', 'active');
+    await this.redis.hset(`session:${sessionId}`, 'status', 'active');
 
     // ── STEP 4: Bidirectional block check ────────────────────────────────
     //
@@ -424,7 +448,7 @@ export class SessionService {
 
     if (block) {
       // Undo the Redis claim so the session stays claimable by others.
-      await this.redis.client.hset(`session:${sessionId}`, {
+      await this.redis.hset(`session:${sessionId}`, {
         listenerId: '',
         status: 'waiting',
       });
@@ -443,7 +467,7 @@ export class SessionService {
       where: { sessionId },
       data: {
         listenerId: volunteerId,
-        status: 'active',
+        status: SessionStatus.active,
       },
       include: {
         // Include the problem + category so we can return the category name
@@ -475,7 +499,8 @@ export class SessionService {
       // Non-fatal — log but don't fail the request. The job may have already
       // fired or been removed. The DB status is already 'active' so the job's
       // handler will see that and do nothing harmful.
-      this.logger.warn(`Could not cancel match:timeout job: ${err.message}`);
+      const errMessage = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Could not cancel match:timeout job: ${errMessage}`);
     }
 
     // Schedule the standard session jobs now that it's active:
@@ -502,9 +527,7 @@ export class SessionService {
     // The WebSocket gateway is Thusirui's code (Task 6). We call it via
     // a shared service or event emitter so we don't import the whole ChatModule.
     // For now we log it — wire up the actual emit when Task 6 is merged.
-    const seekerSocketId = await this.redis.client.get(
-      `account:${seekerId}:socket`,
-    );
+    const seekerSocketId = await this.redis.get(`account:${seekerId}:socket`);
 
     if (seekerSocketId) {
       // TODO: call ChatGateway.emitToSocket(seekerSocketId, 'session:matched', payload)
@@ -582,7 +605,7 @@ export class SessionService {
     //
     // You can only rate a session that has actually ended.
     // Rating an active/waiting session makes no sense and is rejected with 400.
-    if (session.status !== 'completed') {
+    if (session.status !== SessionStatus.completed) {
       throw new BadRequestException({
         statusCode: 400,
         error: 'session_not_completed',
@@ -670,9 +693,9 @@ export class SessionService {
     //
     // We also exclude active/waiting sessions — those aren't history yet,
     // they're live. Only ended sessions belong in the history list.
-    const where = {
+    const where: Prisma.ChatSessionWhereInput = {
       OR: [{ seekerId: callerId }, { listenerId: callerId }],
-      status: { notIn: ['active', 'waiting'] },
+      status: { notIn: [SessionStatus.active] },
     };
 
     // ── STEP 3: Fetch sessions + total count in parallel ─────────────────
@@ -741,7 +764,7 @@ export class SessionService {
   // workers (to consume/release). Keeping all ticket logic in one place
   // means if the ticket system ever changes, you only edit one file.
   // ─────────────────────────────────────────────────────────────────────────
-  async getTickets(seekerId: string) {
+  getTickets(seekerId: string) {
     // TicketService.getRemaining() reads from Redis and returns:
     // { daily: 5, consumed: 2, reserved: 1, remaining: 2 }
     return this.tickets.getRemaining(seekerId);
@@ -753,7 +776,7 @@ export class SessionService {
     seekerId: string,
   ): Promise<string[]> {
     // Get currently pooled (online) volunteer IDs to exclude them.
-    const onlineIds = await this.redis.client.smembers('volunteer:pool');
+    const onlineIds = await this.redis.smembers('volunteer:pool');
 
     // Find the category name for specialisation matching.
     const category = await this.prisma.category.findUnique({
@@ -771,15 +794,13 @@ export class SessionService {
     const candidates = await this.prisma.volunteerProfile.findMany({
       where: {
         isAvailable: true,
-        verificationStatus: 'approved',
+        verificationStatus: VerificationStatus.approved,
         accountId: { notIn: [...onlineIds, seekerId] },
         account: {
-          status: 'active',
+          status: AccountStatus.active,
           // Exclude blocked relationships
-          blockedBy: { none: { blockerId: seekerId } },
-          blocking: { none: { blockedId: seekerId } },
-        },
-        account: {
+          blocksReceived: { none: { blockerId: seekerId } },
+          blocksInitiated: { none: { blockedId: seekerId } },
           volunteerSpecialisations: {
             some: {
               specialisation: {

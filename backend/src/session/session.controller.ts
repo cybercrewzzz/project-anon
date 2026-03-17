@@ -12,19 +12,21 @@ import {
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { ConnectSessionSchema } from './dto/session-connect.dto';
-import { ConnectSessionDto } from './dto/session-connect.dto';
+import type { ConnectSessionDto } from './dto/session-connect.dto';
 import { AcceptSessionParamsSchema } from './dto/sessionid-accept.dto';
 import { RateSessionParamsSchema } from './dto/sessionid-rate.dto';
 import { RateSessionBodySchema } from './dto/sessionid-rate.dto';
-import { RateSessionBodyDto } from './dto/sessionid-rate.dto';
+import type { RateSessionBodyDto } from './dto/sessionid-rate.dto';
 import { SessionHistoryQuerySchema } from './dto/sessionhistory.dto';
-import { SessionHistoryQueryDto } from './dto/sessionhistory.dto';
+import type { SessionHistoryQueryDto } from './dto/sessionhistory.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  type ValidatedUser,
+} from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { JwtPayload } from '../common/types/jwt-payload.type';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WHAT IS A CONTROLLER?
@@ -58,10 +60,10 @@ export class SessionController {
   @Roles('user')
   @HttpCode(HttpStatus.OK)
   async connect(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: ValidatedUser,
     @Body(new ZodValidationPipe(ConnectSessionSchema)) dto: ConnectSessionDto,
   ) {
-    return this.sessionService.connect(user.sub, dto);
+    return this.sessionService.connect(user.accountId, dto);
   }
 
   // ─── POST /session/:sessionId/accept ───────────────────────────────────
@@ -80,14 +82,14 @@ export class SessionController {
   @Roles('volunteer')
   @HttpCode(HttpStatus.OK)
   async accept(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: ValidatedUser,
 
     // @Param() extracts the :sessionId from the URL path.
     // ZodValidationPipe validates it is a proper UUID before anything runs.
     @Param(new ZodValidationPipe(AcceptSessionParamsSchema))
     params: { sessionId: string },
   ) {
-    return this.sessionService.accept(params.sessionId, user.sub);
+    return this.sessionService.accept(params.sessionId, user.accountId);
   }
 
   // ─── PATCH /session/:sessionId/rate ────────────────────────────────────
@@ -104,14 +106,14 @@ export class SessionController {
   @Roles('user', 'volunteer')
   @HttpCode(HttpStatus.OK)
   async rate(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: ValidatedUser,
     @Param(new ZodValidationPipe(RateSessionParamsSchema))
     params: { sessionId: string },
     @Body(new ZodValidationPipe(RateSessionBodySchema)) dto: RateSessionBodyDto,
   ) {
     return this.sessionService.rate(
       params.sessionId,
-      user.sub,
+      user.accountId,
       user.roles,
       dto,
     );
@@ -136,14 +138,14 @@ export class SessionController {
   @Get('history')
   @Roles('user', 'volunteer')
   async history(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: ValidatedUser,
 
     // @Query() extracts URL query parameters (?page=1&limit=20).
     // ZodValidationPipe validates and coerces them from strings to numbers.
     @Query(new ZodValidationPipe(SessionHistoryQuerySchema))
     query: SessionHistoryQueryDto,
   ) {
-    return this.sessionService.getHistory(user.sub, query);
+    return this.sessionService.getHistory(user.accountId, query);
   }
 
   // ─── GET /session/tickets ──────────────────────────────────────────────
@@ -162,7 +164,7 @@ export class SessionController {
   @Get('tickets')
   // Only seekers have ticket limits. Volunteers are not restricted.
   @Roles('user')
-  async tickets(@CurrentUser() user: JwtPayload) {
-    return this.sessionService.getTickets(user.sub);
+  async tickets(@CurrentUser() user: ValidatedUser) {
+    return this.sessionService.getTickets(user.accountId);
   }
 }
