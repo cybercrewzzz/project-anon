@@ -10,7 +10,14 @@ import Animated, {
   Extrapolation,
   SharedValue,
 } from 'react-native-reanimated';
-import { useUnistyles } from 'react-native-unistyles';
+import { StyleSheet as UnistylesStyleSheet } from 'react-native-unistyles';
+
+const themeStyles = UnistylesStyleSheet.create(theme => ({
+  color1: { backgroundColor: theme.action.primary },
+  color2: { backgroundColor: theme.action.secondary },
+  color3: { backgroundColor: theme.text.subtle1 },
+  color4: { backgroundColor: theme.state.success },
+}));
 
 const CIRCLE_COUNT = 20;
 const DURATION = 5000;
@@ -90,16 +97,14 @@ const OrbitingBubble = ({
 };
 
 export function SuccessAnimation() {
-  const { theme } = useUnistyles();
-
   const colors = useMemo(
     () => [
-      theme.action.primary,
-      theme.action.secondary,
-      theme.text.subtle1,
-      theme.state.success,
+      themeStyles.color1.backgroundColor as string,
+      themeStyles.color2.backgroundColor as string,
+      themeStyles.color3.backgroundColor as string,
+      themeStyles.color4.backgroundColor as string,
     ],
-    [theme],
+    [],
   );
 
   const bubbleSeeds = useMemo<BubbleSeed[]>(
@@ -156,7 +161,7 @@ export function SuccessAnimation() {
       width: 80,
       height: 80,
       borderRadius: 40,
-      backgroundColor: theme.action.primary,
+      backgroundColor: themeStyles.color1.backgroundColor as string,
       transform: [{ scale: breatheScale.value * explodeScale }],
       opacity,
       justifyContent: 'center',

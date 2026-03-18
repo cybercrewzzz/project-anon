@@ -1,6 +1,6 @@
 import { View, Pressable, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { SmallButton } from '@/components/SmallButton';
 import InputForm from '@/components/inputForm';
@@ -24,7 +24,6 @@ const AGE_RANGES = Object.keys(AGE_RANGE_MAP);
 
 const SignUp = () => {
   const router = useRouter();
-  const { theme } = useUnistyles();
   const signIn = useAuth(state => state.signIn);
   const [form, setForm] = useState({
     email: '',
@@ -74,7 +73,6 @@ const SignUp = () => {
         <InputForm
           placeholder="Email"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           onChangeText={updateField('email')}
           value={form.email}
           inputMode="email"
@@ -102,7 +100,6 @@ const SignUp = () => {
         <InputForm
           placeholder="Password"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           onChangeText={updateField('password')}
           value={form.password}
           secureTextEntry={true}
@@ -110,7 +107,6 @@ const SignUp = () => {
         <InputForm
           placeholder="Confirm Password"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           onChangeText={updateField('confirmPassword')}
           value={form.confirmPassword}
           secureTextEntry={true}

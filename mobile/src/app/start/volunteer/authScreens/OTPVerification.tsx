@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
-import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 
 interface OTPInputProps {
@@ -18,13 +18,12 @@ const OTPInput = ({
   onKeyPress,
 }: OTPInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
-  const { theme } = useUnistyles();
 
   return (
-    <View style={styles.otpInputContainer(isFocused, theme)}>
+    <View style={styles.otpInputContainer(isFocused)}>
       <TextInput
         ref={inputRef}
-        style={styles.otpInputText(theme)}
+        style={styles.otpInputText}
         maxLength={1}
         keyboardType="number-pad"
         value={value}
@@ -173,7 +172,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginTop: theme.spacing.s6,
     paddingTop: rt.insets.top,
   },
-  otpInputContainer: (isFocused: boolean, theme: any) => ({
+  otpInputContainer: (isFocused: boolean) => ({
     width: 70,
     height: 64,
     justifyContent: 'center',
@@ -183,11 +182,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderColor: isFocused ? theme.text.accent : 'transparent',
     boxShadow: theme.elevation.level3,
   }),
-  otpInputText: (theme: any) => ({
+  otpInputText: {
     textAlign: 'center',
     fontSize: 24,
     color: theme.text.primary,
-  }),
+  },
   verifyText: {
     marginTop: theme.spacing.s5,
     textAlign: 'center',
