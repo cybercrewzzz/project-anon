@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,14 +10,7 @@ import Animated, {
   Extrapolation,
   SharedValue,
 } from 'react-native-reanimated';
-import { StyleSheet as UnistylesStyleSheet } from 'react-native-unistyles';
-
-const themeStyles = UnistylesStyleSheet.create(theme => ({
-  color1: { backgroundColor: theme.action.primary },
-  color2: { backgroundColor: theme.action.secondary },
-  color3: { backgroundColor: theme.text.subtle1 },
-  color4: { backgroundColor: theme.state.success },
-}));
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 const CIRCLE_COUNT = 20;
 const DURATION = 5000;
@@ -97,18 +90,22 @@ const OrbitingBubble = ({
 };
 
 export function SuccessAnimation() {
+  const { theme } = useUnistyles();
+
+  const primaryColor = theme.action.primary;
+
   const colors = useMemo(
     () => [
-      themeStyles.color1.backgroundColor as string,
-      themeStyles.color2.backgroundColor as string,
-      themeStyles.color3.backgroundColor as string,
-      themeStyles.color4.backgroundColor as string,
+      theme.action.primary,
+      theme.action.secondary,
+      theme.text.subtle1,
+      theme.state.success,
     ],
     [
-      themeStyles.color1.backgroundColor,
-      themeStyles.color2.backgroundColor,
-      themeStyles.color3.backgroundColor,
-      themeStyles.color4.backgroundColor,
+      theme.action.primary,
+      theme.action.secondary,
+      theme.text.subtle1,
+      theme.state.success,
     ],
   );
 
@@ -166,7 +163,7 @@ export function SuccessAnimation() {
       width: 80,
       height: 80,
       borderRadius: 40,
-      backgroundColor: themeStyles.color1.backgroundColor as string,
+      backgroundColor: primaryColor,
       transform: [{ scale: breatheScale.value * explodeScale }],
       opacity,
       justifyContent: 'center',
@@ -175,7 +172,7 @@ export function SuccessAnimation() {
   });
 
   return (
-    <View style={styles.container}>
+    <View style={localStyles.container}>
       {bubbleSeeds.map((seed, i) => (
         <OrbitingBubble
           key={`bubble-${i}`}
@@ -188,12 +185,11 @@ export function SuccessAnimation() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create(theme => ({
   container: {
     width: 200,
     height: 185,
     justifyContent: 'center',
     alignItems: 'center',
   },
-});
+}));
