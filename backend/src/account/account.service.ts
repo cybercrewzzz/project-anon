@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
+import * as argon2 from 'argon2';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -45,12 +46,16 @@ function generateId(): string {
   return crypto.randomUUID();
 }
 
-function hashPassword(plain: string): string {
-  return crypto.createHash('sha256').update(plain).digest('hex');
+async function hashPassword(plain: string): Promise<string> {
+  return argon2.hash(plain);
 }
 
-function verifyPassword(plain: string, hash: string): boolean {
-  return hashPassword(plain) === hash;
+async function verifyPassword(plain: string, hash: string): Promise<boolean> {
+  return argon2.verify(hash, plain);
+}
+
+function hashToken(plain: string): string {
+  return crypto.createHash('sha256').update(plain).digest('hex');
 }
 
 // ─── Nickname generator ───────────────────────────────────────────────────────
@@ -96,7 +101,7 @@ export class AccountService {
     const newAccount: Account = {
       accountId: generateId(),
       email: dto.email.toLowerCase(),
-      passwordHash: hashPassword(dto.password),
+      passwordHash: await hashPassword(dto.password),
       oauthProvider: null,
       oauthId: null,
       name: null,
@@ -135,7 +140,7 @@ export class AccountService {
       (a: Account) => a.email.toLowerCase() === dto.email.toLowerCase(),
     );
 
-    if (!account || !verifyPassword(dto.password, account.passwordHash ?? '')) {
+    if (!account || !await verifyPassword(dto.password, account.passwordHash ?? '')) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
@@ -164,7 +169,7 @@ export class AccountService {
   async refresh(dto: RefreshTokenDto) {
     const store = readStore();
     const record = store.refreshTokens.find(
-      (t: RefreshToken) => t.tokenHash === hashPassword(dto.refreshToken),
+      (t: RefreshToken) => t.tokenHash === hashToken(dto.refreshToken),
     );
 
     if (!record || record.isRevoked) {
@@ -196,7 +201,7 @@ export class AccountService {
   async logout(dto: RefreshTokenDto): Promise<{ message: string }> {
     const store = readStore();
     const record = store.refreshTokens.find(
-      (t: RefreshToken) => t.tokenHash === hashPassword(dto.refreshToken),
+      (t: RefreshToken) => t.tokenHash === hashToken(dto.refreshToken),
     );
     if (record) {
       record.isRevoked = true;
@@ -254,7 +259,7 @@ export class AccountService {
       throw new BadRequestException('This account uses social login and has no password to change');
     }
 
-    if (!verifyPassword(dto.currentPassword, account.passwordHash)) {
+    if (!await verifyPassword(dto.currentPassword, account.passwordHash)) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
@@ -262,7 +267,7 @@ export class AccountService {
       throw new BadRequestException('New password must differ from the current password');
     }
 
-    account.passwordHash = hashPassword(dto.newPassword);
+    account.passwordHash = await hashPassword(dto.newPassword);
     account.updatedAt = new Date().toISOString();
 
     store.refreshTokens
@@ -336,7 +341,7 @@ export class AccountService {
     const refreshRecord: RefreshToken = {
       tokenId: generateId(),
       accountId: account.accountId,
-      tokenHash: hashPassword(rawRefresh),
+      tokenHash: hashToken(rawRefresh),
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       isRevoked: false,
       familyId,
