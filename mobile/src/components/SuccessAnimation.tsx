@@ -104,7 +104,12 @@ export function SuccessAnimation() {
       themeStyles.color3.backgroundColor as string,
       themeStyles.color4.backgroundColor as string,
     ],
-    [],
+    [
+      themeStyles.color1.backgroundColor,
+      themeStyles.color2.backgroundColor,
+      themeStyles.color3.backgroundColor,
+      themeStyles.color4.backgroundColor,
+    ],
   );
 
   const bubbleSeeds = useMemo<BubbleSeed[]>(
