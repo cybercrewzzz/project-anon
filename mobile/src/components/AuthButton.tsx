@@ -57,6 +57,7 @@ const styles = StyleSheet.create(theme => ({
     alignItems: 'center',
     alignSelf: 'stretch',
     borderRadius: theme.radius.full,
-    backgroundColor: variant === 'primary' ? theme.action.primary : theme.action.secondary,
+    backgroundColor:
+      variant === 'primary' ? theme.action.primary : theme.action.secondary,
   }),
 }));
