@@ -1,11 +1,11 @@
 import React from 'react';
 import { Pressable, PressableProps } from 'react-native';
-import { useUnistyles } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 
 interface AuthButtonProps extends Omit<PressableProps, 'style'> {
   label: string;
-  //variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary';
   color?: string;
 }
 
@@ -30,26 +30,16 @@ interface AuthButtonProps extends Omit<PressableProps, 'style'> {
  */
 export const AuthButton = ({
   label,
-  //variant = 'secondary',
+  variant = 'secondary',
   color,
   ...pressableProps
 }: AuthButtonProps) => {
-  const { theme } = useUnistyles();
-
-  const backgroundColor = color;
-  //?? (variant === 'primary' ? theme.action.primary : theme.action.secondary);
-
   return (
     <Pressable
-      style={{
-        paddingVertical: theme.spacing.s4,
-        paddingHorizontal: theme.spacing.s5,
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'stretch',
-        borderRadius: theme.radius.full,
-        backgroundColor,
-      }}
+      style={[
+        styles.button(variant),
+        color ? { backgroundColor: color } : undefined,
+      ]}
       {...pressableProps}
     >
       <AppText variant="headline" color="secondary">
@@ -58,3 +48,16 @@ export const AuthButton = ({
     </Pressable>
   );
 };
+
+const styles = StyleSheet.create(theme => ({
+  button: (variant: 'primary' | 'secondary') => ({
+    paddingVertical: theme.spacing.s4,
+    paddingHorizontal: theme.spacing.s5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    borderRadius: theme.radius.full,
+    backgroundColor:
+      variant === 'primary' ? theme.action.primary : theme.action.secondary,
+  }),
+}));

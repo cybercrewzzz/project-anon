@@ -4,10 +4,7 @@ import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
 import { AuthButton } from '@/components/AuthButton';
 import { router } from 'expo-router';
-import { useUnistyles } from 'react-native-unistyles';
-
 const SignUpNLogin = () => {
-  const { theme } = useUnistyles();
   return (
     <View style={styles.container}>
       <View style={styles.screenTitleContainer}>
@@ -18,7 +15,7 @@ const SignUpNLogin = () => {
       <View style={styles.buttonContainer}>
         <AuthButton
           label="Login"
-          color={theme.action.secondary}
+          variant="secondary"
           onPress={() =>
             router.push('/start/volunteer/authScreens/signIn' as any)
           }
@@ -30,7 +27,7 @@ const SignUpNLogin = () => {
         </View>
         <AuthButton
           label="Sign Up"
-          color={theme.action.primary}
+          variant="primary"
           onPress={() =>
             router.push('/start/volunteer/authScreens/signUp' as any)
           }
