@@ -147,7 +147,7 @@ const styles = StyleSheet.create(theme => ({
     paddingTop: theme.spacing.s3,
     paddingBottom: theme.spacing.s2,
     boxShadow: theme.elevation.level3,
-    backgroundColor: formColor || theme.surface.primary,
+    backgroundColor: formColor ?? theme.surface.primary,
     borderRadius: theme.radius.sm,
     position: 'relative' as const,
     borderWidth: isFocused ? 1.5 : 0,
