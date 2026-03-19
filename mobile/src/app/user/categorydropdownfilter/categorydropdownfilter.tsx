@@ -3,43 +3,41 @@ import { common } from '@/theme/palettes/common';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-const feelingTags = [
-  'Anxious',
-  'Angry',
-  'Scared',
-  'Overwhelmed',
-  'Ashamed',
-  'Disgusted',
-  'Frustrated',
-  'Depression',
-  'Worried',
-  'loneliness',
-  'pressure',
-  'Discouraged',
-  'Sad',
-  'Drained',
-  'Breakups',
-  'Stress',
-];
+// =============================================================================
+// ENDPOINT: GET /lookup/categories
+// SCREEN:   src/app/user/categorydropdownfilter/
+// ACCESS:   Any authenticated user (JwtAuthGuard only, no RolesGuard)
+// PURPOSE:  Loads all problem categories to display as selectable tags
+//
+// HOW TO TEST:
+//   → Set USE_MOCK = true in src/hooks/useLookup.ts
+//   → Open this screen — tags should load from MOCK_CATEGORIES
+//   → Toggle tags and verify selectedIds updates
+//   → Set USE_MOCK = false when backend is running
+// =============================================================================
+import { useCategories } from '@/hooks/useLookup';
 
 export default function CategoryDropdownFilter() {
   const router = useRouter();
   const [categoryText, setCategoryText] = useState('Family stress');
-  const [selectedTags, setSelectedTags] = useState<string[]>([
-    'Anxious',
-    'Angry',
-    'Scared',
-    'Overwhelmed',
-  ]);
 
-  const selectedTagSet = useMemo(() => new Set(selectedTags), [selectedTags]);
+  // ── GET /lookup/categories ──────────────────────────────────────────────────
+  // Replaces the hardcoded feelingTags array with real data from the API
+  const { data: categories, isLoading } = useCategories();
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(item => item !== tag) : [...prev, tag],
+  // Tracks selected UUIDs — categoryId instead of name strings
+  // TODO: wire selectedIds to the seeker problem creation flow when built
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+
+  const toggleTag = (categoryId: string) => {
+    setSelectedIds(prev =>
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId],
     );
   };
 
@@ -85,32 +83,44 @@ export default function CategoryDropdownFilter() {
             What best describes this feeling?
           </AppText>
 
-          <View style={styles.tagRow}>
-            {feelingTags.map(tag => {
-              const selected = selectedTagSet.has(tag);
-
-              return (
-                <Pressable
-                  key={tag}
-                  style={[styles.tagPill, selected && styles.tagPillSelected]}
-                  onPress={() => toggleTag(tag)}
-                >
-                  <AppText
-                    variant="caption1"
-                    emphasis="emphasized"
-                    style={
-                      selected ? styles.tagTextSelected : styles.tagTextDefault
-                    }
+          {/* ── GET /lookup/categories ── */}
+          {/* Shows spinner while loading, then renders real tags from API */}
+          {isLoading ? (
+            <ActivityIndicator size="small" />
+          ) : (
+            <View style={styles.tagRow}>
+              {(categories ?? []).map(category => {
+                const selected = selectedIdSet.has(category.categoryId);
+                return (
+                  <Pressable
+                    key={category.categoryId}
+                    style={[styles.tagPill, selected && styles.tagPillSelected]}
+                    onPress={() => toggleTag(category.categoryId)}
                   >
-                    {tag}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
+                    <AppText
+                      variant="caption1"
+                      emphasis="emphasized"
+                      style={
+                        selected
+                          ? styles.tagTextSelected
+                          : styles.tagTextDefault
+                      }
+                    >
+                      {category.name}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
         </View>
 
-        <Pressable style={styles.okBtn}>
+        {/* OK — just navigates back for now                                    */}
+        {/* TODO: wire to problem creation endpoint when seeker flow is built   */}
+        <Pressable
+          style={styles.okBtn}
+          onPress={() => router.back()}
+        >
           <AppText variant="title2" emphasis="emphasized" color="secondary">
             OK
           </AppText>
@@ -120,6 +130,7 @@ export default function CategoryDropdownFilter() {
   );
 }
 
+// Styles unchanged from original
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
