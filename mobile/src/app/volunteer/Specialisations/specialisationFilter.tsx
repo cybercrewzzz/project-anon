@@ -4,43 +4,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-const feelingTags = [
-  'Anxious',
-  'Angry',
-  'Scared',
-  'Overwhelmed',
-  'Ashamed',
-  'Disgusted',
-  'Frustrated',
-  'Depression',
-  'Worried',
-  'loneliness',
-  'pressure',
-  'Discouraged',
-  'Sad',
-  'Drained',
-  'Breakups',
-  'Stress',
-];
+// =============================================================================
+// ENDPOINT: GET /lookup/specialisations
+// Hook: useSpecialisations — loads the list of selectable tags from the API
+// Replaces the hardcoded feelingTags array with real data
+// =============================================================================
+import { useSpecialisations } from '@/hooks/useLookup';
 
 export default function CategoryDropdownFilter() {
   const router = useRouter();
   const [categoryText, setCategoryText] = useState('Family stress');
-  const [selectedTags, setSelectedTags] = useState<string[]>([
-    'Anxious',
-    'Angry',
-    'Scared',
-    'Overwhelmed',
-  ]);
 
-  const selectedTagSet = useMemo(() => new Set(selectedTags), [selectedTags]);
+  // ── GET /lookup/specialisations ─────────────────────────────────────────────
+  // Replaces the hardcoded feelingTags array
+  const { data: specialisations, isLoading } = useSpecialisations();
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(item => item !== tag) : [...prev, tag],
+  // Tracks selected UUIDs — kept as local state for now
+  // When PATCH /volunteer/profile screen is built, selectedIds will be passed
+  // to useUpdateVolunteerProfile({ specialisationIds: selectedIds })
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+
+  const toggleTag = (specialisationId: string) => {
+    setSelectedIds(prev =>
+      prev.includes(specialisationId)
+        ? prev.filter(id => id !== specialisationId)
+        : [...prev, specialisationId],
     );
   };
 
@@ -93,32 +85,44 @@ export default function CategoryDropdownFilter() {
             What best describes this feeling?
           </AppText>
 
-          <View style={styles.tagRow}>
-            {feelingTags.map(tag => {
-              const selected = selectedTagSet.has(tag);
-
-              return (
-                <Pressable
-                  key={tag}
-                  style={[styles.tagPill, selected && styles.tagPillSelected]}
-                  onPress={() => toggleTag(tag)}
-                >
-                  <AppText
-                    variant="caption1"
-                    emphasis="emphasized"
-                    style={
-                      selected ? styles.tagTextSelected : styles.tagTextDefault
-                    }
+          {/* ── GET /lookup/specialisations ── */}
+          {/* Shows spinner while loading, then renders real tags from API */}
+          {isLoading ? (
+            <ActivityIndicator size="small" />
+          ) : (
+            <View style={styles.tagRow}>
+              {(specialisations ?? []).map(spec => {
+                const selected = selectedIdSet.has(spec.specialisationId);
+                return (
+                  <Pressable
+                    key={spec.specialisationId}
+                    style={[styles.tagPill, selected && styles.tagPillSelected]}
+                    onPress={() => toggleTag(spec.specialisationId)}
                   >
-                    {tag}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
+                    <AppText
+                      variant="caption1"
+                      emphasis="emphasized"
+                      style={
+                        selected
+                          ? styles.tagTextSelected
+                          : styles.tagTextDefault
+                      }
+                    >
+                      {spec.name}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
         </View>
 
-        <Pressable style={styles.okBtnWrapper}>
+        {/* OK — just navigates back for now                              */}
+        {/* TODO: wire to PATCH /volunteer/profile when screen is built   */}
+        <Pressable
+          style={styles.okBtnWrapper}
+          onPress={() => router.back()}
+        >
           <LinearGradient
             colors={['#1D47DC', '#0E7FBC']}
             start={{ x: 0, y: 0 }}
@@ -139,6 +143,7 @@ export default function CategoryDropdownFilter() {
   );
 }
 
+// Styles unchanged from original
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
