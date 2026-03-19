@@ -7,10 +7,6 @@ import { FullWidthButton } from '@/components/FullWidthButton';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useApplyAsVolunteer } from '@/hooks/useVolunteerProfile';
 
-// ─── TODO: Replace this with a real specialisation UUID from your DB ──────────
-// Once you have a specialisations endpoint, fetch these dynamically.
-const PLACEHOLDER_SPECIALISATION_ID = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-
 // ─── TODO: Replace with a real upload flow when image upload is implemented ───
 const PLACEHOLDER_IMAGE_URL = 'https://placeholder.com/institute-id.jpg';
 
@@ -33,10 +29,13 @@ const Verify = () => {
 
   // ── Validation ──────────────────────────────────────────────────────────────
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isInstituteEmailValid = emailRegex.test(form.instituteEmail.trim());
+
   const isFormValid =
     confirmed &&
     form.name.trim().length > 0 &&
-    form.instituteEmail.trim().length > 0 &&
+    isInstituteEmailValid &&
     form.grade.trim().length > 0 &&
     form.instituteName.trim().length > 0 &&
     form.instituteId.trim().length > 0;
@@ -54,9 +53,8 @@ const Verify = () => {
         studentId: form.instituteId.trim(),
         grade: form.grade.trim(),
         about: form.aboutYou.trim() || undefined,
-        // TODO: replace both placeholders below once implemented
+        // TODO: add specialisationIds once a specialisation picker is implemented
         instituteIdImageUrl: PLACEHOLDER_IMAGE_URL,
-        specialisationIds: [PLACEHOLDER_SPECIALISATION_ID],
       },
       {
         onSuccess: () => {

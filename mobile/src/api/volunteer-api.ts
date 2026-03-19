@@ -15,7 +15,7 @@ export interface ApplyVolunteerBody {
   instituteIdImageUrl: string;
   grade: string;
   about?: string;
-  specialisationIds: string[];
+  specialisationIds?: string[];
 }
 
 export async function applyAsVolunteer(
