@@ -31,7 +31,7 @@ export function useApplyAsVolunteer() {
           if (SIMULATE_APPLY_ERROR) {
             // Simulates a 409 Conflict — triggers the inline error on verify.tsx
             // Set SIMULATE_APPLY_ERROR = true above to test this path
-            throw { message: 'An active application already exists' };
+            throw new Error('An active application already exists');
           }
 
           // Simulates a successful 201 response from the backend
