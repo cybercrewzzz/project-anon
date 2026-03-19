@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import __DEV__  from 'expo-constants';
 import { applyAsVolunteer, type ApplyVolunteerBody } from '@/api/volunteer-api';
 
 // =============================================================================
@@ -19,8 +20,10 @@ export function useApplyAsVolunteer() {
         async (body: ApplyVolunteerBody) => {
           // Logs the full payload so you can verify every field is
           // correctly mapped from the form before hitting the real backend
-          console.log('=== POST /volunteer/apply MOCK PAYLOAD ===');
-          console.log(JSON.stringify(body, null, 2));
+          if (__DEV__) {
+            console.log('=== POST /volunteer/apply MOCK PAYLOAD ===');
+            console.log(JSON.stringify(body, null, 2));
+          }
 
           // Simulates network delay — lets you see "Submitting..." on button
           await new Promise(resolve => setTimeout(resolve, 1200));
