@@ -14,7 +14,7 @@ import { StyleSheet } from 'react-native-unistyles';
 // =============================================================================
 import { useSpecialisations } from '@/hooks/useLookup';
 
-export default function CategoryDropdownFilter() {
+export default function SpecialisationFilter() {
   const router = useRouter();
   const [categoryText, setCategoryText] = useState('Family stress');
 
