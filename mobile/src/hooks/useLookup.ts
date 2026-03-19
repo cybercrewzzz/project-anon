@@ -12,7 +12,7 @@ const USE_MOCK =
   __DEV__ &&
   typeof process !== 'undefined' &&
   !!process.env &&
-  process.env.EXPO_PUBLIC_USE_MOCK_LOOKUPS === 'true';
+  process.env.EXPO_PUBLIC_USE_MOCK_LOOKUPS === 'false';
 
 // =============================================================================
 // ENDPOINT: GET /lookup/specialisations
@@ -30,78 +30,82 @@ export function useSpecialisations() {
           // Mock data only included in dev builds to reduce production bundle size
           const MOCK_SPECIALISATIONS = [
             {
-              specialisationId: 'spec-1',
+              specialisationId: '11111111-1111-1111-1111-111111111111',
               name: 'Anxiety',
               description: 'Anxiety support',
             },
             {
-              specialisationId: 'spec-2',
+              specialisationId: '22222222-2222-2222-2222-222222222222',
               name: 'Stress',
               description: 'Stress management',
             },
             {
-              specialisationId: 'spec-3',
+              specialisationId: '33333333-3333-3333-3333-333333333333',
               name: 'Depression',
               description: 'Depression support',
             },
             {
-              specialisationId: 'spec-4',
+              specialisationId: '44444444-4444-4444-4444-444444444444',
               name: 'Angry',
               description: 'Anger management',
             },
             {
-              specialisationId: 'spec-5',
+              specialisationId: '55555555-5555-5555-5555-555555555555',
               name: 'Scared',
               description: 'Fear and phobias',
             },
             {
-              specialisationId: 'spec-6',
+              specialisationId: '66666666-6666-6666-6666-666666666666',
               name: 'Overwhelmed',
               description: 'Feeling overwhelmed',
             },
             {
-              specialisationId: 'spec-7',
+              specialisationId: '77777777-7777-7777-7777-777777777777',
               name: 'Ashamed',
               description: 'Shame and guilt',
             },
             {
-              specialisationId: 'spec-8',
+              specialisationId: '88888888-8888-8888-8888-888888888888',
               name: 'Disgusted',
               description: 'Disgust responses',
             },
             {
-              specialisationId: 'spec-9',
+              specialisationId: '99999999-9999-9999-9999-999999999999',
               name: 'Frustrated',
               description: 'Frustration support',
             },
             {
-              specialisationId: 'spec-10',
+              specialisationId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
               name: 'Worried',
               description: 'Worry and rumination',
             },
             {
-              specialisationId: 'spec-11',
+              specialisationId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
               name: 'Loneliness',
               description: 'Loneliness support',
             },
             {
-              specialisationId: 'spec-12',
+              specialisationId: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
               name: 'Pressure',
               description: 'Pressure and burnout',
             },
             {
-              specialisationId: 'spec-13',
+              specialisationId: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
               name: 'Discouraged',
               description: 'Loss of motivation',
             },
-            { specialisationId: 'spec-14', name: 'Sad', description: 'Sadness support' },
             {
-              specialisationId: 'spec-15',
+              specialisationId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+              name: 'Sad',
+              description: 'Sadness support',
+            },
+            {
+              specialisationId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
               name: 'Drained',
               description: 'Emotional exhaustion',
             },
             {
-              specialisationId: 'spec-16',
+              specialisationId: '00000000-0000-0000-0000-000000000000',
               name: 'Breakups',
               description: 'Relationship loss',
             },
