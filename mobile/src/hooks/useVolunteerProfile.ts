@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import __DEV__  from 'expo-constants';
+import __DEV__ from 'expo-constants';
 import { applyAsVolunteer, type ApplyVolunteerBody } from '@/api/volunteer-api';
 
 // =============================================================================
