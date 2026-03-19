@@ -1,4 +1,10 @@
-import { View, ScrollView, Pressable, Text, ActivityIndicator } from 'react-native';
+import {
+  View,
+  ScrollView,
+  Pressable,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import { AppText, AppTextProps } from '@/components/AppText';
 import { Image, ImageSource } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
