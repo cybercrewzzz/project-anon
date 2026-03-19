@@ -28,8 +28,14 @@ const MOCK_PROFILE: VolunteerProfile = {
   verificationStatus: 'approved',
   isAvailable: true,
   specialisations: [
-    { specialisationId: '00000000-0000-0000-0000-000000000101', name: 'Anxiety' },
-    { specialisationId: '00000000-0000-0000-0000-000000000102', name: 'Stress' },
+    {
+      specialisationId: '00000000-0000-0000-0000-000000000101',
+      name: 'Anxiety',
+    },
+    {
+      specialisationId: '00000000-0000-0000-0000-000000000102',
+      name: 'Stress',
+    },
   ],
   experience: {
     points: 150, // → try 0, 150, 300 to test XP bar fill
