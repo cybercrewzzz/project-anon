@@ -182,17 +182,15 @@ const Verify = () => {
 
       <View style={styles.buttonWrapper}>
         {/* Button is disabled until form is valid and not loading */}
-        <Pressable
+        <FullWidthButton
           onPress={handleSubmit}
           disabled={!isFormValid || isPending}
           style={{ opacity: !isFormValid || isPending ? 0.5 : 1 }}
         >
-          <FullWidthButton>
-            <AppText variant="headline" color="secondary" emphasis="emphasized">
-              {isPending ? 'Submitting...' : 'Verify Me'}
-            </AppText>
-          </FullWidthButton>
-        </Pressable>
+          <AppText variant="headline" color="secondary" emphasis="emphasized">
+            {isPending ? 'Submitting...' : 'Verify Me'}
+          </AppText>
+        </FullWidthButton>
       </View>
     </KeyboardAwareScrollView>
   );
