@@ -193,20 +193,19 @@ const SettingsScreen = () => {
           </LinearGradient>
 
           <View style={styles.xpCardsContainer}>
-            {/* Real points in all three cards — swap icons/labels as needed */}
             <XpCard
               text="Daily login"
               value={3}
               icon={require('@/assets/images/fireIconOPT.webp')}
             />
             <XpCard
-              text="Points"
+              text="Current Points"
               value={points}
               icon={require('@/assets/images/fireIconOPT.webp')}
             />
             <XpCard
-              text="Points"
-              value={points}
+              text="Remaining XP"
+              value={Math.max(0, xpCap - points)}
               icon={require('@/assets/images/fireIconOPT.webp')}
             />
           </View>
