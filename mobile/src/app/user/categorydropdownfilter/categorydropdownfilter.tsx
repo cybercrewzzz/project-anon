@@ -35,9 +35,9 @@ export default function CategoryDropdownFilter() {
 
   const toggleTag = (categoryId: string) => {
     setSelectedIds(prev =>
-      prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId],
+      prev.includes(categoryId) ?
+        prev.filter(id => id !== categoryId)
+      : [...prev, categoryId],
     );
   };
 
@@ -85,10 +85,9 @@ export default function CategoryDropdownFilter() {
 
           {/* ── GET /lookup/categories ── */}
           {/* Shows spinner while loading, then renders real tags from API */}
-          {isLoading ? (
+          {isLoading ?
             <ActivityIndicator size="small" />
-          ) : (
-            <View style={styles.tagRow}>
+          : <View style={styles.tagRow}>
               {(categories ?? []).map(category => {
                 const selected = selectedIdSet.has(category.categoryId);
                 return (
@@ -101,9 +100,9 @@ export default function CategoryDropdownFilter() {
                       variant="caption1"
                       emphasis="emphasized"
                       style={
-                        selected
-                          ? styles.tagTextSelected
-                          : styles.tagTextDefault
+                        selected ?
+                          styles.tagTextSelected
+                        : styles.tagTextDefault
                       }
                     >
                       {category.name}
@@ -112,15 +111,12 @@ export default function CategoryDropdownFilter() {
                 );
               })}
             </View>
-          )}
+          }
         </View>
 
         {/* OK — just navigates back for now                                    */}
         {/* TODO: wire to problem creation endpoint when seeker flow is built   */}
-        <Pressable
-          style={styles.okBtn}
-          onPress={() => router.back()}
-        >
+        <Pressable style={styles.okBtn} onPress={() => router.back()}>
           <AppText variant="title2" emphasis="emphasized" color="secondary">
             OK
           </AppText>

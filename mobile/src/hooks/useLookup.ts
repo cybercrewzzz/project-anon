@@ -23,18 +23,34 @@ const MOCK_CATEGORIES = [
   { categoryId: 'cat-1', name: 'Anxious', description: 'Feeling anxious' },
   { categoryId: 'cat-2', name: 'Angry', description: 'Feeling angry' },
   { categoryId: 'cat-3', name: 'Scared', description: 'Feeling scared' },
-  { categoryId: 'cat-4', name: 'Overwhelmed', description: 'Feeling overwhelmed' },
+  {
+    categoryId: 'cat-4',
+    name: 'Overwhelmed',
+    description: 'Feeling overwhelmed',
+  },
   { categoryId: 'cat-5', name: 'Ashamed', description: 'Feeling ashamed' },
   { categoryId: 'cat-6', name: 'Disgusted', description: 'Feeling disgusted' },
-  { categoryId: 'cat-7', name: 'Frustrated', description: 'Feeling frustrated' },
+  {
+    categoryId: 'cat-7',
+    name: 'Frustrated',
+    description: 'Feeling frustrated',
+  },
   { categoryId: 'cat-8', name: 'Depression', description: 'Feeling depressed' },
   { categoryId: 'cat-9', name: 'Worried', description: 'Feeling worried' },
   { categoryId: 'cat-10', name: 'Loneliness', description: 'Feeling lonely' },
   { categoryId: 'cat-11', name: 'Pressure', description: 'Under pressure' },
-  { categoryId: 'cat-12', name: 'Discouraged', description: 'Feeling discouraged' },
+  {
+    categoryId: 'cat-12',
+    name: 'Discouraged',
+    description: 'Feeling discouraged',
+  },
   { categoryId: 'cat-13', name: 'Sad', description: 'Feeling sad' },
   { categoryId: 'cat-14', name: 'Drained', description: 'Feeling drained' },
-  { categoryId: 'cat-15', name: 'Breakups', description: 'Relationship issues' },
+  {
+    categoryId: 'cat-15',
+    name: 'Breakups',
+    description: 'Relationship issues',
+  },
   { categoryId: 'cat-16', name: 'Stress', description: 'Feeling stressed' },
 ];
 
@@ -42,8 +58,9 @@ export function useCategories() {
   // ── GET /lookup/categories ───────────────────────────────────────────────────
   return useQuery({
     queryKey: ['categories'],
-    queryFn: USE_MOCK
-      ? async () => {
+    queryFn:
+      USE_MOCK ?
+        async () => {
           await new Promise(resolve => setTimeout(resolve, 600));
           return MOCK_CATEGORIES;
         }

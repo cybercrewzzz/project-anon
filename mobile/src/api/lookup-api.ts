@@ -1,9 +1,6 @@
 import { apiClient } from './client';
 import { parseApiError } from './errors';
-import {
-  CategoriesResponseSchema,
-  type CategoriesResponse,
-} from './schemas';
+import { CategoriesResponseSchema, type CategoriesResponse } from './schemas';
 
 // =============================================================================
 // ENDPOINT: GET /lookup/categories
