@@ -1,0 +1,20 @@
+.git
+node_modules
+mobile
+
+# Yarn
+.yarn/cache
+.yarn/install-state.gz
+.pnp.*
+
+# Build outputs
+backend/dist
+admin/.next
+admin/out
+
+# Dev files
+*.md
+.vscode
+.husky
+.editorconfig
+.github

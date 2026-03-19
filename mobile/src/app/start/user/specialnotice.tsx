@@ -1,11 +1,9 @@
 import { AppText } from '@/components/AppText';
 import { Pressable, View } from 'react-native';
-import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 import { router } from 'expo-router';
 
 export default function TnS() {
-  const { theme } = useUnistyles();
-
   return (
     <View style={styles.container}>
       <View style={styles.containernote}>
@@ -22,7 +20,7 @@ export default function TnS() {
           emphasis="regular"
           color="subtle1"
           textAlign="center"
-          style={{ marginTop: 100, borderRadius: theme.radius.sm }}
+          style={styles.noteText}
         >
           Hide and Protect Your Data.
         </AppText>
@@ -69,5 +67,9 @@ const styles = StyleSheet.create((theme, rt) => ({
     color: theme.action.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  noteText: {
+    marginTop: 100,
+    borderRadius: theme.radius.sm,
   },
 }));

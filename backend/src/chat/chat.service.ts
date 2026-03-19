@@ -5,7 +5,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 const SESSION_TTL = 86400; // 24 hours
 const SOCKET_TTL = 86400; // match session TTL so stale mappings expire after a server crash
 const MAX_SESSION_MESSAGES = 1000;
+/** Available pool — online volunteers who are isAvailable=true and not in a session. */
 const VOLUNTEER_POOL_KEY = 'volunteer:pool';
+// NOTE: "Online" presence is derived from the account:<id>:socket key (set/cleared by
+// mapSocket/unmapSocket, TTL = SOCKET_TTL). A separate Redis SET would have no per-member
+// TTL and would retain stale entries after a server crash where handleDisconnect never runs.
 
 // Rate-limit windows in seconds
 const MSG_RATE_WINDOW_SEC = 60;
@@ -90,12 +94,44 @@ export class ChatService {
     return volunteerId ?? null;
   }
 
-  // ── Volunteer Eligibility ────────────────────────────────────────
+  // ── Volunteer Online Pool ─────────────────────────────────────────
 
   /**
-   * A volunteer is eligible for the pool if their profile exists and
-   * isAvailable is true.
+   * No-op: online presence is encoded by the account:<id>:socket mapping
+   * that `mapSocket` maintains with a TTL.  Keeping this method so the
+   * gateway call sites don't need to change.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async addToOnlinePool(_accountId: string): Promise<void> {}
+
+  /**
+   * No-op: socket mapping is cleared by `unmapSocket` in handleDisconnect.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async removeFromOnlinePool(_accountId: string): Promise<void> {}
+
+  /**
+   * A volunteer is "online" if a socket mapping exists for their account.
+   * The mapping is written by `mapSocket` on connect and deleted by
+   * `unmapSocket` on disconnect; it expires after SOCKET_TTL on crash.
+   */
+  async isInOnlinePool(accountId: string): Promise<boolean> {
+    const socketId = await this.redis.get(`account:${accountId}:socket`);
+    return socketId !== null;
+  }
+
+  /**
+   * Re-add a volunteer to the available pool after a session ends,
+   * iff they are still online and their profile still has isAvailable=true.
+   */
+  async reAddVolunteerToPoolIfEligible(volunteerId: string): Promise<void> {
+    const isOnline = await this.isInOnlinePool(volunteerId);
+    if (!isOnline) return;
+    const eligible = await this.isEligibleForPool(volunteerId);
+    if (eligible) await this.addToPool(volunteerId);
+  }
+
+  // ── Volunteer Eligibility ────────────────────────────────────────
   async isEligibleForPool(accountId: string): Promise<boolean> {
     const profile = await this.prisma.volunteerProfile.findUnique({
       where: { accountId },
@@ -117,6 +153,56 @@ export class ChatService {
       select: { sessionId: true },
     });
     return session?.sessionId ?? null;
+  }
+
+  // ── Session Matching ─────────────────────────────────────────────
+
+  /**
+   * Validate that a UserProblem belongs to the seeker and is still in 'waiting'
+   * status so it can be attached to a new session.
+   */
+  async validateProblemForSeeker(
+    problemId: string,
+    seekerId: string,
+  ): Promise<boolean> {
+    if (!ChatService.UUID_RE.test(problemId)) return false;
+    const problem = await this.prisma.userProblem.findUnique({
+      where: { problemId },
+      select: { accountId: true, status: true },
+    });
+    return problem?.accountId === seekerId && problem?.status === 'waiting';
+  }
+
+  /**
+   * Atomically create a ChatSession and mark the associated UserProblem
+   * as matched.  Returns the new sessionId.
+   *
+   * The `updateMany` on UserProblem is guarded by `{ accountId: seekerId,
+   * status: 'waiting' }` so that concurrent `session:request` calls for
+   * the same problem both pass `validateProblemForSeeker` (which is a
+   * read-only check) but only one can flip the status to 'matched' —
+   * the other will see count === 0 and the transaction rolls back.
+   */
+  async createSession(
+    seekerId: string,
+    volunteerId: string,
+    problemId: string,
+  ): Promise<string> {
+    return this.prisma.$transaction(async (tx) => {
+      // Guard: only proceed if the problem is still in 'waiting' state for this seeker
+      const { count } = await tx.userProblem.updateMany({
+        where: { problemId, accountId: seekerId, status: 'waiting' },
+        data: { status: 'matched' },
+      });
+      if (count === 0) {
+        throw new Error('Problem is no longer available for matching');
+      }
+      const session = await tx.chatSession.create({
+        data: { seekerId, listenerId: volunteerId, problemId },
+        select: { sessionId: true },
+      });
+      return session.sessionId;
+    });
   }
 
   // ── Session Validation ───────────────────────────────────────────
