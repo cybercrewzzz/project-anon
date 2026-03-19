@@ -11,18 +11,37 @@ import {
 // TESTING MODE FLAG — PATCH /volunteer/status
 // Set USE_MOCK = true  → fake response, no backend needed
 // Set USE_MOCK = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
+// USE_MOCK is only enabled in dev builds and when explicitly opted in via env:
+//   EXPO_PUBLIC_USE_MOCK_API === 'true'
+// In production (__DEV__ === false), this will always be false and the real API
+// will be used.
 // =============================================================================
-const USE_MOCK = false;
+const USE_MOCK =
+  typeof __DEV__ !== 'undefined' &&
+  __DEV__ &&
+  typeof process !== 'undefined' &&
+  process.env?.EXPO_PUBLIC_USE_MOCK_API === 'true';
 
-// Change to true to simulate the toggle failing (tests rollback behaviour)
-const SIMULATE_STATUS_ERROR = false;
+// Simulate the toggle failing (tests optimistic rollback behaviour) — only when
+// explicitly enabled via EXPO_PUBLIC_SIMULATE_STATUS_ERROR in dev builds.
+const SIMULATE_STATUS_ERROR =
+  typeof __DEV__ !== 'undefined' &&
+  __DEV__ &&
+  typeof process !== 'undefined' &&
+  process.env?.EXPO_PUBLIC_SIMULATE_STATUS_ERROR === 'true';
 
 // ENDPOINT: GET /volunteer/profile  (read-only, used to load initial toggle state)
 // SCREEN:   src/app/volunteer/P2p-And/p2p-and.tsx
 // PURPOSE:  Reads isAvailable from the profile to set the toggle on screen load
 //
-
-const MOCK_IS_AVAILABLE = false; // → change to true to open as Active
+// MOCK_IS_AVAILABLE controls the initial mock state (used only when USE_MOCK is
+// true). It is restricted to dev builds and an explicit env opt-in:
+//   EXPO_PUBLIC_MOCK_VOLUNTEER_AVAILABLE === 'true'
+const MOCK_IS_AVAILABLE =
+  typeof __DEV__ !== 'undefined' &&
+  __DEV__ &&
+  typeof process !== 'undefined' &&
+  process.env?.EXPO_PUBLIC_MOCK_VOLUNTEER_AVAILABLE === 'true';
 
 // ENDPOINT: PATCH /volunteer/status
 // SCREEN:   src/app/volunteer/P2p-And/p2p-and.tsx
