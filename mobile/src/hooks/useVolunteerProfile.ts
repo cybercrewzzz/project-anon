@@ -1,20 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
-//import { queryClient } from '@/api/queryClient';
 import { queryKeys } from '@/api/keys';
-import {
-  fetchVolunteerProfile,
-  //updateVolunteerProfile,
-  //updateVolunteerStatus,
-  //type UpdateVolunteerProfileBody,
-} from '@/api/volunteer-api';
+import { fetchVolunteerProfile } from '@/api/volunteer-api';
 import type { VolunteerProfile } from '@/api/schemas';
 
 // =============================================================================
 // TESTING MODE FLAG — GET /volunteer/profile
-// Set USE_MOCK = true  → fake data, no backend needed
-// Set USE_MOCK = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
+// - EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true' → fake data, no backend
+// - otherwise falls back to __DEV__ (development builds only)
+// - production builds default to real API (needs backend + EXPO_PUBLIC_API_URL)
 // =============================================================================
-const USE_MOCK = false;
+const USE_MOCK =
+  (
+    typeof process !== 'undefined' &&
+    process.env?.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE != null
+  ) ?
+    process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true'
+  : typeof __DEV__ !== 'undefined' ? __DEV__
+  : false;
 
 const MOCK_PROFILE: VolunteerProfile = {
   accountId: 'test-account-id',
