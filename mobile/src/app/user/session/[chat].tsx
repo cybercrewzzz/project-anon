@@ -13,7 +13,6 @@ import ChatScreenHeader from '@/components/chat/chatScreenHeader';
 import OutgoingMessage from '@/components/chat/outgoingMessage';
 import IncomingMessage from '@/components/chat/incomingMessage';
 import { useChat } from '@/hooks/useChat';
-import { MOCK_USER_ID } from '@/constants/mock-ids';
 
 const SESSION_TIME_SECONDS = 1800; // 30 minutes
 const UUID_RE =
@@ -26,8 +25,7 @@ export default function Chat() {
   };
 
   const account = useAuth(state => state.account);
-  // TODO: Remove mock ID when auth is implemented.
-  const userId = account?.accountId || MOCK_USER_ID;
+  const userId = account?.accountId ?? '';
 
   const {
     messages,
@@ -65,6 +63,10 @@ export default function Chat() {
 
   if (!chatId || !UUID_RE.test(chatId)) {
     return <AppText>We couldn&apos;t find this chat room 🥲</AppText>;
+  }
+
+  if (!userId) {
+    return <AppText>Not authenticated</AppText>;
   }
 
   return (
@@ -161,7 +163,7 @@ export default function Chat() {
               private and confidential.
             </AppText>
             <Pressable onPress={() => router.back()} style={styles.closeButton}>
-              <AppText variant="body" style={styles.closeButtonText}>
+              <AppText variant="body" color="secondary">
                 Close
               </AppText>
             </Pressable>
@@ -212,7 +214,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
   },
   bannerText: {
-    color: '#fff',
+    color: theme.state.warning,
   },
   sessionEndedOverlay: {
     position: 'absolute',
@@ -239,8 +241,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.spacing.s6,
     backgroundColor: theme.action.secondary,
     borderRadius: theme.radius.full,
-  },
-  closeButtonText: {
-    color: '#fff',
   },
 }));
