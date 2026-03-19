@@ -16,7 +16,7 @@ import { useSpecialisations } from '@/hooks/useLookup';
 
 export default function SpecialisationFilter() {
   const router = useRouter();
-  const [categoryText, setCategoryText] = useState('Family stress');
+  const [searchText, setSearchText] = useState('');
 
   // ── GET /lookup/specialisations ─────────────────────────────────────────────
   // Replaces the hardcoded feelingTags array
@@ -62,28 +62,21 @@ export default function SpecialisationFilter() {
           textAlign="center"
           style={styles.sheetTitle}
         >
-          Select Your Specialisation ?
+          Select your specialisation
         </AppText>
 
         <View style={styles.categoryInputRow}>
           <Ionicons name="add" size={24} color={common.gray[700]} />
           <TextInput
             style={styles.categoryInput}
-            value={categoryText}
-            onChangeText={setCategoryText}
-            placeholder="Family stress"
+            value={searchText}
+            onChangeText={setSearchText}
+            placeholder="Search specialisations..."
             placeholderTextColor={common.gray[400]}
           />
         </View>
 
         <View style={styles.filterCard}>
-          <AppText
-            variant="title3"
-            emphasis="emphasized"
-            style={styles.filterTitle}
-          >
-            What best describes this feeling?
-          </AppText>
 
           {/* ── GET /lookup/specialisations ── */}
           {/* Shows spinner while loading, then renders real tags from API */}
@@ -221,7 +214,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexWrap: 'wrap',
     rowGap: theme.spacing.s4,
     columnGap: theme.spacing.s3,
-    paddingTop: theme.spacing.s2,
   },
   tagPill: {
     borderRadius: theme.radius.full,
