@@ -199,6 +199,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingVertical: theme.spacing.s2,
     gap: theme.spacing.s2,
     marginBottom: theme.spacing.s4,
+    borderWidth: 1,
+    borderColor: common.gray[300],
   },
   categoryInput: {
     flex: 1,
@@ -216,7 +218,9 @@ const styles = StyleSheet.create((theme, rt) => ({
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.s2,
+    rowGap: theme.spacing.s4,
+    columnGap: theme.spacing.s3,
+    paddingTop: theme.spacing.s2,
   },
   tagPill: {
     borderRadius: theme.radius.full,

@@ -171,6 +171,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   categoryInputRow: {
     backgroundColor: theme.surface.primary,
     borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: common.gray[300],
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.s3,
@@ -181,6 +183,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   categoryInput: {
     flex: 1,
     color: theme.text.primary,
+    fontSize: 16,
   },
   filterCard: {
     backgroundColor: theme.surface.primary,
@@ -194,7 +197,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.s2,
+    rowGap: theme.spacing.s2,
+    columnGap: theme.spacing.s2,
   },
   tagPill: {
     borderRadius: theme.radius.full,

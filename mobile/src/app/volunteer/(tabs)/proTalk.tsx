@@ -17,7 +17,7 @@ const ProTalk = () => {
           onPress={() => router.push('/volunteer/P2p-And/p2p-and')}
         />
         <Button
-          text="To Specialisation Dropdown Filter"
+          text="Specialisation Dropdown Filter"
           onPress={() =>
             router.push('/volunteer/Specialisations/specialisationFilter')
           }
