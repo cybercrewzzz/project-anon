@@ -7,7 +7,7 @@ const VolunteerLayout = () => {
         name="editVolunteerProfile"
         options={{
           headerShown: true,
-          title: 'Volunteer Connect',
+          title: 'Edit Profile',
         }}
       />
     </Stack>
