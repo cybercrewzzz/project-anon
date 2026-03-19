@@ -29,6 +29,7 @@
  * @see {@link colors} - Blue color palette
  */
 
+import { AppTheme } from '@/theme/appTheme';
 import { colors } from '@/theme/palettes/colors';
 import { common } from '@/theme/palettes/common';
 import { purple } from '@/theme/palettes/purple';
@@ -134,7 +135,7 @@ export const userLightTheme = {
   radius,
   spacing,
   elevation,
-} as const;
+} as const satisfies AppTheme;
 
 /**
  * Type definition for the app theme.
@@ -146,4 +147,3 @@ export const userLightTheme = {
  * This type can be used to enforce consistent theme structure
  * across different theme variants (light/dark, different roles).
  */
-export type AppTheme = typeof userLightTheme;

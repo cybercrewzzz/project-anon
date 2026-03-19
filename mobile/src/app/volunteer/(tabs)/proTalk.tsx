@@ -13,32 +13,8 @@ const ProTalk = () => {
       </AppText>
       <View style={styles.buttonsContainer}>
         <Button
-          text="To the OTPVerification"
-          onPress={() => router.push('/volunteer/authScreens/OTPVerification')}
-        />
-        <Button
-          text="To Enter Email"
-          onPress={() => router.push('/volunteer/authScreens/enterEmail')}
-        />
-        <Button
-          text="To Login Successful"
-          onPress={() =>
-            router.push('/volunteer/loginSuccessful/LoginSuccessful')
-          }
-        />
-        <Button
-          text="To Sign Up and Login"
-          onPress={() => router.push('/volunteer/signUpNlogin/SignUpNLogin')}
-        />
-        <Button
           text="Open Peer to Peer"
           onPress={() => router.push('/volunteer/P2p-And/p2p-and')}
-        />
-        <Button
-          text="SignUpNLogin"
-          onPress={() =>
-            router.navigate('/volunteer/SignupNLoginV/signupNlogin')
-          }
         />
       </View>
     </View>

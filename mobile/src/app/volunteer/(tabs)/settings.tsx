@@ -1,9 +1,11 @@
-import { View, ScrollView, ActivityIndicator } from 'react-native';
-import React from 'react';
+import { View, ScrollView, Pressable, Text, ActivityIndicator } from 'react-native';
 import { AppText, AppTextProps } from '@/components/AppText';
 import { Image, ImageSource } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/store/useAuth';
+import { logout } from '@/api/auth';
 import { useVolunteerProfile } from '@/hooks/useVolunteerProfile';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -20,6 +22,131 @@ interface MenuItemProps {
   color?: AppTextProps['color'];
   rightIcon?: ImageSource;
 }
+
+const styles = StyleSheet.create((theme, rt) => ({
+  screen: {
+    flex: 1,
+    paddingTop: rt.insets.top + theme.spacing.s6,
+    paddingBottom: rt.insets.bottom,
+    paddingLeft: rt.insets.left + theme.spacing.s5,
+    paddingRight: rt.insets.right + theme.spacing.s5,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contentContainer: {
+    gap: theme.spacing.s4,
+    flex: 1,
+  },
+  background: {
+    position: 'absolute',
+    inset: 0,
+  },
+  profileCard: {
+    backgroundColor: '#CDE2FF',
+    flexDirection: 'row',
+    padding: theme.spacing.s3,
+    borderRadius: theme.radius.mdSoft,
+    alignItems: 'center',
+    gap: theme.spacing.s5,
+  },
+  xpSection: {
+    gap: theme.spacing.s3,
+  },
+  Certificate: {
+    backgroundColor: '#CDE2FF',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: theme.spacing.s3,
+    borderRadius: theme.radius.mdSoft,
+    flexDirection: 'row',
+  },
+  menuSection: {
+    backgroundColor: theme.background.secondary,
+    borderRadius: theme.radius.md,
+  },
+  profileImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: theme.spacing.s3,
+  },
+  profileDetails: {
+    alignContent: 'center',
+    gap: theme.spacing.s2,
+  },
+  xpBarContainer: {
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.s3,
+    paddingVertical: theme.spacing.s4,
+  },
+  xpCardsContainer: {
+    flexDirection: 'row',
+    gap: theme.spacing.s3,
+  },
+  levelText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s1,
+  },
+  xpText: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  xpAmount: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  xpBar: {
+    height: 12,
+    backgroundColor: theme.background.secondary,
+    borderRadius: theme.radius.full,
+    marginTop: theme.spacing.s2,
+  },
+  xpBarFill: {
+    height: '100%',
+    backgroundColor: '#36D367',
+    borderRadius: theme.radius.full,
+  },
+  card: {
+    backgroundColor: '#72BCF8',
+    borderRadius: theme.radius.md,
+    paddingVertical: theme.spacing.s2,
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardValue: {
+    flexDirection: 'row',
+    gap: theme.spacing.s2,
+    paddingVertical: theme.spacing.s1,
+  },
+  CertificateText: {
+    gap: theme.spacing.s1,
+  },
+  CertificateImage: {
+    width: 74,
+    height: 69,
+    position: 'absolute',
+    right: theme.spacing.s3,
+    bottom: -theme.spacing.s3,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s2,
+  },
+  menuItemText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s2,
+  },
+  menuItemicon: {},
+}));
 
 const XpCard = ({ text, value, icon }: XpCardProps) => {
   return (
@@ -82,6 +209,27 @@ function getXpCap(level: number): number {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 const SettingsScreen = () => {
+  const router = useRouter();
+  const refreshToken = useAuth(state => state.refreshToken);
+  const signOut = useAuth(state => state.signOut);
+  const showDevUI = process.env.EXPO_PUBLIC_SHOW_DEV_UI === 'true';
+
+  // Dev-only temporary logout handler; gated behind EXPO_PUBLIC_SHOW_DEV_UI
+  const handleLogout = async () => {
+    if (!showDevUI) {
+      return;
+    }
+
+    try {
+      if (refreshToken) await logout(refreshToken);
+    } catch {
+      // Ignore API errors — still sign out locally
+    } finally {
+      await signOut();
+      router.replace('/start/welcome' as any);
+    }
+  };
+
   const { data: profile, isLoading, isError } = useVolunteerProfile();
 
   // ── Loading state ──
@@ -261,134 +409,25 @@ const SettingsScreen = () => {
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
         </View>
+        {/* TODO: Remove this temp button when permanent logout UI is built */}
+        <Pressable
+          onPress={handleLogout}
+          style={{
+            backgroundColor: '#DC2626',
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            marginTop: 8,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+            🚪 Logout (Dev)
+          </Text>
+        </Pressable>
       </ScrollView>
     </View>
   );
 };
 
 export default SettingsScreen;
-
-const styles = StyleSheet.create((theme, rt) => ({
-  screen: {
-    flex: 1,
-    paddingTop: rt.insets.top + theme.spacing.s6,
-    paddingBottom: rt.insets.bottom,
-    paddingLeft: rt.insets.left + theme.spacing.s5,
-    paddingRight: rt.insets.right + theme.spacing.s5,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  contentContainer: {
-    gap: theme.spacing.s4,
-    flex: 1,
-  },
-  background: {
-    position: 'absolute',
-    inset: 0,
-  },
-  profileCard: {
-    backgroundColor: '#CDE2FF',
-    flexDirection: 'row',
-    padding: theme.spacing.s3,
-    borderRadius: theme.radius.mdSoft,
-    alignItems: 'center',
-    gap: theme.spacing.s5,
-  },
-  xpSection: {
-    gap: theme.spacing.s3,
-  },
-  Certificate: {
-    backgroundColor: '#CDE2FF',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: theme.spacing.s3,
-    borderRadius: theme.radius.mdSoft,
-    flexDirection: 'row',
-  },
-  menuSection: {
-    backgroundColor: theme.background.secondary,
-    borderRadius: theme.radius.md,
-  },
-  profileImage: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: theme.spacing.s3,
-  },
-  profileDetails: {
-    alignContent: 'center',
-    gap: theme.spacing.s2,
-  },
-  xpBarContainer: {
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.s3,
-    paddingVertical: theme.spacing.s4,
-  },
-  xpCardsContainer: {
-    flexDirection: 'row',
-    gap: theme.spacing.s3,
-  },
-  levelText: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s1,
-  },
-  xpText: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  xpAmount: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  xpBar: {
-    height: 12,
-    backgroundColor: theme.background.secondary,
-    borderRadius: theme.radius.full,
-    marginTop: theme.spacing.s2,
-  },
-  xpBarFill: {
-    height: '100%',
-    backgroundColor: '#36D367',
-    borderRadius: theme.radius.full,
-  },
-  card: {
-    backgroundColor: '#72BCF8',
-    borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.s2,
-    flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardValue: {
-    flexDirection: 'row',
-    gap: theme.spacing.s2,
-    paddingVertical: theme.spacing.s1,
-  },
-  CertificateText: {
-    gap: theme.spacing.s1,
-  },
-  CertificateImage: {
-    width: 74,
-    height: 69,
-    position: 'absolute',
-    right: theme.spacing.s3,
-    bottom: -theme.spacing.s3,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.s3,
-    paddingHorizontal: theme.spacing.s2,
-  },
-  menuItemText: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s2,
-  },
-  menuItemicon: {},
-}));

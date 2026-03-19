@@ -55,6 +55,13 @@ export class ChatProcessor extends WorkerHost {
         await this.chatService.clearAccountSession(participants.listenerId);
       }
       await this.chatService.purgeMessages(sessionId);
+
+      // Return volunteer to the available pool if they reconnected and are still eligible
+      if (participants.listenerId) {
+        await this.chatService.reAddVolunteerToPoolIfEligible(
+          participants.listenerId,
+        );
+      }
     }
 
     console.log(
@@ -123,6 +130,13 @@ export class ChatTimeoutProcessor extends WorkerHost {
       await this.chatService.clearAccountSession(participants.listenerId);
     }
     await this.chatService.purgeMessages(sessionId);
+
+    // Return volunteer to the available pool if they are still online and eligible
+    if (participants.listenerId) {
+      await this.chatService.reAddVolunteerToPoolIfEligible(
+        participants.listenerId,
+      );
+    }
 
     console.log(`[BullMQ] Session timed out — session=${sessionId}`);
   }

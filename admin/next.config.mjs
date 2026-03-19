@@ -1,7 +1,13 @@
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@refinedev/antd"],
   output: "standalone",
+  outputFileTracingRoot: resolve(__dirname, ".."),
 };
 
 export default nextConfig;
