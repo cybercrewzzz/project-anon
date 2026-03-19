@@ -19,7 +19,7 @@ const USE_MOCK =
   : false;
 
 const MOCK_PROFILE: VolunteerProfile = {
-  accountId: 'test-account-id',
+  accountId: '00000000-0000-0000-0000-000000000001',
   name: 'John Doe', // → profile card header
   instituteEmail: 'john@university.edu',
   instituteName: 'Institute Of Mental Health', // → under name in profile card
@@ -28,8 +28,8 @@ const MOCK_PROFILE: VolunteerProfile = {
   verificationStatus: 'approved',
   isAvailable: true,
   specialisations: [
-    { specialisationId: 'spec-1', name: 'Anxiety' },
-    { specialisationId: 'spec-2', name: 'Stress' },
+    { specialisationId: '00000000-0000-0000-0000-000000000101', name: 'Anxiety' },
+    { specialisationId: '00000000-0000-0000-0000-000000000102', name: 'Stress' },
   ],
   experience: {
     points: 150, // → try 0, 150, 300 to test XP bar fill
