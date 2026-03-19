@@ -1,6 +1,7 @@
 import { AppText } from '@/components/AppText';
 import { common } from '@/theme/palettes/common';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
@@ -45,6 +46,13 @@ export default function CategoryDropdownFilter() {
 
   return (
     <View style={styles.container}>
+      <LinearGradient
+        colors={['#F0E7FF', '#F9FBFF', '#BCDCF0']}
+        style={styles.gradient}
+        start={{ x: 0.05, y: 0.2 }}
+        end={{ x: 1, y: 0.5 }}
+        locations={[0.2, 0.5, 1]}
+      />
       <View style={styles.baseLayer}>
         <View style={styles.headerRow}>
           <Pressable style={styles.backButton} onPress={() => router.back()}>
@@ -62,7 +70,7 @@ export default function CategoryDropdownFilter() {
           textAlign="center"
           style={styles.sheetTitle}
         >
-          Select Your Issue
+          Select Your Specialisation ?
         </AppText>
 
         <View style={styles.categoryInputRow}>
@@ -110,10 +118,21 @@ export default function CategoryDropdownFilter() {
           </View>
         </View>
 
-        <Pressable style={styles.okBtn}>
-          <AppText variant="title2" emphasis="emphasized" color="secondary">
-            OK
-          </AppText>
+        <Pressable style={styles.okBtnWrapper}>
+          <LinearGradient
+            colors={['#1D47DC', '#0E7FBC']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.okBtn}
+          >
+            <AppText
+              variant="title2"
+              emphasis="emphasized"
+              style={styles.okBtnText}
+            >
+              OK
+            </AppText>
+          </LinearGradient>
         </Pressable>
       </View>
     </View>
@@ -123,9 +142,12 @@ export default function CategoryDropdownFilter() {
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
     flex: 1,
-    backgroundColor: theme.background.default,
     paddingTop: rt.insets.top,
     position: 'relative',
+  },
+  gradient: {
+    position: 'absolute',
+    inset: 0,
   },
   baseLayer: {
     paddingHorizontal: theme.spacing.s4,
@@ -158,7 +180,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     right: 0,
     bottom: 0,
     height: '74%',
-    backgroundColor: theme.surface.muted,
+    backgroundColor: common.white,
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
     paddingTop: theme.spacing.s5,
@@ -207,24 +229,30 @@ const styles = StyleSheet.create((theme, rt) => ({
     justifyContent: 'center',
   },
   tagPillSelected: {
-    backgroundColor: theme.action.secondary,
-    borderColor: theme.action.secondary,
+    backgroundColor: '#0E7FBC',
+    borderColor: '#0E7FBC',
   },
   tagTextDefault: {
     color: theme.text.accent,
   },
   tagTextSelected: {
-    color: theme.text.secondary,
+    color: common.white,
   },
-  okBtn: {
+  okBtnWrapper: {
     marginTop: 'auto',
     alignSelf: 'center',
     minWidth: 120,
     borderRadius: theme.radius.full,
-    backgroundColor: theme.action.secondary,
+    overflow: 'hidden',
+  },
+  okBtn: {
+    borderRadius: theme.radius.full,
     paddingVertical: theme.spacing.s3,
     paddingHorizontal: theme.spacing.s6,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  okBtnText: {
+    color: common.white,
   },
 }));
