@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
-import { StyleSheet} from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 
 // =============================================================================
 // ENDPOINT: GET /lookup/specialisations
@@ -20,7 +20,12 @@ export default function SpecialisationFilter() {
 
   // ── GET /lookup/specialisations ─────────────────────────────────────────────
   // Replaces the hardcoded feelingTags array
-  const { data: specialisations, isLoading, isError, error } = useSpecialisations();
+  const {
+    data: specialisations,
+    isLoading,
+    isError,
+    error,
+  } = useSpecialisations();
 
   // Tracks selected UUIDs — kept as local state for now
   // When PATCH /volunteer/profile screen is built, selectedIds will be passed
@@ -77,17 +82,14 @@ export default function SpecialisationFilter() {
         </View>
 
         <View style={styles.filterCard}>
-
           {/* ── GET /lookup/specialisations ── */}
           {/* Shows spinner while loading, then renders real tags from API */}
           {isLoading ?
             <ActivityIndicator size="small" />
           : isError ?
-            <AppText
-              variant="body"
-              emphasis="emphasized"
-            >
-              {error?.message ?? 'Unable to load specialisations. Please try again later.'}
+            <AppText variant="body" emphasis="emphasized">
+              {error?.message ??
+                'Unable to load specialisations. Please try again later.'}
             </AppText>
           : <View style={styles.tagRow}>
               {(specialisations ?? []).map(spec => {
