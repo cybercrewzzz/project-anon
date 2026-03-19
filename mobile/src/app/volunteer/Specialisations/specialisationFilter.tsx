@@ -30,9 +30,9 @@ export default function CategoryDropdownFilter() {
 
   const toggleTag = (specialisationId: string) => {
     setSelectedIds(prev =>
-      prev.includes(specialisationId)
-        ? prev.filter(id => id !== specialisationId)
-        : [...prev, specialisationId],
+      prev.includes(specialisationId) ?
+        prev.filter(id => id !== specialisationId)
+      : [...prev, specialisationId],
     );
   };
 
@@ -87,10 +87,9 @@ export default function CategoryDropdownFilter() {
 
           {/* ── GET /lookup/specialisations ── */}
           {/* Shows spinner while loading, then renders real tags from API */}
-          {isLoading ? (
+          {isLoading ?
             <ActivityIndicator size="small" />
-          ) : (
-            <View style={styles.tagRow}>
+          : <View style={styles.tagRow}>
               {(specialisations ?? []).map(spec => {
                 const selected = selectedIdSet.has(spec.specialisationId);
                 return (
@@ -103,9 +102,9 @@ export default function CategoryDropdownFilter() {
                       variant="caption1"
                       emphasis="emphasized"
                       style={
-                        selected
-                          ? styles.tagTextSelected
-                          : styles.tagTextDefault
+                        selected ?
+                          styles.tagTextSelected
+                        : styles.tagTextDefault
                       }
                     >
                       {spec.name}
@@ -114,15 +113,12 @@ export default function CategoryDropdownFilter() {
                 );
               })}
             </View>
-          )}
+          }
         </View>
 
         {/* OK — just navigates back for now                              */}
         {/* TODO: wire to PATCH /volunteer/profile when screen is built   */}
-        <Pressable
-          style={styles.okBtnWrapper}
-          onPress={() => router.back()}
-        >
+        <Pressable style={styles.okBtnWrapper} onPress={() => router.back()}>
           <LinearGradient
             colors={['#1D47DC', '#0E7FBC']}
             start={{ x: 0, y: 0 }}

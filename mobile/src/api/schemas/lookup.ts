@@ -11,4 +11,6 @@ import { SpecialisationSchema } from './common';
 // ── GET /lookup/specialisations ───────────────────────────────────────────────
 
 export const SpecialisationsResponseSchema = z.array(SpecialisationSchema);
-export type SpecialisationsResponse = z.infer<typeof SpecialisationsResponseSchema>;
+export type SpecialisationsResponse = z.infer<
+  typeof SpecialisationsResponseSchema
+>;
