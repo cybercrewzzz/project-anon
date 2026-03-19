@@ -25,9 +25,9 @@ export default function Index() {
 
   // ── PATCH /volunteer/status ─────────────────────────────────────────────────
   // Added: read isAvailable from profile to set initial toggle state
-  const { data: profile } = useVolunteerStatus();
+  const { data: profile, isLoading: isProfileLoading } = useVolunteerStatus();
   // Added: fires PATCH /volunteer/status when toggle is pressed
-  const { mutate: updateStatus } = useUpdateVolunteerStatus();
+  const { mutate: updateStatus, isPending } = useUpdateVolunteerStatus();
   // ───────────────────────────────────────────────────────────────────────────
 
   const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>(
@@ -44,6 +44,16 @@ export default function Index() {
 
   // Added: replaces direct setSelectedOption calls on the toggle buttons
   const handleToggle = (option: 'Offline' | 'Active') => {
+    // Prevent toggles while profile is loading or mutation is in flight,
+    // before we have a baseline profile state, or if the option is already selected.
+    if (
+      option === selectedOption ||
+      isProfileLoading ||
+      profile?.isAvailable === undefined ||
+      isPending
+    ) {
+      return;
+    }
     const available = option === 'Active';
     setSelectedOption(option); // update local UI immediately
     updateStatus(available); // fire PATCH /volunteer/status
@@ -172,7 +182,7 @@ export default function Index() {
           <View style={styles.toggleWrapper}>
             <View style={styles.toggleContainer}>
               {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
-              <Pressable onPress={() => handleToggle('Offline')}>
+              <Pressable onPress={() => handleToggle('Offline')} disabled={isPending || isProfileLoading}>
                 <Animated.View
                   style={[
                     styles.toggleButton,
@@ -185,7 +195,7 @@ export default function Index() {
                 </Animated.View>
               </Pressable>
               {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
-              <Pressable onPress={() => handleToggle('Active')}>
+              <Pressable onPress={() => handleToggle('Active')} disabled={isPending || isProfileLoading}>
                 <Animated.View
                   style={[
                     styles.toggleButton,
