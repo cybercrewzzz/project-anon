@@ -18,14 +18,14 @@ const USE_MOCK = false;
 const SIMULATE_STATUS_ERROR = false;
 
 // ENDPOINT: GET /volunteer/profile  (read-only, used to load initial toggle state)
-// SCREEN:   src/app/volunteer/(tabs)/p2p-and.tsx
+// SCREEN:   src/app/volunteer/P2p-And/p2p-and.tsx
 // PURPOSE:  Reads isAvailable from the profile to set the toggle on screen load
 //
 
 const MOCK_IS_AVAILABLE = false; // → change to true to open as Active
 
 // ENDPOINT: PATCH /volunteer/status
-// SCREEN:   src/app/volunteer/(tabs)/p2p-and.tsx
+// SCREEN:   src/app/volunteer/P2p-And/p2p-and.tsx
 // PURPOSE:  Flips the volunteer's isAvailable flag when toggle is pressed
 
 // ── Read: load initial isAvailable state for the toggle ──────────────────────
@@ -92,20 +92,42 @@ export function useUpdateVolunteerStatus() {
       const previous = queryClient.getQueryData<VolunteerProfile>(
         queryKeys.volunteer.profile(),
       );
+      const optimisticProfile: VolunteerProfile =
+        previous ?
+          { ...previous, isAvailable: available }
+        : {
+            // minimal optimistic profile; real data will be fetched on success
+            accountId: 'optimistic-id',
+            name: 'Volunteer',
+            instituteEmail: '',
+            instituteName: '',
+            grade: '',
+            about: null,
+            verificationStatus: 'approved',
+            isAvailable: available,
+            specialisations: [],
+            experience: { points: 0, level: 0 },
+          };
       queryClient.setQueryData<VolunteerProfile>(
         queryKeys.volunteer.profile(),
-        old => (old ? { ...old, isAvailable: available } : old),
+        optimisticProfile,
       );
-      return { previous };
+      return { previous, hadPrevious: Boolean(previous) };
     },
 
     // Rolls back to the previous state if the request fails
     onError: (_err, _vars, context) => {
-      if (context?.previous) {
+      if (!context) return;
+      if (context.hadPrevious) {
         queryClient.setQueryData(
           queryKeys.volunteer.profile(),
           context.previous,
         );
+      } else {
+        // No previous profile existed: remove the optimistic entry
+        queryClient.removeQueries({
+          queryKey: queryKeys.volunteer.profile(),
+        });
       }
     },
 
