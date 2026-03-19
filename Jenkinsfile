@@ -14,9 +14,14 @@ pipeline {
     agent { label 'jenkins-agent-node' }
 
     options {
-        timeout(time: 15, unit: 'MINUTES')
+        timeout(time: 30, unit: 'MINUTES')
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    environment {
+        YARN_CACHE_FOLDER = '/opt/yarn-cache'
+        DOCKER_BUILDKIT = '1'
     }
 
     stages {
@@ -104,13 +109,74 @@ pipeline {
             }
         }
 
-        stage('Build Backend') {
+        stage('Docker Login') {
             when { branch 'main' }
             steps {
                 script {
-                    withChecks('Build: Backend') {
-                        // WIP
-                        echo "Build in progress..."
+                    env.GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+
+                    withCredentials([
+                        usernamePassword(credentialsId: 'registry-credentials', usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')
+                    ]) {
+                        sh "echo \"\$REG_PASS\" | docker login registry.anora-app.com -u \"\$REG_USER\" --password-stdin"
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Images') {
+            when { branch 'main' }
+            parallel {
+                stage('Backend Image') {
+                    steps {
+                        script {
+                            withChecks('Build & Push: Backend') {
+                                sh "docker pull registry.anora-app.com/backend:latest || true"
+                                sh """
+                                    docker build -f backend/Dockerfile \
+                                        --build-arg BUILDKIT_INLINE_CACHE=1 \
+                                        --cache-from registry.anora-app.com/backend:latest \
+                                        -t registry.anora-app.com/backend:${env.GIT_SHA} \
+                                        -t registry.anora-app.com/backend:latest \
+                                        .
+                                    docker push registry.anora-app.com/backend:${env.GIT_SHA}
+                                    docker push registry.anora-app.com/backend:latest
+                                    docker rmi registry.anora-app.com/backend:${env.GIT_SHA} registry.anora-app.com/backend:latest || true
+                                """
+                            }
+                        }
+                    }
+                }
+                stage('Admin Image') {
+                    steps {
+                        script {
+                            withChecks('Build & Push: Admin') {
+                                sh "docker pull registry.anora-app.com/admin:latest || true"
+                                sh """
+                                    docker build -f admin/Dockerfile \
+                                        --build-arg BUILDKIT_INLINE_CACHE=1 \
+                                        --build-arg NEXT_PUBLIC_API_URL=https://api.anora-app.com/v1 \
+                                        --cache-from registry.anora-app.com/admin:latest \
+                                        -t registry.anora-app.com/admin:${env.GIT_SHA} \
+                                        -t registry.anora-app.com/admin:latest \
+                                        .
+                                    docker push registry.anora-app.com/admin:${env.GIT_SHA}
+                                    docker push registry.anora-app.com/admin:latest
+                                    docker rmi registry.anora-app.com/admin:${env.GIT_SHA} registry.anora-app.com/admin:latest || true
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when { branch 'main' }
+            steps {
+                script {
+                    withChecks('Deploy') {
+                        build job: 'Project Anon Infra/main', wait: true
                     }
                 }
             }

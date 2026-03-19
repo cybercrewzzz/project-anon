@@ -34,7 +34,7 @@ const InputForm = ({
   placeholderVariant = 'callout',
   placeholderEmphasis = 'emphasized',
   contentContainerStyle,
-  formColor = 'white',
+  formColor,
   value,
   style,
   onFocus,
@@ -142,12 +142,12 @@ const InputForm = ({
 export default InputForm;
 
 const styles = StyleSheet.create(theme => ({
-  inputBox: (formColor: ColorValue, isFocused: boolean) => ({
+  inputBox: (formColor: ColorValue | undefined, isFocused: boolean) => ({
     paddingHorizontal: theme.spacing.s4,
     paddingTop: theme.spacing.s3,
     paddingBottom: theme.spacing.s2,
     boxShadow: theme.elevation.level3,
-    backgroundColor: formColor,
+    backgroundColor: formColor ?? theme.surface.primary,
     borderRadius: theme.radius.sm,
     position: 'relative' as const,
     borderWidth: isFocused ? 1.5 : 0,
