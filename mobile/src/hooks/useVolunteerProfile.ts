@@ -150,7 +150,7 @@ export function useUpdateVolunteerStatus() {
       }
     },
 
-    onSuccess: (data) => {
+    onSuccess: data => {
       queryClient.setQueryData<VolunteerProfile>(
         queryKeys.volunteer.profile(),
         old => (old ? { ...old, isAvailable: data?.isAvailable } : old),

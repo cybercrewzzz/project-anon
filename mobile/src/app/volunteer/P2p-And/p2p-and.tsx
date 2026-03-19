@@ -182,7 +182,10 @@ export default function Index() {
           <View style={styles.toggleWrapper}>
             <View style={styles.toggleContainer}>
               {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
-              <Pressable onPress={() => handleToggle('Offline')} disabled={isPending || isProfileLoading}>
+              <Pressable
+                onPress={() => handleToggle('Offline')}
+                disabled={isPending || isProfileLoading}
+              >
                 <Animated.View
                   style={[
                     styles.toggleButton,
@@ -195,7 +198,10 @@ export default function Index() {
                 </Animated.View>
               </Pressable>
               {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
-              <Pressable onPress={() => handleToggle('Active')} disabled={isPending || isProfileLoading}>
+              <Pressable
+                onPress={() => handleToggle('Active')}
+                disabled={isPending || isProfileLoading}
+              >
                 <Animated.View
                   style={[
                     styles.toggleButton,
