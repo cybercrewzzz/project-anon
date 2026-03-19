@@ -137,9 +137,11 @@ const SettingsScreen = () => {
               {profile.name}
             </AppText>
             {/* Real institute from API */}
-            <AppText variant="footnote" emphasis="emphasized" color="primary">
-              {profile.instituteName}
-            </AppText>
+            {profile.instituteName && (
+              <AppText variant="footnote" emphasis="emphasized" color="primary">
+                {profile.instituteName}
+              </AppText>
+            )}
             <View style={styles.levelText}>
               <AppText variant="caption1">Level: </AppText>
               {/* Real level label derived from experience.level */}
