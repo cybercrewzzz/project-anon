@@ -8,6 +8,8 @@ import { RedisModule } from './redis/redis.module';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { VolunteerModule } from './volunteer/volunteer.module';
+import { LookupModule } from './lookup/lookup.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { ChatModule } from './chat/chat.module';
     AuthModule,
     RedisModule,
     ChatModule,
+    VolunteerModule,
+    LookupModule,
   ],
   controllers: [AppController],
   providers: [AppService],

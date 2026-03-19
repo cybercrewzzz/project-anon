@@ -97,3 +97,27 @@ export function joinRoom(sessionId: string, lastMsgIndex?: number): void {
 export function leaveRoom(sessionId: string): void {
   socket?.emit('room:leave', { sessionId });
 }
+
+export type SessionRequestResult =
+  | { status: 'matched'; sessionId: string }
+  | { status: 'no_volunteer' }
+  | { status: 'error'; message: string };
+
+/**
+ * Ask the server to match the seeker with an available volunteer.
+ * The referenced UserProblem must already exist with status 'waiting'.
+ * Returns a Promise that resolves with the server ack.
+ */
+export function requestSession(
+  problemId: string,
+): Promise<SessionRequestResult> {
+  return new Promise((resolve, reject) => {
+    if (!socket?.connected) {
+      reject(new Error('Socket not connected'));
+      return;
+    }
+    socket.emit('session:request', { problemId }, (ack: SessionRequestResult) =>
+      resolve(ack),
+    );
+  });
+}
