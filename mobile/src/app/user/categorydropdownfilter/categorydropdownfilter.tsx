@@ -26,12 +26,7 @@ export default function CategoryDropdownFilter() {
 
   // ── GET /lookup/categories ──────────────────────────────────────────────────
   // Replaces the hardcoded feelingTags array with real data from the API
-  const {
-    data: categories,
-    isLoading,
-    isError,
-    refetch,
-  } = useCategories();
+  const { data: categories, isLoading, isError, refetch } = useCategories();
 
   // Tracks selected UUIDs — categoryId instead of name strings
   // TODO: wire selectedIds to the seeker problem creation flow when built
@@ -102,7 +97,11 @@ export default function CategoryDropdownFilter() {
                 Unable to load categories. Please try again.
               </AppText>
               <Pressable style={styles.retryBtn} onPress={() => refetch()}>
-                <AppText variant="caption1" emphasis="emphasized" color="secondary">
+                <AppText
+                  variant="caption1"
+                  emphasis="emphasized"
+                  color="secondary"
+                >
                   Retry
                 </AppText>
               </Pressable>

@@ -1,7 +1,8 @@
 import { apiClient } from './client';
 import { parseApiError } from './errors';
 import {
-  SpecialisationsResponseSchema, CategoriesResponseSchema,
+  SpecialisationsResponseSchema,
+  CategoriesResponseSchema,
   type CategoriesResponse,
   type SpecialisationsResponse,
 } from './schemas';
@@ -22,7 +23,6 @@ export async function fetchSpecialisations(): Promise<SpecialisationsResponse> {
   }
 }
 
-
 // =============================================================================
 // ENDPOINT: GET /lookup/categories
 // CONTROLLER: backend/src/lookup/lookup.controller.ts
@@ -36,9 +36,6 @@ export async function fetchCategories(): Promise<CategoriesResponse> {
     const { data } = await apiClient.get('/lookup/categories');
     return CategoriesResponseSchema.parse(data);
   } catch (error) {
-      throw parseApiError(error);
-    }
+    throw parseApiError(error);
   }
-
-
-
+}
