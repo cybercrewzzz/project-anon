@@ -370,7 +370,7 @@ const SettingsScreen = () => {
               Get Your
             </AppText>
             <AppText variant="title3" emphasis="emphasized">
-              Certificate !
+              Certificate!
             </AppText>
           </View>
           <Image
@@ -393,7 +393,7 @@ const SettingsScreen = () => {
           ──────────────────────────────────────────────────────────────────── */}
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Edit your Profile."
+            text="Edit Profile"
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
             onPress={() =>
               router.push('/volunteer/EditProfile/editVolunteerProfile')

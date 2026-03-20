@@ -94,7 +94,7 @@ export function useUpdateVolunteerProfile() {
           await new Promise(resolve => setTimeout(resolve, 1000));
 
           if (SIMULATE_PROFILE_ERROR) {
-            throw { message: 'Failed to update profile. Please try again.' };
+            throw new Error ('Failed to update profile. Please try again.' );
           }
 
           // Returns the updated profile shape

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUpdateVolunteerProfile } from '@/hooks/useVolunteerProfile';
 import { useSpecialisations } from '@/hooks/useLookup';
 
@@ -23,6 +23,18 @@ export function useVolunteerEditProfile(
   const [selectedIds, setSelectedIds] = useState<string[]>(
     initialSpecialisationIds,
   );
+
+  // ── Sync form state when initial values change ──────────────────────────────
+  // This ensures the form populates when profile data loads after mount
+  useEffect(() => {
+    if (initialAbout !== null) {
+      setAbout(initialAbout);
+    }
+  }, [initialAbout]);
+
+  useEffect(() => {
+    setSelectedIds(initialSpecialisationIds);
+  }, [initialSpecialisationIds]);
 
   // ── GET /lookup/specialisations ─────────────────────────────────────────────
   // Loads the list of available specialisations for the picker
