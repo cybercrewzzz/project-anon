@@ -41,43 +41,40 @@ export default function PeerToPeer() {
         </View>
 
         <View style={styles.badgeRow}>
+          <Pressable
+            onPress={() => setStarActive(prev => !prev)}
+            style={[
+              styles.starBadge,
+              { backgroundColor: starActive ? common.white : purple[500] },
+            ]}
+          >
+            <AppText
+              style={[
+                styles.starBadgeText,
+                { color: starActive ? purple[500] : common.white },
+              ]}
+            >
+              ⭐ 185
+            </AppText>
+          </Pressable>
 
-  <Pressable
-onPress={() => setStarActive(prev => !prev)}
-    style={[
-      styles.starBadge,
-      { backgroundColor: starActive ? common.white : purple[500] },
-    ]}
-  >
-    <AppText
-      style={[
-        styles.starBadgeText,
-        { color: starActive ? purple[500] : common.white },
-      ]}
-    >
-      ⭐ 185
-    </AppText>
-  </Pressable>
-
-  <Pressable
-onPress={() => setTicketActive(prev => !prev)}   
- style={[
-      styles.ticketBadge,
-      { backgroundColor: ticketActive ? purple[500] : common.white },
-    ]}
-  >
-    <AppText
-      style={[
-        styles.ticketBadgeText,
-        { color: ticketActive ? common.white : common.gray[700] },
-      ]}
-    >
-      🎫 5
-    </AppText>
-  </Pressable>
-
-</View>
-
+          <Pressable
+            onPress={() => setTicketActive(prev => !prev)}
+            style={[
+              styles.ticketBadge,
+              { backgroundColor: ticketActive ? purple[500] : common.white },
+            ]}
+          >
+            <AppText
+              style={[
+                styles.ticketBadgeText,
+                { color: ticketActive ? common.white : common.gray[700] },
+              ]}
+            >
+              🎫 5
+            </AppText>
+          </Pressable>
+        </View>
 
         {/* Mood Card */}
         <View style={styles.card}>
@@ -164,9 +161,8 @@ onPress={() => setTicketActive(prev => !prev)}
                   style={[
                     styles.onlineDot,
                     {
-                      backgroundColor: user.online
-                        ? common.green[500]
-                        : common.gray[300],
+                      backgroundColor:
+                        user.online ? common.green[500] : common.gray[300],
                     },
                   ]}
                 />
@@ -270,14 +266,13 @@ const styles = StyleSheet.create((theme, rt) => ({
     fontSize: 14,
   },
 
-
   card: {
     backgroundColor: theme.background.default,
     borderRadius: theme.radius.lg,
     padding: theme.spacing.s4,
     marginBottom: theme.spacing.s4,
     gap: theme.spacing.s4,
-   
+
     boxShadow: theme.elevation.level2,
   },
 
@@ -285,7 +280,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    
   },
   emojiBtn: {
     padding: theme.spacing.s3,
