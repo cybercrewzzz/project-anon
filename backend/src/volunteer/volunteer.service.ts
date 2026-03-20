@@ -2,15 +2,31 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
+import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateProfileDTO } from './dto/update-profile.dto';
-import { UpdateStatusDTO } from './dto/update-status.dto';
-import { ApplyVolunteerDTO } from './dto/apply-volunteer.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { ApplyVolunteerDto } from './dto/apply-volunteer.dto';
 
 @Injectable()
 export class VolunteerService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async assertAccountActive(accountId: string): Promise<void> {
+    const account = await this.prisma.account.findUnique({
+      where: { accountId },
+      select: { status: true },
+    });
+    if (account?.status === 'suspended') {
+      throw new ForbiddenException('Account is suspended');
+    }
+    if (account?.status === 'banned') {
+      throw new ForbiddenException('Account has been banned');
+    }
+  }
 
   // GET /volunteer/profile
 
@@ -61,7 +77,9 @@ export class VolunteerService {
 
   // PATCH /volunteer/profile
 
-  async updateProfile(accountId: string, dto: UpdateProfileDTO) {
+  async updateProfile(accountId: string, dto: UpdateProfileDto) {
+    await this.assertAccountActive(accountId);
+
     const existing = await this.prisma.volunteerProfile.findUnique({
       where: { accountId },
     });
@@ -72,31 +90,39 @@ export class VolunteerService {
 
     if (dto.specialisationIds !== undefined) {
       const { specialisationIds } = dto;
-      await this.prisma.$transaction(async (tx) => {
-        await tx.volunteerProfile.update({
-          where: { accountId },
-          data: {
-            ...(dto.about !== undefined && { about: dto.about }),
-          },
-        });
-        await tx.volunteerSpecialisation.deleteMany({
-          where: { accountId },
-        });
-        if (specialisationIds.length > 0) {
+      try {
+        await this.prisma.$transaction(async (tx) => {
+          if (dto.about !== undefined) {
+            await tx.volunteerProfile.update({
+              where: { accountId },
+              data: { about: dto.about },
+            });
+          }
+          await tx.volunteerSpecialisation.deleteMany({
+            where: { accountId },
+          });
           await tx.volunteerSpecialisation.createMany({
             data: specialisationIds.map((specialisationId) => ({
               accountId,
               specialisationId,
             })),
           });
+        });
+      } catch (e) {
+        if (
+          e instanceof Prisma.PrismaClientKnownRequestError &&
+          e.code === 'P2003'
+        ) {
+          throw new BadRequestException(
+            'One or more specialisation IDs are invalid',
+          );
         }
-      });
-    } else {
+        throw e;
+      }
+    } else if (dto.about !== undefined) {
       await this.prisma.volunteerProfile.update({
         where: { accountId },
-        data: {
-          ...(dto.about !== undefined && { about: dto.about }),
-        },
+        data: { about: dto.about },
       });
     }
 
@@ -105,13 +131,21 @@ export class VolunteerService {
 
   // PATCH /volunteer/status
 
-  async updateStatus(accountId: string, dto: UpdateStatusDTO) {
+  async updateStatus(accountId: string, dto: UpdateStatusDto) {
+    await this.assertAccountActive(accountId);
+
     const existing = await this.prisma.volunteerProfile.findUnique({
       where: { accountId },
     });
 
     if (!existing) {
       throw new NotFoundException('Volunteer profile not found');
+    }
+
+    if (existing.verificationStatus !== 'approved') {
+      throw new ForbiddenException(
+        'Only approved volunteers can change availability',
+      );
     }
 
     const updated = await this.prisma.volunteerProfile.update({
@@ -124,69 +158,81 @@ export class VolunteerService {
 
   // POST /volunteer/apply
 
-  async applyAsVolunteer(accountId: string, dto: ApplyVolunteerDTO) {
-    const existingApplication =
-      await this.prisma.volunteerVerification.findFirst({
-        where: {
-          volunteerId: accountId,
-          status: { in: ['pending', 'approved'] },
-        },
-      });
+  async applyAsVolunteer(accountId: string, dto: ApplyVolunteerDto) {
+    await this.assertAccountActive(accountId);
 
-    if (existingApplication) {
-      throw new ConflictException('An active application already exists');
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        const existingApplication = await tx.volunteerVerification.findFirst({
+          where: {
+            volunteerId: accountId,
+            status: { in: ['pending', 'approved'] },
+          },
+        });
+
+        if (existingApplication) {
+          throw new ConflictException('An active application already exists');
+        }
+
+        await tx.volunteerProfile.upsert({
+          where: { accountId },
+          update: {
+            instituteEmail: dto.instituteEmail,
+            instituteName: dto.instituteName,
+            studentId: dto.studentId,
+            instituteIdImageUrl: dto.instituteIdImageUrl,
+            grade: dto.grade,
+            about: dto.about ?? null,
+            verificationStatus: 'pending',
+            isAvailable: false,
+          },
+          create: {
+            accountId,
+            instituteEmail: dto.instituteEmail,
+            instituteName: dto.instituteName,
+            studentId: dto.studentId,
+            instituteIdImageUrl: dto.instituteIdImageUrl,
+            grade: dto.grade,
+            about: dto.about ?? null,
+            verificationStatus: 'pending',
+            isAvailable: false,
+          },
+        });
+        await tx.volunteerSpecialisation.deleteMany({ where: { accountId } });
+        await tx.volunteerSpecialisation.createMany({
+          data: dto.specialisationIds.map((specialisationId) => ({
+            accountId,
+            specialisationId,
+          })),
+        });
+        await tx.volunteerVerification.create({
+          data: {
+            volunteerId: accountId,
+            documentUrl: dto.instituteIdImageUrl,
+            status: 'pending',
+          },
+        });
+        await tx.volunteerExperience.upsert({
+          where: { accountId },
+          update: {},
+          create: { accountId, points: 0 },
+        });
+        await tx.account.update({
+          where: { accountId },
+          data: { name: dto.name },
+        });
+      });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2003'
+      ) {
+        throw new BadRequestException(
+          'One or more specialisation IDs are invalid',
+        );
+      }
+      throw e;
     }
-
-    await this.prisma.$transaction(async (tx) => {
-      await tx.volunteerProfile.upsert({
-        where: { accountId },
-        update: {
-          instituteEmail: dto.instituteEmail,
-          instituteName: dto.instituteName,
-          studentId: dto.studentId,
-          instituteIdImageUrl: dto.instituteIdImageUrl,
-          grade: dto.grade,
-          about: dto.about ?? null,
-          verificationStatus: 'pending',
-          isAvailable: false,
-        },
-        create: {
-          accountId,
-          instituteEmail: dto.instituteEmail,
-          instituteName: dto.instituteName,
-          studentId: dto.studentId,
-          instituteIdImageUrl: dto.instituteIdImageUrl,
-          grade: dto.grade,
-          about: dto.about ?? null,
-          verificationStatus: 'pending',
-          isAvailable: false,
-        },
-      });
-      await tx.volunteerSpecialisation.deleteMany({ where: { accountId } });
-      await tx.volunteerSpecialisation.createMany({
-        data: dto.specialisationIds.map((specialisationId) => ({
-          accountId,
-          specialisationId,
-        })),
-      });
-      await tx.volunteerVerification.create({
-        data: {
-          volunteerId: accountId,
-          documentUrl: dto.instituteIdImageUrl,
-          status: 'pending',
-          submittedAt: new Date(),
-        },
-      });
-      await tx.volunteerExperience.upsert({
-        where: { accountId },
-        update: {},
-        create: { accountId, points: 0, level: 0 },
-      });
-      await tx.account.update({
-        where: { accountId },
-        data: { name: dto.name },
-      });
-    });
 
     return {
       message: 'Application submitted',
