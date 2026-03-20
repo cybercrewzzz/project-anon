@@ -1,43 +1,46 @@
-FROM refinedev/node:18 AS base
+# ---- Base ----
+FROM node:lts-alpine AS base
+RUN corepack enable
 
+WORKDIR /app
+
+# Copy workspace root files needed for dependency resolution
+COPY package.json yarn.lock .yarnrc.yml ./
+
+# Copy only the admin workspace package.json for layer caching
+COPY admin/package.json admin/package.json
+
+# ---- Dependencies ----
 FROM base AS deps
 
-RUN apk add --no-cache libc6-compat
+# Install all dependencies (dev needed for build step)
+RUN yarn workspaces focus admin
 
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+# ---- Build ----
+FROM deps AS build
 
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-FROM base AS builder
+# Copy admin source
+COPY admin/ admin/
 
-COPY --from=deps /app/refine/node_modules ./node_modules
+WORKDIR /app/admin
 
-COPY . .
+RUN npx next build
 
-RUN npm run build
+# ---- Production ----
+FROM node:lts-alpine AS production
 
-FROM base AS runner
+WORKDIR /app
 
-ENV NODE_ENV production
+# Copy standalone output (preserves monorepo path structure from outputFileTracingRoot)
+COPY --from=build /app/admin/.next/standalone ./
+COPY --from=build /app/admin/.next/static ./admin/.next/static
+COPY --from=build /app/admin/public ./admin/public
 
-COPY --from=builder /app/refine/public ./public
-
-RUN mkdir .next
-RUN chown refine:nodejs .next
-
-COPY --from=builder --chown=refine:nodejs /app/refine/.next/standalone ./
-COPY --from=builder --chown=refine:nodejs /app/refine/.next/static ./.next/static
-
-USER refine
-
+ENV NODE_ENV=production
+ENV PORT=3000
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-
-CMD ["node", "server.js"]
+CMD ["node", "admin/server.js"]
