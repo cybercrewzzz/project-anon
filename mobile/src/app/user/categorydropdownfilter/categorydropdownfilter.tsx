@@ -13,10 +13,10 @@ import { StyleSheet } from 'react-native-unistyles';
 // PURPOSE:  Loads all problem categories to display as selectable tags
 //
 // HOW TO TEST:
-//   → Set USE_MOCK = true in src/hooks/useLookup.ts
+//   → Set EXPO_PUBLIC_USE_MOCK_LOOKUP='true' in src/hooks/useLookup.ts
 //   → Open this screen — tags should load from MOCK_CATEGORIES
 //   → Toggle tags and verify selectedIds updates
-//   → Set USE_MOCK = false when backend is running
+//   → Remove EXPO_PUBLIC_USE_MOCK_LOOKUP when backend is running
 // =============================================================================
 import { useCategories } from '@/hooks/useLookup';
 

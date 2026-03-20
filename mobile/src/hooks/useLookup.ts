@@ -4,10 +4,13 @@ import { queryKeys } from '@/api/keys';
 
 // =============================================================================
 // TESTING MODE FLAG — GET /lookup/categories
-// Set USE_MOCK = true  → fake data, no backend needed
-// Set USE_MOCK = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
+// Set EXPO_PUBLIC_USE_MOCK_LOOKUP='true' (in dev) → fake data, no backend needed
+// Unset / set to anything else                    → real API (needs backend running + EXPO_PUBLIC_API_URL)
 // =============================================================================
-const USE_MOCK = true;
+const USE_MOCK =
+  typeof __DEV__ !== 'undefined' &&
+  __DEV__ &&
+  process.env.EXPO_PUBLIC_USE_MOCK_LOOKUP === 'true';
 
 // =============================================================================
 // ENDPOINT: GET /lookup/categories
@@ -15,9 +18,9 @@ const USE_MOCK = true;
 // PURPOSE:  Loads all problem categories to display as selectable tags
 //
 // HOW TO TEST:
-//   STEP A → Set USE_MOCK = true, open the category screen
+//   STEP A → In development, set EXPO_PUBLIC_USE_MOCK_LOOKUP='true', open the category screen
 //            Tags render from MOCK_CATEGORIES below
-//   STEP B → Set USE_MOCK = false for real API
+//   STEP B → Remove or change EXPO_PUBLIC_USE_MOCK_LOOKUP for real API
 // =============================================================================
 
 const MOCK_CATEGORIES = [
