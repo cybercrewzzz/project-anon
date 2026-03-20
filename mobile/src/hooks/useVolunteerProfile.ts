@@ -10,10 +10,16 @@ import { VolunteerProfile } from '@/api/schemas';
 
 // =============================================================================
 // TESTING MODE FLAGS
-// Set to true  → fake data, no backend needed
-// Set to false → real API (needs backend running + EXPO_PUBLIC_API_URL in .env)
+// USE_MOCK is derived from env + __DEV__:
+//   • In production: defaults to real API (mocks OFF) unless
+//       EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true'
+//   • In development: defaults to mocks ON unless
+//       EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'false'
 // =============================================================================
-const USE_MOCK = true;
+const USE_MOCK =
+  process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true' ||
+  (__DEV__ &&
+    process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE !== 'false');
 
 // =============================================================================
 // ENDPOINT: GET /volunteer/profile
@@ -22,7 +28,7 @@ const USE_MOCK = true;
 // =============================================================================
 
 const MOCK_PROFILE: VolunteerProfile = {
-  accountId: 'test-account-id',
+  accountId: '12345678-1234-1234-1234-123456789abc',
   name: 'John Doe',
   instituteEmail: 'john@university.edu',
   instituteName: 'Institute Of Mental Health',
@@ -31,8 +37,8 @@ const MOCK_PROFILE: VolunteerProfile = {
   verificationStatus: 'approved',
   isAvailable: false, // → change to true to open the connect toggle as "Active"
   specialisations: [
-    { specialisationId: 'spec-1', name: 'Anxiety' },
-    { specialisationId: 'spec-2', name: 'Stress' },
+    { specialisationId: '11111111-1111-1111-1111-111111111111', name: 'Anxiety' },
+    { specialisationId: '22222222-2222-2222-2222-222222222222', name: 'Stress' },
   ],
   experience: {
     points: 150, // → try 0, 150, 300 to test XP bar fill in settings.tsx
@@ -56,7 +62,7 @@ export function useVolunteerProfile() {
 
 // =============================================================================
 // ENDPOINT: PATCH /volunteer/profile
-// SCREEN:   src/app/volunteer/EditProfile/index.tsx  (not built yet)
+// SCREEN:   src/app/volunteer/EditProfile/editVolunteerProfile.tsx
 // PURPOSE:  Updates volunteer's about text and/or specialisation list
 //
 // HOW TO TEST:
