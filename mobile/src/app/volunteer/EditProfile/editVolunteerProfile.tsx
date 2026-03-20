@@ -19,8 +19,6 @@ const EditVolunteerProfile = () => {
   const { data: profile, isLoading: isLoadingProfile } = useVolunteerProfile();
 
   const {
-    tagline,
-    setTagline,
     about,
     setAbout,
     selectedIds,
@@ -30,7 +28,6 @@ const EditVolunteerProfile = () => {
     handleSave,
     isSaving,
   } = useVolunteerEditProfile(
-    profile?.tagline ?? null,
     profile?.about ?? null,
     profile?.specialisations?.map(s => s.specialisationId) ?? [],
   );
@@ -60,7 +57,6 @@ const EditVolunteerProfile = () => {
     );
   }
 
-  const TAGLINE_MAX = 80;
   const ABOUT_MAX = 500;
   const selectedCount = selectedIds.length;
 
@@ -71,39 +67,6 @@ const EditVolunteerProfile = () => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Tagline Section */}
-        <View style={styles.section}>
-          <AppText
-            style={styles.sectionLabel}
-            variant="body"
-            emphasis="emphasized"
-            color="accent"
-          >
-            Tagline
-          </AppText>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={tagline}
-              onChangeText={text => {
-                if (text.length <= TAGLINE_MAX) {
-                  setTagline(text);
-                }
-              }}
-              placeholder="Here to listen, here to help."
-              placeholderTextColor="#7dd3fc"
-              multiline
-            />
-            <AppText
-              style={styles.charCount}
-              variant="caption1"
-              color="subtle2"
-            >
-              {tagline.length}/{TAGLINE_MAX}
-            </AppText>
-          </View>
-        </View>
-
         {/* About You Section */}
         <View style={styles.section}>
           <AppText

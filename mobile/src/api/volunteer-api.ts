@@ -17,7 +17,6 @@ export async function fetchVolunteerProfile(): Promise<VolunteerProfile> {
 // ── PATCH /volunteer/profile ──────────────────────────────────────────────────
 
 export interface UpdateVolunteerProfileBody {
-  tagline?: string;
   about?: string;
   specialisationIds?: string[];
 }

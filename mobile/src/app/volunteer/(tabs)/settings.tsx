@@ -383,7 +383,7 @@ const SettingsScreen = () => {
           ──────────────────────────────────────────────────────────────────── */}
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Your Specialisations"
+            text="Edit your Profile."
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
             onPress={() => router.push('/volunteer/EditProfile/editVolunteerProfile')}
           />
