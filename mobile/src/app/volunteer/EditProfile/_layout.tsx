@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-const VolunteerLayout = () => {
+const EditProfileLayout = () => {
   return (
     <Stack screenOptions={{ headerShown: true, headerTitleAlign: 'center' }}>
       <Stack.Screen
@@ -14,4 +14,4 @@ const VolunteerLayout = () => {
   );
 };
 
-export default VolunteerLayout;
+export default EditProfileLayout;

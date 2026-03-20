@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchSpecialisations } from '@/api/lookup-api';
+import { queryKeys } from '@/api/keys';
 
 // =============================================================================
 // TESTING MODE FLAG — GET /lookup/specialisations
@@ -23,7 +24,7 @@ const USE_MOCK =
 export function useSpecialisations() {
   // ── GET /lookup/specialisations ─────────────────────────────────────────────
   return useQuery({
-    queryKey: ['specialisations'],
+    queryKey: queryKeys.specialisations,
     queryFn:
       USE_MOCK ?
         async () => {

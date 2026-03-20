@@ -238,7 +238,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderRadius: theme.radius.full,
     backgroundColor: theme.surface.primary,
     borderWidth: 1,
-    borderColor: common.gray[300],
+    borderColor: theme.text.gray,
     paddingVertical: theme.spacing.s2,
     paddingHorizontal: theme.spacing.s4,
     minHeight: 32,
