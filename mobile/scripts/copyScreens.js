@@ -23,27 +23,27 @@ const filesToCopy = [
 function processFile(filePath) {
   const srcPath = path.join(srcDir, filePath);
   const destPath = path.join(destDir, filePath);
-  
+
   if (!fs.existsSync(srcPath)) {
     console.log(`Source file does not exist: ${srcPath}`);
     return;
   }
-  
+
   let content = fs.readFileSync(srcPath, 'utf8');
-  
+
   // Replace references
   content = content.replace(/\/volunteer\//g, '/user/');
   content = content.replace(/\/start\/volunteer/g, '/start/user');
   content = content.replace(/setRole\('volunteer'\)/g, "setRole('user')");
-  
+
   // specialnotice specific
   content = content.replace(/\/user\/\(tabs\)\/home/g, '/user/(tabs)/home'); // just mapping nicely if needed
-  
+
   const destFolder = path.dirname(destPath);
   if (!fs.existsSync(destFolder)) {
     fs.mkdirSync(destFolder, { recursive: true });
   }
-  
+
   fs.writeFileSync(destPath, content);
   console.log(`Created: ${destPath}`);
 }

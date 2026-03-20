@@ -18,7 +18,9 @@ export async function getAccountMe(): Promise<Account> {
 /**
  * PATCH /account/me — Update name, interface language, spoken languages
  */
-export async function updateAccountMe(body: UpdateAccountBody): Promise<Account> {
+export async function updateAccountMe(
+  body: UpdateAccountBody,
+): Promise<Account> {
   const { data } = await apiClient.patch<Account>('/account/me', body);
   return data;
 }
@@ -41,7 +43,9 @@ export async function getLanguages(): Promise<LanguagesResponse> {
 /**
  * POST /device/token — Register/update FCM push notification token
  */
-export async function registerDeviceToken(body: DeviceTokenBody): Promise<void> {
+export async function registerDeviceToken(
+  body: DeviceTokenBody,
+): Promise<void> {
   await apiClient.post('/device/token', {
     fcm_token: body.fcmToken, // Map camelCase to snake_case if expected by backend or just pass it as fcmToken, wait the prompt said "if same fcm_token exists". So I'll just send { fcm_token: body.fcmToken }
   });

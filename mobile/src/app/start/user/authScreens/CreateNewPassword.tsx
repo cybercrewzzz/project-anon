@@ -55,7 +55,7 @@ const CreateNewPassword = () => {
     onSuccess: () => {
       router.push('/start/user/authScreens/ResetPassword' as any);
     },
-    onError: (error) => {
+    onError: error => {
       const apiError = parseApiError(error);
       Alert.alert('Error', apiError.message);
     },
@@ -125,10 +125,7 @@ const CreateNewPassword = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton
-          onPress={handleContinue}
-          disabled={isPending}
-        >
+        <FullWidthButton onPress={handleContinue} disabled={isPending}>
           <AppText variant="headline" color="secondary">
             {isPending ? 'Updating...' : 'Continue'}
           </AppText>
