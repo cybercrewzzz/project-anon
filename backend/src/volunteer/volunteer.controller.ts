@@ -13,9 +13,9 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { UpdateProfileDTO } from './dto/update-profile.dto';
-import { UpdateStatusDTO } from './dto/update-status.dto';
-import { ApplyVolunteerDTO } from './dto/apply-volunteer.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { ApplyVolunteerDto } from './dto/apply-volunteer.dto';
 
 @Controller('volunteer')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -34,9 +34,10 @@ export class VolunteerController {
 
   @Patch('profile')
   @Roles('volunteer')
+  @HttpCode(HttpStatus.OK)
   updateProfile(
     @CurrentUser('accountId') accountId: string,
-    @Body() body: UpdateProfileDTO,
+    @Body() body: UpdateProfileDto,
   ) {
     return this.volunteerService.updateProfile(accountId, body);
   }
@@ -48,7 +49,7 @@ export class VolunteerController {
   @HttpCode(HttpStatus.OK)
   updateStatus(
     @CurrentUser('accountId') accountId: string,
-    @Body() body: UpdateStatusDTO,
+    @Body() body: UpdateStatusDto,
   ) {
     return this.volunteerService.updateStatus(accountId, body);
   }
@@ -56,11 +57,11 @@ export class VolunteerController {
   // ── POST /volunteer/apply ────────────────────────────────────────
 
   @Post('apply')
-  @Roles('user')
+  @Roles('user', 'volunteer')
   @HttpCode(HttpStatus.CREATED)
   applyAsVolunteer(
     @CurrentUser('accountId') accountId: string,
-    @Body() body: ApplyVolunteerDTO,
+    @Body() body: ApplyVolunteerDto,
   ) {
     return this.volunteerService.applyAsVolunteer(accountId, body);
   }

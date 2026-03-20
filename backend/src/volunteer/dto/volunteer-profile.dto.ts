@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class SpecialisationDTO {
+class SpecialisationDto {
   // specialisation.specialisation_id
   @IsUUID()
   specialisationId: string;
@@ -40,7 +40,7 @@ class ExperienceDto {
   lastUpdated: string;
 }
 
-export class VolunteerProfileDTO {
+export class VolunteerProfileDto {
   // volunteer_profile.account_id
   @IsUUID()
   accountId: string;
@@ -86,8 +86,8 @@ export class VolunteerProfileDTO {
   // @Type(() => SpecialisationDto) — tells class-transformer what class each item is
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => SpecialisationDTO)
-  specialisations: SpecialisationDTO[];
+  @Type(() => SpecialisationDto)
+  specialisations: SpecialisationDto[];
 
   // Joined from volunteer_experience table
   @IsOptional()
