@@ -27,6 +27,7 @@ const MOCK_PROFILE: VolunteerProfile = {
   instituteEmail: 'john@university.edu',
   instituteName: 'Institute Of Mental Health',
   grade: 'A+',
+  tagline: 'Here to listen, here to help.',
   about: 'Passionate about helping others',
   verificationStatus: 'approved',
   isAvailable: false, // → change to true to open the connect toggle as "Active"
@@ -57,7 +58,7 @@ export function useVolunteerProfile() {
 // =============================================================================
 // ENDPOINT: PATCH /volunteer/profile
 // SCREEN:   src/app/volunteer/EditProfile/index.tsx  (not built yet)
-// PURPOSE:  Updates volunteer's about text and/or specialisation list
+// PURPOSE:  Updates volunteer's tagline, about text and/or specialisation list
 //
 // HOW TO TEST:
 //   STEP A — Successful update:
@@ -65,7 +66,7 @@ export function useVolunteerProfile() {
 //     → Fill in about text and select specialisations on the edit screen
 //     → Tap save — check terminal for logged payload:
 //          === PATCH /volunteer/profile MOCK PAYLOAD ===
-//          { "about": "...", "specialisationIds": ["spec-1", ...] }
+//          { "tagline": "...", "about": "...", "specialisationIds": ["spec-1", ...] }
 //
 //   STEP B — Error state:
 //     → Set SIMULATE_PROFILE_ERROR = true

@@ -8,6 +8,7 @@ import { useSpecialisations } from '@/hooks/useLookup';
 // PURPOSE:  Combines form state + submit logic for the edit profile screen
 //
 // CONTAINS:
+//   - tagline text field state
 //   - about text field state
 //   - selected specialisation IDs state
 //   - useSpecialisations() to load the picker options
@@ -15,10 +16,12 @@ import { useSpecialisations } from '@/hooks/useLookup';
 // =============================================================================
 
 export function useVolunteerEditProfile(
+  initialTagline: string | null,
   initialAbout: string | null,
   initialSpecialisationIds: string[],
 ) {
   // ── Local form state ────────────────────────────────────────────────────────
+  const [tagline, setTagline] = useState(initialTagline ?? '');
   const [about, setAbout] = useState(initialAbout ?? '');
   const [selectedIds, setSelectedIds] = useState<string[]>(
     initialSpecialisationIds,
@@ -36,9 +39,9 @@ export function useVolunteerEditProfile(
   // Toggle a specialisation on or off in the selected list
   const toggleSpecialisation = (specialisationId: string) => {
     setSelectedIds(prev =>
-      prev.includes(specialisationId)
-        ? prev.filter(id => id !== specialisationId)
-        : [...prev, specialisationId],
+      prev.includes(specialisationId) ?
+        prev.filter(id => id !== specialisationId)
+      : [...prev, specialisationId],
     );
   };
 
@@ -49,6 +52,7 @@ export function useVolunteerEditProfile(
   }) => {
     updateProfile(
       {
+        tagline: tagline.trim() || undefined,
         about: about.trim() || undefined,
         specialisationIds: selectedIds,
       },
@@ -67,6 +71,8 @@ export function useVolunteerEditProfile(
 
   return {
     // Form state
+    tagline,
+    setTagline,
     about,
     setAbout,
     selectedIds,

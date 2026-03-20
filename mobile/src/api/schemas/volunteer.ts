@@ -8,6 +8,7 @@ export const VolunteerProfileSchema = z.object({
   instituteEmail: z.email().nullable(),
   instituteName: z.string().nullable(),
   grade: z.string().nullable(),
+  tagline: z.string().nullable(),
   about: z.string().nullable(),
   verificationStatus: z.string(),
   isAvailable: z.boolean(),
