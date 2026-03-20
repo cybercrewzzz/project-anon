@@ -14,7 +14,7 @@ import { useAuth } from '@/store/useAuth';
 import { logout } from '@/api/auth';
 import { useVolunteerProfile } from '@/hooks/useVolunteerProfile';
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 interface XpCardProps {
   text: string;
@@ -27,7 +27,6 @@ interface MenuItemProps {
   text: string;
   color?: AppTextProps['color'];
   rightIcon?: ImageSource;
-  // ── PATCH /volunteer/profile: added so menu items can navigate ────────────
   onPress?: () => void;
 }
 
@@ -155,6 +154,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   menuItemicon: {},
 }));
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 const XpCard = ({ text, value, icon }: XpCardProps) => {
   return (

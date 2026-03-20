@@ -13,7 +13,7 @@ const USE_MOCK =
   __DEV__ &&
   typeof process !== 'undefined' &&
   !!process.env &&
-  process.env.EXPO_PUBLIC_USE_MOCK_LOOKUPS === 'false';
+  process.env.EXPO_PUBLIC_USE_MOCK_LOOKUPS === 'true';
 
 // =============================================================================
 // ENDPOINT: GET /lookup/specialisations

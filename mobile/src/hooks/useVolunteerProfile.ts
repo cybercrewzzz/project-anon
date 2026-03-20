@@ -1,55 +1,54 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/api/queryClient';
 import { queryKeys } from '@/api/keys';
+import { queryClient } from '@/api/queryClient';
 import {
   fetchVolunteerProfile,
   updateVolunteerProfile,
   type UpdateVolunteerProfileBody,
 } from '@/api/volunteer-api';
-import { VolunteerProfile } from '@/api/schemas';
+import type { VolunteerProfile } from '@/api/schemas';
 
 // =============================================================================
-// TESTING MODE FLAGS
-// USE_MOCK is derived from env + __DEV__:
-//   • In production: defaults to real API (mocks OFF) unless
-//       EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true'
-//   • In development: defaults to mocks ON unless
-//       EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'false'
+// TESTING MODE FLAG — GET /volunteer/profile
+// - EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true' → fake data, no backend
+// - otherwise falls back to __DEV__ (development builds only)
+// - production builds default to real API (needs backend + EXPO_PUBLIC_API_URL)
 // =============================================================================
 const USE_MOCK =
-  process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true' ||
-  (__DEV__ && process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE !== 'false');
-
-// =============================================================================
-// ENDPOINT: GET /volunteer/profile
-// SCREEN:   settings.tsx — loads name, institute, XP, level, specialisations
-//           p2p-and.tsx  — reads isAvailable to set the initial toggle state
-// =============================================================================
+  (
+    typeof process !== 'undefined' &&
+    process.env?.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE != null
+  ) ?
+    process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true'
+  : typeof __DEV__ !== 'undefined' ? __DEV__
+  : false;
 
 const MOCK_PROFILE: VolunteerProfile = {
-  accountId: '12345678-1234-1234-1234-123456789abc',
-  name: 'John Doe',
+  accountId: '00000000-0000-0000-0000-000000000001',
+  name: 'John Doe', // → profile card header
   instituteEmail: 'john@university.edu',
-  instituteName: 'Institute Of Mental Health',
+  instituteName: 'Institute Of Mental Health', // → under name in profile card
   grade: 'A+',
   about: 'Passionate about helping others',
   verificationStatus: 'approved',
-  isAvailable: false, // → change to true to open the connect toggle as "Active"
+  isAvailable: true,
   specialisations: [
     {
-      specialisationId: '11111111-1111-1111-1111-111111111111',
+      specialisationId: '00000000-0000-0000-0000-000000000101',
       name: 'Anxiety',
     },
     {
-      specialisationId: '22222222-2222-2222-2222-222222222222',
+      specialisationId: '00000000-0000-0000-0000-000000000102',
       name: 'Stress',
     },
   ],
   experience: {
-    points: 150, // → try 0, 150, 300 to test XP bar fill in settings.tsx
-    level: 1, // → try 1, 4, 7 to test level label in settings.tsx
+    points: 150, // → try 0, 150, 300 to test XP bar fill
+    level: 1, // → try 1, 4, 7 to test level label
   },
 };
+
+// ── Read: volunteer profile ───────────────────────────────────────────────────
 
 export function useVolunteerProfile() {
   // ── GET /volunteer/profile ─────────────────────────────────────────────────
