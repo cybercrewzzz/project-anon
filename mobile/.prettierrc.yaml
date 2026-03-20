@@ -1,4 +1,4 @@
 arrowParens: avoid
 singleQuote: true
-endOfLine: auto
+endOfLine: lf
 experimentalTernaries: true
