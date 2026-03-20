@@ -6,6 +6,7 @@ import {
   setTokens as persistTokens,
   clearTokens,
 } from '@/api/tokenStorage';
+import { removeDeviceToken } from '@/api/account';
 
 type MobileRole = Extract<AccountRole, 'user' | 'volunteer'>;
 
@@ -73,6 +74,11 @@ export const useAuth = create<AuthState>()(set => ({
   },
 
   signOut: async () => {
+    try {
+      await removeDeviceToken();
+    } catch (e) {
+      // Ignore errors from the backend on logout
+    }
     await clearTokens();
     set({ ...initialState, isHydrated: true });
   },
