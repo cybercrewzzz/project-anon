@@ -76,7 +76,7 @@ export const useAuth = create<AuthState>()(set => ({
   signOut: async () => {
     try {
       await removeDeviceToken();
-    } catch  {
+    } catch {
       // Ignore errors from the backend on logout
     }
     await clearTokens();

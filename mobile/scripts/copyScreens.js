@@ -37,7 +37,7 @@ function processFile(filePath) {
   content = content.replace(/setRole\('volunteer'\)/g, "setRole('user')");
 
   // specialnotice specific
-content = content.replace(/\/user\/tabs\/home/g, '/user/(tabs)/home');
+  content = content.replace(/\/user\/tabs\/home/g, '/user/(tabs)/home');
   const destFolder = path.dirname(destPath);
   if (!fs.existsSync(destFolder)) {
     fs.mkdirSync(destFolder, { recursive: true });
