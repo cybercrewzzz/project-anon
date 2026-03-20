@@ -8,7 +8,7 @@ import { CategorySchema } from './common';
 // =============================================================================
 
 // ── GET /lookup/categories ────────────────────────────────────────────────────
-// Not used yet — added here so it's ready when the seeker flow needs it
+// Used by fetchCategories to validate responses from GET /lookup/categories
 
 export const CategoriesResponseSchema = z.array(CategorySchema);
 export type CategoriesResponse = z.infer<typeof CategoriesResponseSchema>;

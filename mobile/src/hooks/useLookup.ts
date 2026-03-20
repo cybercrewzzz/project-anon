@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchCategories } from '@/api/lookup-api';
+import { queryKeys } from '@/api/keys';
 
 // =============================================================================
-// TESTING MODE FLAG — GET /lookup/specialisations + GET /lookup/categories
+// TESTING MODE FLAG — GET /lookup/categories
 // Set USE_MOCK = true  → fake data, no backend needed
 // Set USE_MOCK = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
 // =============================================================================
@@ -57,7 +58,7 @@ const MOCK_CATEGORIES = [
 export function useCategories() {
   // ── GET /lookup/categories ───────────────────────────────────────────────────
   return useQuery({
-    queryKey: ['categories'],
+    queryKey: queryKeys.categories,
     queryFn:
       USE_MOCK ?
         async () => {
