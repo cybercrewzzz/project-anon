@@ -43,7 +43,7 @@ export default function PeerToPeer() {
         <View style={styles.badgeRow}>
 
   <Pressable
-    onPress={() => setStarActive(!starActive)}
+onPress={() => setStarActive(prev => !prev)}
     style={[
       styles.starBadge,
       { backgroundColor: starActive ? common.white : purple[500] },
@@ -60,8 +60,8 @@ export default function PeerToPeer() {
   </Pressable>
 
   <Pressable
-    onPress={() => setTicketActive(!ticketActive)}
-    style={[
+onPress={() => setTicketActive(prev => !prev)}   
+ style={[
       styles.ticketBadge,
       { backgroundColor: ticketActive ? purple[500] : common.white },
     ]}
@@ -278,11 +278,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginBottom: theme.spacing.s4,
     gap: theme.spacing.s4,
    
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2, // Android
+    boxShadow: theme.elevation.level2,
   },
 
   emojiRow: {
