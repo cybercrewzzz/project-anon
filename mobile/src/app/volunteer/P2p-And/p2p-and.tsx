@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 // ── PATCH /volunteer/status ───────────────────────────────────────────────────
 // Added: these two hooks are the only new imports
 import {
-  useVolunteerStatus,
+  useVolunteerProfile,
   useUpdateVolunteerStatus,
 } from '@/hooks/useVolunteerProfile';
 // ─────────────────────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ export default function Index() {
 
   // ── PATCH /volunteer/status ─────────────────────────────────────────────────
   // Added: read isAvailable from profile to set initial toggle state
-  const { data: profile, isLoading: isProfileLoading } = useVolunteerStatus();
+  const { data: profile, isLoading: isProfileLoading } = useVolunteerProfile();
   // Added: fires PATCH /volunteer/status when toggle is pressed
   const { mutate: updateStatus, isPending } = useUpdateVolunteerStatus();
   // ───────────────────────────────────────────────────────────────────────────
@@ -44,14 +44,8 @@ export default function Index() {
 
   // Added: replaces direct setSelectedOption calls on the toggle buttons
   const handleToggle = (option: 'Offline' | 'Active') => {
-    // Prevent toggles while profile is loading or mutation is in flight,
-    // before we have a baseline profile state, or if the option is already selected.
-    if (
-      option === selectedOption ||
-      isProfileLoading ||
-      profile?.isAvailable === undefined ||
-      isPending
-    ) {
+    // Prevent toggling if already selected or while mutation is in flight
+    if (option === selectedOption || isPending) {
       return;
     }
     const available = option === 'Active';
@@ -739,7 +733,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   toggleWrapperRight: {
     position: 'absolute',
-    fontSize: rt.screen.width < 560 ? 14 : 18,
     right: rt.screen.width < 560 ? 14 : 18,
     zIndex: 10,
     marginTop: rt.screen.width < 560 ? 0 : 8,
