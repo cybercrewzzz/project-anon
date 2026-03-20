@@ -6,6 +6,7 @@ import {
   type VolunteerProfile,
   type VolunteerStatusResponse,
 } from './schemas';
+import { ZodError } from 'zod';
 
 // ── GET /volunteer/profile ────────────────────────────────────────────────────
 
@@ -27,6 +28,9 @@ export async function updateVolunteerStatus(
     const { data } = await apiClient.patch('/volunteer/status', { available });
     return VolunteerStatusResponseSchema.parse(data);
   } catch (error) {
+    if (error instanceof ZodError) {
+      // The server responded, but the payload did not match the expected schema.
+    }
     throw parseApiError(error);
   }
 }

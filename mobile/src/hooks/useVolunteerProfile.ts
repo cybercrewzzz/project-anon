@@ -47,6 +47,24 @@ const MOCK_IS_AVAILABLE =
 // SCREEN:   src/app/volunteer/P2p-And/p2p-and.tsx
 // PURPOSE:  Flips the volunteer's isAvailable flag when toggle is pressed
 
+// ── Mock profile data ─────────────────────────────────────────────────────────
+
+const MOCK_PROFILE: VolunteerProfile = {
+  accountId: '00000000-0000-0000-0000-000000000000',
+  name: 'Mock Volunteer',
+  instituteEmail: 'mock@example.com',
+  instituteName: 'Mock University',
+  grade: 'Mock Grade',
+  about: 'This is a mock volunteer profile for testing',
+  verificationStatus: 'approved',
+  isAvailable: MOCK_IS_AVAILABLE,
+  specialisations: [],
+  experience: {
+    points: 100,
+    level: 1,
+  },
+};
+
 // ── Read: load initial isAvailable state for the toggle ──────────────────────
 
 export function useVolunteerStatus() {
@@ -56,105 +74,72 @@ export function useVolunteerStatus() {
     queryFn:
       USE_MOCK ?
         async () => {
-          await new Promise(resolve => setTimeout(resolve, 400));
-          // Returns a minimal profile shape — only isAvailable matters here
-          return {
-            accountId: 'test-id',
-            name: 'John Doe',
-            instituteEmail: 'john@uni.edu',
-            instituteName: 'Institute Of Mental Health',
-            grade: 'A+',
-            about: null,
-            verificationStatus: 'approved',
-            isAvailable: MOCK_IS_AVAILABLE, // ← controls initial toggle state
-            specialisations: [],
-            experience: { points: 150, level: 1 },
-          } satisfies VolunteerProfile;
+          // Simulates network delay so you can see the loading spinner
+          await new Promise(resolve => setTimeout(resolve, 800));
+          return MOCK_PROFILE;
         }
-      : fetchVolunteerProfile,
-    // Keep staleTime short so the toggle stays fresh
-    staleTime: 1000 * 30,
+      : fetchVolunteerProfile, // ← real API call when USE_MOCK = false
   });
 }
 
-// ── Write: flip isAvailable when toggle is pressed ───────────────────────────
+// ── Write: update isAvailable when toggle is pressed ─────────────────────────
 
 export function useUpdateVolunteerStatus() {
-  // PATCH /volunteer/status
   return useMutation({
     mutationFn:
       USE_MOCK ?
         async (available: boolean) => {
-          // Logs payload so you can verify the correct boolean is sent
-          console.log('=== PATCH /volunteer/status MOCK PAYLOAD ===');
-          console.log(JSON.stringify({ available }, null, 2));
+          // Simulates network delay so you can see the loading state
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
-          // Simulates network delay
-          await new Promise(resolve => setTimeout(resolve, 600));
-
+          // Simulate error if flag is enabled
           if (SIMULATE_STATUS_ERROR) {
-            // Triggers the optimistic rollback — toggle snaps back
-            // Set SIMULATE_STATUS_ERROR = true above to test this
-            throw new Error('Failed to update status');
+            throw new Error('Simulated error: status update failed');
           }
 
           return { isAvailable: available };
         }
-      : (available: boolean) => updateVolunteerStatus(available),
+      : updateVolunteerStatus, // ← real API call when USE_MOCK = false
 
-    // Optimistic update — flips the toggle in the cache immediately
-    // so the UI feels instant before the server responds
+    // Optimistic update: immediately flip the toggle before the server responds
     onMutate: async (available: boolean) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: queryKeys.volunteer.profile(),
       });
-      const previous = queryClient.getQueryData<VolunteerProfile>(
+
+      // Snapshot the previous value
+      const previousProfile = queryClient.getQueryData<VolunteerProfile>(
         queryKeys.volunteer.profile(),
       );
-      const optimisticProfile: VolunteerProfile =
-        previous ?
-          { ...previous, isAvailable: available }
-        : {
-            // minimal optimistic profile; real data will be fetched on success
-            accountId: 'optimistic-id',
-            name: 'Volunteer',
-            instituteEmail: '',
-            instituteName: '',
-            grade: '',
-            about: null,
-            verificationStatus: 'approved',
+
+      // Optimistically update to the new value
+      if (previousProfile) {
+        queryClient.setQueryData<VolunteerProfile>(
+          queryKeys.volunteer.profile(),
+          {
+            ...previousProfile,
             isAvailable: available,
-            specialisations: [],
-            experience: { points: 0, level: 0 },
-          };
-      queryClient.setQueryData<VolunteerProfile>(
-        queryKeys.volunteer.profile(),
-        optimisticProfile,
-      );
-      return { previous, hadPrevious: Boolean(previous) };
+          },
+        );
+      }
+
+      // Return a context object with the snapshotted value
+      return { previousProfile };
     },
 
-    // Rolls back to the previous state if the request fails
-    onError: (_err, _vars, context) => {
-      if (!context) return;
-      if (context.hadPrevious) {
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (_error, _available, context) => {
+      if (context?.previousProfile) {
         queryClient.setQueryData(
           queryKeys.volunteer.profile(),
-          context.previous,
+          context.previousProfile,
         );
-      } else {
-        // No previous profile existed: remove the optimistic entry
-        queryClient.removeQueries({
-          queryKey: queryKeys.volunteer.profile(),
-        });
       }
     },
 
-    onSuccess: data => {
-      queryClient.setQueryData<VolunteerProfile>(
-        queryKeys.volunteer.profile(),
-        old => (old ? { ...old, isAvailable: data?.isAvailable } : old),
-      );
+    // Always refetch after error or success to ensure cache is in sync with server
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.volunteer.profile(),
       });
