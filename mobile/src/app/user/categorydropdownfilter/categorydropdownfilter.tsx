@@ -26,7 +26,12 @@ export default function CategoryDropdownFilter() {
 
   // ── GET /lookup/categories ──────────────────────────────────────────────────
   // Replaces the hardcoded feelingTags array with real data from the API
-  const { data: categories, isLoading } = useCategories();
+  const {
+    data: categories,
+    isLoading,
+    isError,
+    refetch,
+  } = useCategories();
 
   // Tracks selected UUIDs — categoryId instead of name strings
   // TODO: wire selectedIds to the seeker problem creation flow when built
@@ -87,6 +92,21 @@ export default function CategoryDropdownFilter() {
           {/* Shows spinner while loading, then renders real tags from API */}
           {isLoading ?
             <ActivityIndicator size="small" />
+          : isError ?
+            <View style={styles.errorContainer}>
+              <AppText
+                variant="body"
+                emphasis="emphasized"
+                style={styles.errorText}
+              >
+                Unable to load categories. Please try again.
+              </AppText>
+              <Pressable style={styles.retryBtn} onPress={() => refetch()}>
+                <AppText variant="caption1" emphasis="emphasized" color="secondary">
+                  Retry
+                </AppText>
+              </Pressable>
+            </View>
           : <View style={styles.tagRow}>
               {(categories ?? []).map(category => {
                 const selected = selectedIdSet.has(category.categoryId);
@@ -197,6 +217,22 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   filterTitle: {
     marginBottom: theme.spacing.s1,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    gap: theme.spacing.s2,
+  },
+  errorText: {
+    color: theme.state.error || theme.text.primary,
+    textAlign: 'center',
+  },
+  retryBtn: {
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.action.secondary,
+    paddingVertical: theme.spacing.s2,
+    paddingHorizontal: theme.spacing.s4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tagRow: {
     flexDirection: 'row',
