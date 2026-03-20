@@ -28,28 +28,68 @@ describe('LookupController', () => {
   // ── Specialisations ───────────────────────────────────────────────
 
   describe('getSpecialisations', () => {
-    it('delegates to service', () => {
-      void controller.getSpecialisations();
-      expect(service.getSpecialisations).toHaveBeenCalled();
+    const mockSpecialisations = [
+      {
+        specialisationId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        name: 'Teaching',
+        description: 'Teaching skills',
+      },
+      {
+        specialisationId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        name: 'Mentoring',
+        description: 'Mentoring skills',
+      },
+    ];
+
+    it('delegates to service and returns its result', async () => {
+      service.getSpecialisations.mockResolvedValue(mockSpecialisations);
+
+      const result = await controller.getSpecialisations();
+
+      expect(service.getSpecialisations).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockSpecialisations);
     });
 
-    it('calls service exactly once', () => {
-      void controller.getSpecialisations();
-      expect(service.getSpecialisations).toHaveBeenCalledTimes(1);
+    it('returns an empty array when no specialisations exist', async () => {
+      service.getSpecialisations.mockResolvedValue([]);
+
+      const result = await controller.getSpecialisations();
+
+      expect(result).toEqual([]);
     });
   });
 
   // ── Categories ────────────────────────────────────────────────────
 
   describe('getCategories', () => {
-    it('delegates to service', () => {
-      void controller.getCategories();
-      expect(service.getCategories).toHaveBeenCalled();
+    const mockCategories = [
+      {
+        categoryId: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+        name: 'Mental Health',
+        description: 'Mental health support',
+      },
+      {
+        categoryId: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
+        name: 'Academic',
+        description: 'Academic support',
+      },
+    ];
+
+    it('delegates to service and returns its result', async () => {
+      service.getCategories.mockResolvedValue(mockCategories);
+
+      const result = await controller.getCategories();
+
+      expect(service.getCategories).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockCategories);
     });
 
-    it('calls service exactly once', () => {
-      void controller.getCategories();
-      expect(service.getCategories).toHaveBeenCalledTimes(1);
+    it('returns an empty array when no categories exist', async () => {
+      service.getCategories.mockResolvedValue([]);
+
+      const result = await controller.getCategories();
+
+      expect(result).toEqual([]);
     });
   });
 });
