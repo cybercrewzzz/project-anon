@@ -67,7 +67,7 @@ const MOCK_PROFILE: VolunteerProfile = {
 
 // ── Read: load initial isAvailable state for the toggle ──────────────────────
 
-export function useVolunteerStatus() {
+export function useVolunteerProfile() {
   // GET /volunteer/profile — only used to read isAvailable on screen load
   return useQuery({
     queryKey: queryKeys.volunteer.profile(),
