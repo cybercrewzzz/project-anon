@@ -188,11 +188,7 @@ const MenuItem = ({
   onPress,
 }: MenuItemProps) => {
   return (
-    <Pressable
-      style={styles.menuItem}
-      onPress={onPress}
-      disabled={!onPress}
-    >
+    <Pressable style={styles.menuItem} onPress={onPress} disabled={!onPress}>
       <View style={styles.menuItemText}>
         <Image source={leftIcon} style={{ width: 24, height: 24 }} />
         <AppText variant="body" emphasis="emphasized" color={color}>
@@ -325,16 +321,26 @@ const SettingsScreen = () => {
                 Level {level}
               </AppText>
               <View style={styles.xpAmount}>
-                <AppText variant="footnote" emphasis="emphasized" color="secondary">
+                <AppText
+                  variant="footnote"
+                  emphasis="emphasized"
+                  color="secondary"
+                >
                   XP:{' '}
                 </AppText>
-                <AppText variant="footnote" emphasis="regular" color="secondary">
+                <AppText
+                  variant="footnote"
+                  emphasis="regular"
+                  color="secondary"
+                >
                   {points}/{xpCap}
                 </AppText>
               </View>
             </View>
             <View style={styles.xpBar}>
-              <View style={[styles.xpBarFill, { width: `${xpPercent * 100}%` }]} />
+              <View
+                style={[styles.xpBarFill, { width: `${xpPercent * 100}%` }]}
+              />
             </View>
           </LinearGradient>
 
@@ -360,8 +366,12 @@ const SettingsScreen = () => {
         {/* ── Certificate banner ── */}
         <View style={styles.Certificate}>
           <View style={styles.CertificateText}>
-            <AppText variant="title3" emphasis="emphasized">Get Your</AppText>
-            <AppText variant="title3" emphasis="emphasized">Certificate !</AppText>
+            <AppText variant="title3" emphasis="emphasized">
+              Get Your
+            </AppText>
+            <AppText variant="title3" emphasis="emphasized">
+              Certificate !
+            </AppText>
           </View>
           <Image
             source={require('@/assets/icons/certificateOPT.svg')}
@@ -385,7 +395,9 @@ const SettingsScreen = () => {
             leftIcon={require('@/assets/icons/languageOPT.svg')}
             text="Edit your Profile."
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-            onPress={() => router.push('/volunteer/EditProfile/editVolunteerProfile')}
+            onPress={() =>
+              router.push('/volunteer/EditProfile/editVolunteerProfile')
+            }
           />
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
