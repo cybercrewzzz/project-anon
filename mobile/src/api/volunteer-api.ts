@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { parseApiError} from './errors';
+import { parseApiError } from './errors';
 import {
   VolunteerApplyResponseSchema,
   VolunteerProfileSchema,
