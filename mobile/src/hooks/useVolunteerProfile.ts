@@ -18,8 +18,7 @@ import { VolunteerProfile } from '@/api/schemas';
 // =============================================================================
 const USE_MOCK =
   process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true' ||
-  (__DEV__ &&
-    process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE !== 'false');
+  (__DEV__ && process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE !== 'false');
 
 // =============================================================================
 // ENDPOINT: GET /volunteer/profile
@@ -37,8 +36,14 @@ const MOCK_PROFILE: VolunteerProfile = {
   verificationStatus: 'approved',
   isAvailable: false, // → change to true to open the connect toggle as "Active"
   specialisations: [
-    { specialisationId: '11111111-1111-1111-1111-111111111111', name: 'Anxiety' },
-    { specialisationId: '22222222-2222-2222-2222-222222222222', name: 'Stress' },
+    {
+      specialisationId: '11111111-1111-1111-1111-111111111111',
+      name: 'Anxiety',
+    },
+    {
+      specialisationId: '22222222-2222-2222-2222-222222222222',
+      name: 'Stress',
+    },
   ],
   experience: {
     points: 150, // → try 0, 150, 300 to test XP bar fill in settings.tsx
@@ -94,7 +99,7 @@ export function useUpdateVolunteerProfile() {
           await new Promise(resolve => setTimeout(resolve, 1000));
 
           if (SIMULATE_PROFILE_ERROR) {
-            throw new Error ('Failed to update profile. Please try again.' );
+            throw new Error('Failed to update profile. Please try again.');
           }
 
           // Returns the updated profile shape
