@@ -16,47 +16,103 @@ export class TicketService {
   constructor(private readonly redis: RedisService) {}
 
   async tryReserve(accountId: string): Promise<boolean> {
-    const state = await this.getRemaining(accountId);
+    const key = this.getTicketKey(accountId);
+    const configuredDailyLimit = this.getDailyLimit(undefined);
 
-    if (state.remaining <= 0) {
-      return false;
-    }
+    const result = await this.redis.eval(
+      `
+      local key = KEYS[1]
+      local configured_daily = tonumber(ARGV[1])
+      local ttl = tonumber(ARGV[2])
 
-    await this.writeState(accountId, {
-      daily: state.daily,
-      consumed: state.consumed,
-      reserved: state.reserved + 1,
-    });
+      local daily = redis.call('HGET', key, 'daily')
+      if not daily or daily == '' then
+        daily = tostring(configured_daily)
+        redis.call('HSET', key, 'daily', daily)
+      end
 
-    return true;
+      local consumed = tonumber(redis.call('HGET', key, 'consumed') or '0')
+      if not consumed or consumed < 0 then consumed = 0 end
+
+      local reserved = tonumber(redis.call('HGET', key, 'reserved') or '0')
+      if not reserved or reserved < 0 then reserved = 0 end
+
+      local daily_num = tonumber(daily)
+      if not daily_num or daily_num < 1 then daily_num = configured_daily end
+
+      local remaining = daily_num - consumed - reserved
+      if remaining <= 0 then
+        return 0
+      end
+
+      reserved = reserved + 1
+      redis.call('HSET', key, 'reserved', tostring(reserved))
+      redis.call('EXPIRE', key, ttl)
+      return 1
+      `,
+      1,
+      key,
+      configuredDailyLimit.toString(),
+      TicketService.TTL_SECONDS.toString(),
+    );
+
+    return result === 1 || result === '1';
   }
 
   async releaseReserved(accountId: string): Promise<void> {
-    const state = await this.getRemaining(accountId);
+    const key = this.getTicketKey(accountId);
 
-    if (state.reserved <= 0) {
-      return;
-    }
+    await this.redis.eval(
+      `
+      local key = KEYS[1]
+      local ttl = tonumber(ARGV[1])
 
-    await this.writeState(accountId, {
-      daily: state.daily,
-      consumed: state.consumed,
-      reserved: state.reserved - 1,
-    });
+      local reserved = tonumber(redis.call('HGET', key, 'reserved') or '0')
+      if not reserved or reserved <= 0 then
+        return 0
+      end
+
+      reserved = reserved - 1
+      if reserved < 0 then reserved = 0 end
+
+      redis.call('HSET', key, 'reserved', tostring(reserved))
+      redis.call('EXPIRE', key, ttl)
+      return 1
+      `,
+      1,
+      key,
+      TicketService.TTL_SECONDS.toString(),
+    );
   }
 
   async consumeReserved(accountId: string): Promise<void> {
-    const state = await this.getRemaining(accountId);
+    const key = this.getTicketKey(accountId);
 
-    if (state.reserved <= 0) {
-      return;
-    }
+    await this.redis.eval(
+      `
+      local key = KEYS[1]
+      local ttl = tonumber(ARGV[1])
 
-    await this.writeState(accountId, {
-      daily: state.daily,
-      consumed: state.consumed + 1,
-      reserved: state.reserved - 1,
-    });
+      local reserved = tonumber(redis.call('HGET', key, 'reserved') or '0')
+      if not reserved or reserved <= 0 then
+        return 0
+      end
+
+      local consumed = tonumber(redis.call('HGET', key, 'consumed') or '0')
+      if not consumed or consumed < 0 then consumed = 0 end
+
+      reserved = reserved - 1
+      if reserved < 0 then reserved = 0 end
+      consumed = consumed + 1
+
+      redis.call('HSET', key, 'consumed', tostring(consumed), 'reserved', tostring(reserved))
+      redis.call('EXPIRE', key, ttl)
+      return 1
+      `,
+      1,
+      key,
+      TicketService.TTL_SECONDS.toString(),
+    );
   }
 
   async getRemaining(accountId: string): Promise<TicketState> {
