@@ -1,6 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import {
+  fetchVolunteerProfile,
+  applyAsVolunteer,
+  type ApplyVolunteerBody,
+} from '@/api/volunteer-api';
 import { queryKeys } from '@/api/keys';
-import { fetchVolunteerProfile } from '@/api/volunteer-api';
 import type { VolunteerProfile } from '@/api/schemas';
 
 // =============================================================================
@@ -9,14 +13,9 @@ import type { VolunteerProfile } from '@/api/schemas';
 // - otherwise falls back to __DEV__ (development builds only)
 // - production builds default to real API (needs backend + EXPO_PUBLIC_API_URL)
 // =============================================================================
-const USE_MOCK =
-  (
-    typeof process !== 'undefined' &&
-    process.env?.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE != null
-  ) ?
-    process.env.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true'
-  : typeof __DEV__ !== 'undefined' ? __DEV__
-  : false;
+const USE_MOCK_PROFILE =
+  typeof process !== 'undefined' &&
+  process.env?.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_PROFILE === 'true';
 
 const MOCK_PROFILE: VolunteerProfile = {
   accountId: '00000000-0000-0000-0000-000000000001',
@@ -50,12 +49,58 @@ export function useVolunteerProfile() {
   return useQuery({
     queryKey: queryKeys.volunteer.profile(),
     queryFn:
-      USE_MOCK ?
+      USE_MOCK_PROFILE ?
         async () => {
           // Simulates network delay so you can see the loading spinner
           await new Promise(resolve => setTimeout(resolve, 800));
           return MOCK_PROFILE;
         }
-      : fetchVolunteerProfile, // ← real API call when USE_MOCK = false
+      : fetchVolunteerProfile, // ← real API call when USE_MOCK_PROFILE = false
+  });
+}
+
+// =============================================================================
+// TESTING MODE FLAG — POST /volunteer/apply
+// Set USE_MOCK_APPLY = true  → fake submission, no backend needed
+// Set USE_MOCK_APPLY = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
+// =============================================================================
+const USE_MOCK_APPLY =
+  typeof process !== 'undefined' &&
+  process.env?.EXPO_PUBLIC_USE_MOCK_VOLUNTEER_APPLY === 'true';
+
+// Change to true to test the error state on verify.tsx
+const SIMULATE_APPLY_ERROR =
+  typeof process !== 'undefined' &&
+  process.env?.EXPO_PUBLIC_SIMULATE_APPLY_ERROR === 'true';
+
+export function useApplyAsVolunteer() {
+  // ── POST /volunteer/apply ──────────────────────────────────────────────────
+  return useMutation({
+    mutationFn:
+      USE_MOCK_APPLY ?
+        async (body: ApplyVolunteerBody) => {
+          // Logs the full payload so you can verify every field is
+          // correctly mapped from the form before hitting the real backend
+          if (__DEV__ !== false) {
+            console.log('=== POST /volunteer/apply MOCK PAYLOAD ===');
+            console.log(JSON.stringify(body, null, 2));
+          }
+
+          // Simulates network delay — lets you see "Submitting..." on button
+          await new Promise(resolve => setTimeout(resolve, 1200));
+
+          if (SIMULATE_APPLY_ERROR) {
+            // Simulates a 409 Conflict — triggers the inline error on verify.tsx
+            // Set EXPO_PUBLIC_SIMULATE_APPLY_ERROR = true to test this path
+            throw new Error('An active application already exists');
+          }
+
+          // Simulates a successful 201 response from the backend
+          return {
+            message: 'Application submitted',
+            verificationStatus: 'pending' as const,
+          };
+        }
+      : (body: ApplyVolunteerBody) => applyAsVolunteer(body), // ← real API call
   });
 }
