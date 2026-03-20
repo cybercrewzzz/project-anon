@@ -21,38 +21,38 @@ const USE_MOCK = true;
 // =============================================================================
 
 const MOCK_CATEGORIES = [
-  { categoryId: 'cat-1', name: 'Anxious', description: 'Feeling anxious' },
-  { categoryId: 'cat-2', name: 'Angry', description: 'Feeling angry' },
-  { categoryId: 'cat-3', name: 'Scared', description: 'Feeling scared' },
+  { categoryId: '11111111-1111-1111-1111-111111111111', name: 'Anxious', description: 'Feeling anxious' },
+  { categoryId: '22222222-2222-2222-2222-222222222222', name: 'Angry', description: 'Feeling angry' },
+  { categoryId: '33333333-3333-3333-3333-333333333333', name: 'Scared', description: 'Feeling scared' },
   {
-    categoryId: 'cat-4',
+    categoryId: '44444444-4444-4444-4444-444444444444',
     name: 'Overwhelmed',
     description: 'Feeling overwhelmed',
   },
-  { categoryId: 'cat-5', name: 'Ashamed', description: 'Feeling ashamed' },
-  { categoryId: 'cat-6', name: 'Disgusted', description: 'Feeling disgusted' },
+  { categoryId: '55555555-5555-5555-5555-555555555555', name: 'Ashamed', description: 'Feeling ashamed' },
+  { categoryId: '66666666-6666-6666-6666-666666666666', name: 'Disgusted', description: 'Feeling disgusted' },
   {
-    categoryId: 'cat-7',
+    categoryId: '77777777-7777-7777-7777-777777777777',
     name: 'Frustrated',
     description: 'Feeling frustrated',
   },
-  { categoryId: 'cat-8', name: 'Depression', description: 'Feeling depressed' },
-  { categoryId: 'cat-9', name: 'Worried', description: 'Feeling worried' },
-  { categoryId: 'cat-10', name: 'Loneliness', description: 'Feeling lonely' },
-  { categoryId: 'cat-11', name: 'Pressure', description: 'Under pressure' },
+  { categoryId: '88888888-8888-8888-8888-888888888888', name: 'Depression', description: 'Feeling depressed' },
+  { categoryId: '99999999-9999-9999-9999-999999999999', name: 'Worried', description: 'Feeling worried' },
+  { categoryId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', name: 'Loneliness', description: 'Feeling lonely' },
+  { categoryId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', name: 'Pressure', description: 'Under pressure' },
   {
-    categoryId: 'cat-12',
+    categoryId: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
     name: 'Discouraged',
     description: 'Feeling discouraged',
   },
-  { categoryId: 'cat-13', name: 'Sad', description: 'Feeling sad' },
-  { categoryId: 'cat-14', name: 'Drained', description: 'Feeling drained' },
+  { categoryId: 'dddddddd-dddd-dddd-dddd-dddddddddddd', name: 'Sad', description: 'Feeling sad' },
+  { categoryId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', name: 'Drained', description: 'Feeling drained' },
   {
-    categoryId: 'cat-15',
+    categoryId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
     name: 'Breakups',
     description: 'Relationship issues',
   },
-  { categoryId: 'cat-16', name: 'Stress', description: 'Feeling stressed' },
+  { categoryId: '00000000-0000-0000-0000-000000000000', name: 'Stress', description: 'Feeling stressed' },
 ];
 
 export function useCategories() {
