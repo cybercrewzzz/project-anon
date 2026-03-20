@@ -29,7 +29,7 @@ export class TicketService {
     });
 
     return true;
-}
+  }
 
   async releaseReserved(accountId: string): Promise<void> {
     const state = await this.getRemaining(accountId);
