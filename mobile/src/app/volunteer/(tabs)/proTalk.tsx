@@ -1,54 +1,45 @@
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View } from 'react-native';
+import React from 'react';
 import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Button from '@/components/button';
+import { AppText } from '@/components/AppText';
+import { StyleSheet } from 'react-native-unistyles';
 
 const ProTalk = () => {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.title}>ProTalk</Text>
+    <View style={styles.container}>
+      <AppText variant="title1" emphasis="emphasized" color="accent">
+        ProTalk
+      </AppText>
+      <View style={styles.buttonsContainer}>
         <Button
-          title="To the OTPVerification"
-          onPress={() => router.push('/volunteer/authScreens/OTPVerification')}
+          text="Open Peer to Peer"
+          onPress={() => router.push('/volunteer/P2p-And/p2p-and')}
         />
         <Button
-          title="To Enter Email"
-          onPress={() => router.push('/volunteer/authScreens/enterEmail')}
-        />
-        <Button
-          title="To Login Successful"
+          text="Specialisation Dropdown Filter"
           onPress={() =>
-            router.push('/volunteer/loginSuccessful/LoginSuccessful')
+            router.push('/volunteer/Specialisations/specialisationFilter')
           }
-        />
-        <Button
-          title="To Sign Up and Login"
-          onPress={() =>
-            router.navigate('/volunteer/signUpNlogin/SignUpNLogin')
-          }
-        />
-        <Button
-          title="P2P AND"
-          onPress={() => router.navigate('/volunteer/P2p-And/p2p-and')}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 export default ProTalk;
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
+const styles = StyleSheet.create(theme => ({
   container: {
     flex: 1,
+    backgroundColor: theme.background.default,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.s7,
+    paddingHorizontal: theme.spacing.s5,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    alignSelf: 'center',
+  buttonsContainer: {
+    alignSelf: 'stretch',
+    gap: theme.spacing.s4,
   },
-});
+}));

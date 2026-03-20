@@ -29,6 +29,7 @@
  * @see {@link colors} - Blue color palette
  */
 
+import { AppTheme } from '@/theme/appTheme';
 import { colors } from '@/theme/palettes/colors';
 import { common } from '@/theme/palettes/common';
 import { purple } from '@/theme/palettes/purple';
@@ -87,19 +88,23 @@ export const userLightTheme = {
     default: common.white,
     secondary: purple[50],
     accent: purple[500],
-    overlay: 'rgba(149, 0, 255, 0.8)',
+    overlay: 'rgba(51, 51, 51, 0.8)',
   },
   surface: {
     primary: common.white,
     secondary: purple[50],
     tertiary: purple[100],
     muted: common.gray[100],
+    chatSurface: colors.blue[100],
+    chatBubbleIncoming: purple[800],
+    chatTimerTrack: common.gray[200],
     highlightedGradient: [purple[800], purple[500]],
   },
   text: {
     primary: common.black,
     secondary: common.white,
     muted: common.gray[400],
+    gray: common.gray[600],
     accent: purple[500],
     subtle1: purple[600],
     subtle2: purple[400],
@@ -130,7 +135,7 @@ export const userLightTheme = {
   radius,
   spacing,
   elevation,
-} as const;
+} as const satisfies AppTheme;
 
 /**
  * Type definition for the app theme.
@@ -142,4 +147,3 @@ export const userLightTheme = {
  * This type can be used to enforce consistent theme structure
  * across different theme variants (light/dark, different roles).
  */
-export type AppTheme = typeof userLightTheme;

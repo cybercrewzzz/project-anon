@@ -54,7 +54,7 @@ export default function Index() {
         }),
       ]).start();
     }
-  }, [selectedOption]);
+  });
 
   useEffect(() => {
     if (connectFilter === 'Recommended') {
@@ -84,7 +84,7 @@ export default function Index() {
         }),
       ]).start();
     }
-  }, [connectFilter]);
+  });
 
   const offlineBackgroundColor = offlineAnim.interpolate({
     inputRange: [0, 1],
