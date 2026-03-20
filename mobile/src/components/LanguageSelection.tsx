@@ -37,7 +37,12 @@ export const LanguageSelection = ({
   const [language, setLanguage] = useState('english');
   const [talkLanguages, setTalkLanguages] = useState<string[]>(['english']);
 
-  const { data: languages, isLoading, isError, error } = useQuery({
+  const {
+    data: languages,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['languages'],
     queryFn: getLanguages,
   });
@@ -77,50 +82,48 @@ export const LanguageSelection = ({
         <AppText variant="subhead" emphasis="emphasized" color="primary">
           App Interface Language
         </AppText>
-        {isLoading ? (
+        {isLoading ?
           <ActivityIndicator size="small" />
-        ) : (
-            <View style={styles.selectionButtons}>
+        : <View style={styles.selectionButtons}>
             {languages?.map((lang: { code: string; name: string }) => (
               <SmallButton
-              key={`interface-${lang.code}`}
-              selected={language === lang.code}
-              onPress={() => handleLanguageChange(lang.code)}
+                key={`interface-${lang.code}`}
+                selected={language === lang.code}
+                onPress={() => handleLanguageChange(lang.code)}
               >
-              {lang.name}
+                {lang.name}
               </SmallButton>
             ))}
-            </View>
-        )}
+          </View>
+        }
       </View>
       <View style={styles.talkCard}>
         <AppText variant="subhead" emphasis="emphasized" color="primary">
           How would you like to talk with others?
         </AppText>
-        {isLoading ? (
+        {isLoading ?
           <ActivityIndicator size="small" />
-        ) : (
-            <View style={styles.selectionButtons}>
+        : <View style={styles.selectionButtons}>
             {languages?.map((lang: { code: string; name: string }) => {
               const isSelected = talkLanguages.includes(lang.code);
               return (
-              <SmallButton
-                key={`talk-${lang.code}`}
-                selected={isSelected}
-                onPress={() => {
-                const newTalkLanguages: string[] =
-                  talkLanguages.includes(lang.code) ?
-                  talkLanguages.filter((l: string) => l !== lang.code)
-                  : [...talkLanguages, lang.code];
-                handleTalkLanguagesChange(newTalkLanguages);
-                }}
-              >
-                {lang.name}
-              </SmallButton>
+                <SmallButton
+                  key={`talk-${lang.code}`}
+                  selected={isSelected}
+                  onPress={() => {
+                    const newTalkLanguages: string[] =
+                      talkLanguages.includes(lang.code) ?
+                        talkLanguages.filter((l: string) => l !== lang.code)
+                      : [...talkLanguages, lang.code];
+                    handleTalkLanguagesChange(newTalkLanguages);
+                  }}
+                >
+                  {lang.name}
+                </SmallButton>
               );
             })}
-            </View>
-        )}
+          </View>
+        }
       </View>
     </View>
   );
