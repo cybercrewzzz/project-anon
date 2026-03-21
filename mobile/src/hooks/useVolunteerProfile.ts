@@ -4,19 +4,21 @@ import {
   fetchVolunteerProfile,
   applyAsVolunteer,
   updateVolunteerStatus,
+  updateVolunteerProfile,
   type ApplyVolunteerBody,
+  type UpdateVolunteerProfileBody,
 } from '@/api/volunteer-api';
 import { queryKeys } from '@/api/keys';
 import type { VolunteerProfile } from '@/api/schemas';
 
 // =============================================================================
-// TESTING MODE FLAG — PATCH /volunteer/status
-// Set USE_MOCK = true  → fake response, no backend needed
-// Set USE_MOCK = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
-// USE_MOCK is only enabled in dev builds and when explicitly opted in via env:
-//   EXPO_PUBLIC_USE_MOCK_API === 'true'
-// In production (__DEV__ === false), this will always be false and the real API
-// will be used.
+// ENDPOINT: GET /volunteer/profile
+// SCREEN:   src/app/volunteer/settings.tsx
+// PURPOSE:  Reads the initial isAvailable state for the toggle
+// =============================================================================
+// TESTING MODE FLAG — GET /volunteer/profile
+// Set USE_MOCK_PROFILE = true  → fake response, no backend needed
+// Set USE_MOCK_PROFILE = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
 // =============================================================================
 const USE_MOCK_PROFILE =
   typeof process !== 'undefined' &&
@@ -47,11 +49,61 @@ export function useVolunteerProfile() {
     queryFn:
       USE_MOCK_PROFILE ?
         async () => {
-          // Simulates network delay so you can see the loading spinner
           await new Promise(resolve => setTimeout(resolve, 800));
           return MOCK_PROFILE;
         }
       : fetchVolunteerProfile, // ← real API call when USE_MOCK_PROFILE = false
+  });
+}
+
+// =============================================================================
+// ENDPOINT: PATCH /volunteer/profile
+// SCREEN:   src/app/volunteer/EditProfile/editVolunteerProfile.tsx
+// PURPOSE:  Updates volunteer's about text and/or specialisation list
+//
+// HOW TO TEST:
+//   STEP A — Successful update:
+//     → Set SIMULATE_PROFILE_ERROR = false (default)
+//     → Fill in about text and select specialisations on the edit screen
+//     → Tap save — check terminal for logged payload:
+//          === PATCH /volunteer/profile MOCK PAYLOAD ===
+//          { "about": "...", "specialisationIds": ["spec-1", ...] }
+//
+//   STEP B — Error state:
+//     → Set SIMULATE_PROFILE_ERROR = true
+//     → Tap save — error should show on the edit screen
+//     → Set back to false when done
+// =============================================================================
+
+const SIMULATE_PROFILE_ERROR = false;
+
+export function useUpdateVolunteerProfile() {
+  // ── PATCH /volunteer/profile ───────────────────────────────────────────────
+  return useMutation({
+    mutationFn:
+      USE_MOCK_PROFILE ?
+        async (body: UpdateVolunteerProfileBody) => {
+          console.log('=== PATCH /volunteer/profile MOCK PAYLOAD ===');
+          console.log(JSON.stringify(body, null, 2));
+
+          // Simulates network delay — lets you see saving state on button
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          if (SIMULATE_PROFILE_ERROR) {
+            throw new Error('Failed to update profile. Please try again.');
+          }
+
+          // Returns the updated profile shape
+          return { ...MOCK_PROFILE, ...body };
+        }
+      : async (body: UpdateVolunteerProfileBody) =>
+          updateVolunteerProfile(body),
+    onSuccess: () => {
+      // Refreshes the profile cache so settings.tsx shows updated data
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.volunteer.profile(),
+      });
+    },
   });
 }
 
@@ -101,6 +153,26 @@ export function useApplyAsVolunteer() {
   });
 }
 
+// =============================================================================
+// ENDPOINT: PATCH /volunteer/status
+// SCREEN:   src/app/volunteer/settings.tsx
+// PURPOSE:  Updates the isAvailable toggle state
+//
+// HOW TO TEST:
+//   STEP A — Successful update:
+//     → Set SIMULATE_STATUS_ERROR = false (default)
+//     → Toggle the availability switch on the settings screen
+//     → Check the toggle flips immediately (optimistic update)
+//
+//   STEP B — Error state:
+//     → Set SIMULATE_STATUS_ERROR = true (via EXPO_PUBLIC_SIMULATE_STATUS_ERROR env)
+//     → Toggle the switch — it should rollback on error
+//     → Set back to false when done
+//
+// TESTING MODE FLAG — PATCH /volunteer/status
+// Set USE_MOCK = true  → fake response, no backend needed
+// Set USE_MOCK = false → real API (needs backend running + EXPO_PUBLIC_API_URL)
+// =============================================================================
 // ── Write: update isAvailable when toggle is pressed ─────────────────────────
 
 const USE_MOCK =

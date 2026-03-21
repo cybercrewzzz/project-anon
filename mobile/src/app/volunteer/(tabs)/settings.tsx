@@ -14,7 +14,7 @@ import { useAuth } from '@/store/useAuth';
 import { logout } from '@/api/auth';
 import { useVolunteerProfile } from '@/hooks/useVolunteerProfile';
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 interface XpCardProps {
   text: string;
@@ -27,6 +27,7 @@ interface MenuItemProps {
   text: string;
   color?: AppTextProps['color'];
   rightIcon?: ImageSource;
+  onPress?: () => void;
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
@@ -154,6 +155,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   menuItemicon: {},
 }));
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
 const XpCard = ({ text, value, icon }: XpCardProps) => {
   return (
     <View style={styles.card}>
@@ -176,14 +179,17 @@ const XpCard = ({ text, value, icon }: XpCardProps) => {
   );
 };
 
+// ── PATCH /volunteer/profile: MenuItem is now a Pressable when onPress given ──
+// Items without onPress stay non-interactive (disabled)
 const MenuItem = ({
   leftIcon,
   text,
   color = 'primary',
   rightIcon,
+  onPress,
 }: MenuItemProps) => {
   return (
-    <View style={styles.menuItem}>
+    <Pressable style={styles.menuItem} onPress={onPress} disabled={!onPress}>
       <View style={styles.menuItemText}>
         <Image source={leftIcon} style={{ width: 24, height: 24 }} />
         <AppText variant="body" emphasis="emphasized" color={color}>
@@ -193,7 +199,7 @@ const MenuItem = ({
       <View style={styles.menuItemicon}>
         <Image source={rightIcon} style={{ width: 18, height: 18 }} />
       </View>
-    </View>
+    </Pressable>
   );
 };
 
@@ -225,7 +231,6 @@ const SettingsScreen = () => {
     if (!showDevUI) {
       return;
     }
-
     try {
       if (refreshToken) await logout(refreshToken);
     } catch {
@@ -286,11 +291,9 @@ const SettingsScreen = () => {
             />
           </View>
           <View style={styles.profileDetails}>
-            {/* Real name from API */}
             <AppText variant="headline" emphasis="emphasized" color="accent">
               {profile.name}
             </AppText>
-            {/* Real institute from API */}
             {profile.instituteName && (
               <AppText variant="footnote" emphasis="emphasized" color="primary">
                 {profile.instituteName}
@@ -298,7 +301,6 @@ const SettingsScreen = () => {
             )}
             <View style={styles.levelText}>
               <AppText variant="caption1">Level: </AppText>
-              {/* Real level label derived from experience.level */}
               <AppText variant="footnote" emphasis="emphasized">
                 {levelLabel}
               </AppText>
@@ -316,7 +318,6 @@ const SettingsScreen = () => {
             locations={[0, 0.5]}
           >
             <View style={styles.xpText}>
-              {/* Real level number */}
               <AppText variant="footnote" emphasis="regular" color="secondary">
                 Level {level}
               </AppText>
@@ -328,7 +329,6 @@ const SettingsScreen = () => {
                 >
                   XP:{' '}
                 </AppText>
-                {/* Real points / cap */}
                 <AppText
                   variant="footnote"
                   emphasis="regular"
@@ -339,7 +339,6 @@ const SettingsScreen = () => {
               </View>
             </View>
             <View style={styles.xpBar}>
-              {/* Dynamic fill width based on real XP progress */}
               <View
                 style={[styles.xpBarFill, { width: `${xpPercent * 100}%` }]}
               />
@@ -372,7 +371,7 @@ const SettingsScreen = () => {
               Get Your
             </AppText>
             <AppText variant="title3" emphasis="emphasized">
-              Certificate !
+              Certificate!
             </AppText>
           </View>
           <Image
@@ -389,10 +388,17 @@ const SettingsScreen = () => {
             text="Select Language"
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
+          {/* ── PATCH /volunteer/profile ──────────────────────────────────────
+              Navigates to EditProfile screen where volunteer updates
+              their about text and specialisations
+          ──────────────────────────────────────────────────────────────────── */}
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Your Specialisation"
+            text="Edit Profile"
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+            onPress={() =>
+              router.push('/volunteer/EditProfile/editVolunteerProfile')
+            }
           />
           <MenuItem
             leftIcon={require('@/assets/icons/languageOPT.svg')}
@@ -415,6 +421,7 @@ const SettingsScreen = () => {
             rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
           />
         </View>
+
         {/* TODO: Remove this temp button when permanent logout UI is built */}
         <Pressable
           onPress={handleLogout}

@@ -21,6 +21,24 @@ export async function fetchVolunteerProfile(): Promise<VolunteerProfile> {
   }
 }
 
+// ── PATCH /volunteer/profile ──────────────────────────────────────────────────
+
+export interface UpdateVolunteerProfileBody {
+  about?: string;
+  specialisationIds?: string[];
+}
+
+export async function updateVolunteerProfile(
+  body: UpdateVolunteerProfileBody,
+): Promise<VolunteerProfile> {
+  try {
+    const { data } = await apiClient.patch('/volunteer/profile', body);
+    return VolunteerProfileSchema.parse(data);
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
 // ── PATCH /volunteer/status ───────────────────────────────────────────────────
 
 export async function updateVolunteerStatus(

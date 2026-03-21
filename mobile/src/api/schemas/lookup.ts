@@ -3,7 +3,6 @@ import { SpecialisationSchema, CategorySchema } from './common';
 
 // =============================================================================
 // ENDPOINT: GET /lookup/specialisations
-// ENDPOINT: GET /lookup/categories
 // MODULE:   backend/src/lookup/
 // PURPOSE:  Reference data — any authenticated user can call these
 // =============================================================================
