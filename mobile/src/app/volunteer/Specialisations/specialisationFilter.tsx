@@ -24,7 +24,7 @@ export default function SpecialisationFilter() {
     data: specialisations,
     isLoading,
     isError,
-    error,
+    refetch,
   } = useSpecialisations();
 
   // Tracks selected UUIDs — kept as local state for now
@@ -87,10 +87,23 @@ export default function SpecialisationFilter() {
           {isLoading ?
             <ActivityIndicator size="small" />
           : isError ?
-            <AppText variant="body" emphasis="emphasized">
-              {error?.message ??
-                'Unable to load specialisations. Please try again later.'}
-            </AppText>
+            <View style={{ alignItems: 'center', padding: 16 }}>
+              <AppText variant="body" emphasis="emphasized" textAlign="center">
+                Could not load specialisations. Please try again.
+              </AppText>
+              <Pressable
+                onPress={() => refetch()}
+                style={{
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  marginTop: 16,
+                }}
+              >
+                <AppText variant="body" emphasis="emphasized" color="accent">
+                  Retry
+                </AppText>
+              </Pressable>
+            </View>
           : <View style={styles.tagRow}>
               {(specialisations ?? []).map(spec => {
                 const selected = selectedIdSet.has(spec.specialisationId);
@@ -120,7 +133,11 @@ export default function SpecialisationFilter() {
 
         {/* OK — just navigates back for now                              */}
         {/* TODO: wire to PATCH /volunteer/profile when screen is built   */}
-        <Pressable style={styles.okBtnWrapper} onPress={() => router.back()}>
+        <Pressable
+          style={[styles.okBtnWrapper, isLoading && { opacity: 0.5 }]}
+          onPress={() => router.back()}
+          disabled={isLoading}
+        >
           <LinearGradient
             colors={['#1D47DC', '#0E7FBC']}
             start={{ x: 0, y: 0 }}
