@@ -7,16 +7,10 @@ import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 // =============================================================================
-// ENDPOINT: GET /lookup/categories
+// ENDPOINT: GET /categories
 // SCREEN:   src/app/user/categorydropdownfilter/
 // ACCESS:   Any authenticated user (JwtAuthGuard only, no RolesGuard)
 // PURPOSE:  Loads all problem categories to display as selectable tags
-//
-// HOW TO TEST:
-//   → Set EXPO_PUBLIC_USE_MOCK_LOOKUP='true' as environment variable
-//   → Open this screen — tags should load from MOCK_CATEGORIES
-//   → Toggle tags and verify selectedIds updates
-//   → Remove EXPO_PUBLIC_USE_MOCK_LOOKUP when backend is running
 // =============================================================================
 import { useCategories } from '@/hooks/useLookup';
 
@@ -24,7 +18,7 @@ export default function CategoryDropdownFilter() {
   const router = useRouter();
   const [categoryText, setCategoryText] = useState('Family stress');
 
-  // ── GET /lookup/categories ──────────────────────────────────────────────────
+  // ── GET /categories ────────────────────────────────────────────────────────
   // Replaces the hardcoded feelingTags array with real data from the API
   const { data: categories, isLoading, isError, refetch } = useCategories();
 
@@ -88,19 +82,17 @@ export default function CategoryDropdownFilter() {
           {isLoading ?
             <ActivityIndicator size="small" />
           : isError ?
-            <View style={{ alignItems: 'center', padding: 16 }}>
-              <AppText variant="body" emphasis="emphasized" textAlign="center">
+            <View style={styles.errorContainer}>
+              <AppText
+                variant="body"
+                emphasis="emphasized"
+                textAlign="center"
+                style={styles.errorText}
+              >
                 Could not load categories. Please try again.
               </AppText>
-              <Pressable
-                onPress={() => refetch()}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 24,
-                  marginTop: 16,
-                }}
-              >
-                <AppText variant="body" emphasis="emphasized" color="accent">
+              <Pressable style={styles.retryBtn} onPress={() => refetch()}>
+                <AppText variant="body" emphasis="emphasized" color="secondary">
                   Retry
                 </AppText>
               </Pressable>
@@ -228,10 +220,10 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   errorContainer: {
     alignItems: 'center',
-    gap: theme.spacing.s2,
+    padding: theme.spacing.s4,
+    gap: theme.spacing.s4,
   },
   errorText: {
-    color: theme.state.error || theme.text.primary,
     textAlign: 'center',
   },
   retryBtn: {
