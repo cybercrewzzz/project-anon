@@ -1,4 +1,4 @@
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
@@ -6,6 +6,10 @@ import InputForm from '@/components/inputForm';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
+import { useApplyAsVolunteer } from '@/hooks/useVolunteerProfile';
+
+// ─── TODO: Replace with a real upload flow when image upload is implemented ───
+const PLACEHOLDER_IMAGE_URL = 'https://placeholder.com/institute-id.jpg';
 
 const Verify = () => {
   const router = useRouter();
@@ -15,13 +19,64 @@ const Verify = () => {
     instituteEmail: '',
     grade: '',
     instituteName: '',
-    instituteId: '',
-    aboutYou: '',
+    instituteId: '', // maps to studentId in the API
+    aboutYou: '', // maps to about in the API (optional)
   });
   const [confirmed, setConfirmed] = useState(false);
 
+  const { mutate: apply, isPending, error } = useApplyAsVolunteer();
+
   const updateField = (field: keyof typeof form) => (text: string) => {
     setForm(prev => ({ ...prev, [field]: text }));
+  };
+
+  // ── Validation ──────────────────────────────────────────────────────────────
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isInstituteEmailValid = emailRegex.test(form.instituteEmail.trim());
+
+  const isFormValid =
+    confirmed &&
+    form.name.trim().length > 0 &&
+    isInstituteEmailValid &&
+    form.grade.trim().length > 0 &&
+    form.instituteName.trim().length > 0 &&
+    form.instituteId.trim().length > 0;
+
+  // ── Submit ──────────────────────────────────────────────────────────────────
+
+  const handleSubmit = () => {
+    if (!isFormValid) return;
+
+    apply(
+      {
+        name: form.name.trim(),
+        instituteEmail: form.instituteEmail.trim(),
+        instituteName: form.instituteName.trim(),
+        studentId: form.instituteId.trim(),
+        grade: form.grade.trim(),
+        about: form.aboutYou.trim() || undefined,
+        // TODO: add specialisationIds once a specialisation picker is implemented
+        instituteIdImageUrl: PLACEHOLDER_IMAGE_URL,
+      },
+      {
+        onSuccess: () => {
+          Alert.alert(
+            'Application Submitted',
+            'Your verification is pending admin review.',
+          );
+          router.replace(
+            '/start/volunteer/authScreens/VerificationSubmitSuccessful' as any,
+          );
+        },
+        onError: (err: any) => {
+          Alert.alert(
+            'Submission Failed',
+            err?.message ?? 'Something went wrong. Please try again.',
+          );
+        },
+      },
+    );
   };
 
   return (
@@ -81,6 +136,7 @@ const Verify = () => {
             contentContainerStyle={styles.instituteIdInput}
             placeholderVariant="subhead"
           />
+          {/* TODO: wire this up to expo-image-picker when ready */}
           <Pressable style={styles.attachmentIcon}>
             <AppText variant="title3" color="accent">
               {'\u{1F4CE}'}
@@ -101,6 +157,17 @@ const Verify = () => {
         />
       </View>
 
+      {/* ── Error message ── */}
+      {error && (
+        <AppText
+          variant="caption1"
+          textAlign="center"
+          style={styles.errorMessage}
+        >
+          {(error as any)?.message ?? 'Submission failed. Please try again.'}
+        </AppText>
+      )}
+
       <Pressable
         style={styles.checkboxRow}
         onPress={() => setConfirmed(prev => !prev)}
@@ -112,16 +179,16 @@ const Verify = () => {
           Yes, I confirm that the above information is true.
         </AppText>
       </Pressable>
+
       <View style={styles.buttonWrapper}>
+        {/* Button is disabled until form is valid and not loading */}
         <FullWidthButton
-          onPress={() => {
-            router.replace(
-              '/start/volunteer/authScreens/VerificationSubmitSuccessful' as any,
-            );
-          }}
+          onPress={handleSubmit}
+          disabled={!isFormValid || isPending}
+          style={{ opacity: !isFormValid || isPending ? 0.5 : 1 }}
         >
           <AppText variant="headline" color="secondary" emphasis="emphasized">
-            Verify Me
+            {isPending ? 'Submitting...' : 'Verify Me'}
           </AppText>
         </FullWidthButton>
       </View>
@@ -165,6 +232,9 @@ const styles = StyleSheet.create((theme, rt) => ({
   aboutYouTextInput: {
     textAlignVertical: 'top',
     minHeight: 80,
+  },
+  errorMessage: {
+    color: theme.state.error,
   },
   checkboxRow: {
     flexDirection: 'row',
