@@ -88,20 +88,19 @@ export default function CategoryDropdownFilter() {
           {isLoading ?
             <ActivityIndicator size="small" />
           : isError ?
-            <View style={styles.errorContainer}>
-              <AppText
-                variant="body"
-                emphasis="emphasized"
-                style={styles.errorText}
-              >
-                Unable to load categories. Please try again.
+            <View style={{ alignItems: 'center', padding: 16 }}>
+              <AppText variant="body" emphasis="emphasized" textAlign="center">
+                Could not load categories. Please try again.
               </AppText>
-              <Pressable style={styles.retryBtn} onPress={() => refetch()}>
-                <AppText
-                  variant="caption1"
-                  emphasis="emphasized"
-                  color="secondary"
-                >
+              <Pressable
+                onPress={() => refetch()}
+                style={{
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  marginTop: 16,
+                }}
+              >
+                <AppText variant="body" emphasis="emphasized" color="accent">
                   Retry
                 </AppText>
               </Pressable>
@@ -135,7 +134,11 @@ export default function CategoryDropdownFilter() {
 
         {/* OK — just navigates back for now                                    */}
         {/* TODO: wire to problem creation endpoint when seeker flow is built   */}
-        <Pressable style={styles.okBtn} onPress={() => router.back()}>
+        <Pressable
+          style={[styles.okBtn, (isLoading || selectedIds.length === 0) && { opacity: 0.5 }]}
+          onPress={() => router.back()}
+          disabled={isLoading || selectedIds.length === 0}
+        >
           <AppText variant="title2" emphasis="emphasized" color="secondary">
             OK
           </AppText>

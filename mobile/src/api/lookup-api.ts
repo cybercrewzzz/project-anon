@@ -33,7 +33,7 @@ export async function fetchSpecialisations(): Promise<SpecialisationsResponse> {
 
 export async function fetchCategories(): Promise<CategoriesResponse> {
   try {
-    const { data } = await apiClient.get('/lookup/categories');
+    const { data } = await apiClient.get('/categories');
     return CategoriesResponseSchema.parse(data);
   } catch (error) {
     throw parseApiError(error);
