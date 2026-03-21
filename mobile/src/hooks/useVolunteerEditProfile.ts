@@ -69,7 +69,8 @@ export function useVolunteerEditProfile(
     // Build payload with only the fields that actually changed
     const payload: { about?: string; specialisationIds?: string[] } = {};
     if (aboutChanged) payload.about = about.trim();
-    if (specsChanged) payload.specialisationIds = selectedIds;
+    if (specsChanged && selectedIds.length > 0)
+      payload.specialisationIds = selectedIds;
 
     updateProfile(payload, {
       onSuccess: () => {
