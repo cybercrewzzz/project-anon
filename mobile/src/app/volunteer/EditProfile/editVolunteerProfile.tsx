@@ -131,7 +131,8 @@ const EditVolunteerProfile = () => {
                   onPress={() => {
                     setSaveError(null);
                     toggleSpecialisation(spec.specialisationId);
-                  }}>
+                  }}
+                >
                   <AppText
                     variant="callout"
                     emphasis="emphasized"
@@ -161,7 +162,10 @@ const EditVolunteerProfile = () => {
             {saveError}
           </AppText>
         )}
-        <FullWidthButton onPress={handleSavePress} disabled={isSaving || !isDirty}>
+        <FullWidthButton
+          onPress={handleSavePress}
+          disabled={isSaving || !isDirty}
+        >
           <AppText variant="body" emphasis="emphasized" color="secondary">
             {isSaving ? 'Saving...' : 'Save changes'}
           </AppText>
