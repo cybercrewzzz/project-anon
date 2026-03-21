@@ -28,6 +28,7 @@ export default function Index() {
   const { data: profile, isLoading: isProfileLoading } = useVolunteerProfile();
   // Added: fires PATCH /volunteer/status when toggle is pressed
   const { mutate: updateStatus, isPending } = useUpdateVolunteerStatus();
+  const [statusError, setStatusError] = useState<string | null>(null);
   // ───────────────────────────────────────────────────────────────────────────
 
   const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>(
@@ -48,9 +49,14 @@ export default function Index() {
     if (option === selectedOption || isPending) {
       return;
     }
+    setStatusError(null);
     const available = option === 'Active';
     setSelectedOption(option); // update local UI immediately
-    updateStatus(available); // fire PATCH /volunteer/status
+    updateStatus(available, {
+      onError: () => {
+        setStatusError('Could not update availability. Please try again.');
+      },
+    }); // fire PATCH /volunteer/status
   };
   // ───────────────────────────────────────────────────────────────────────────
 
@@ -224,6 +230,11 @@ export default function Index() {
             </Pressable>
           </View>
         </View>
+        {statusError !== null && (
+          <AppText variant="footnote" style={styles.toggleError}>
+            {statusError}
+          </AppText>
+        )}
         {/* Specialisations section */}
         <View
           style={{
@@ -763,6 +774,11 @@ const styles = StyleSheet.create((theme, rt) => ({
   singleButtonText: {
     color: '#9500FF',
     fontWeight: '600',
+  },
+  toggleError: {
+    color: theme.state.error,
+    textAlign: 'center',
+    marginTop: theme.spacing.s2,
   },
   textContainer: {
     flex: 1,
