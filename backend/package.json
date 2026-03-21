@@ -6,6 +6,15 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "db:start": "docker compose -f docker-compose.dev.yaml up -d",
+    "db:stop": "docker compose -f docker-compose.dev.yaml down",
+    "db:wipe": "docker compose -f docker-compose.dev.yaml down -v",
+    "db:logs": "docker compose -f docker-compose.dev.yaml logs -f",
+    "db:push": "yarn prisma db push",
+    "db:seed": "yarn prisma db seed",
+    "studio": "yarn prisma studio",
+    "generate": "yarn prisma generate",
+    "dev": "yarn db:start && yarn prisma generate && yarn prisma db push && nest start --watch",
     "build": "nest build",
     "format": "prettier -w .",
     "format:check": "prettier -c .",
@@ -16,7 +25,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "lint:ci": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "format_lint:ci": "yarn lint:ci & yarn format:ci",
+    "format_lint:ci": "yarn format:ci && yarn lint:ci",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -24,18 +33,24 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.2",
+    "@nestjs/mapped-types": "*",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.16",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/websockets": "^11.1.16",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "argon2": "^0.44.0",
+    "bullmq": "^5.71.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "ioredis": "^5.10.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.20.0",
@@ -53,7 +68,7 @@
     "@types/node": "^22.10.7",
     "@types/passport": "^1.0.17",
     "@types/passport-jwt": "^4.0.1",
-    "@types/pg": "^8",
+    "@types/pg": "8.11.11",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
@@ -68,6 +83,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
@@ -86,6 +102,10 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1",
+      "^(\\.{1,2}/.+)\\.js$": "$1"
+    }
   }
 }

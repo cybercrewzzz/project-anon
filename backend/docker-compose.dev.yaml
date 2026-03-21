@@ -1,0 +1,26 @@
+services:
+  dev-db:
+    image: postgres:18-alpine
+    container_name: anora_dev_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DEV_DB_USER}
+      POSTGRES_PASSWORD: ${DEV_DB_PASS}
+      POSTGRES_DB: ${DEV_DB_NAME}
+    ports:
+      - '5432:5432'
+    volumes:
+      - dev-db-data:/var/lib/postgresql
+
+  dev-redis:
+    image: redis:8.6-alpine
+    container_name: anora_dev_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - dev-redis-data:/data
+
+volumes:
+  dev-db-data:
+  dev-redis-data:
