@@ -141,9 +141,9 @@ export default function SpecialisationFilter() {
         {/* OK — just navigates back for now                              */}
         {/* TODO: wire to PATCH /volunteer/profile when screen is built   */}
         <Pressable
-          style={[styles.okBtnWrapper, isLoading && { opacity: 0.5 }]}
+          style={[styles.okBtnWrapper, (isLoading || isFetching) && { opacity: 0.5 }]}
           onPress={() => router.back()}
-          disabled={isLoading}
+          disabled={isLoading || isFetching}
         >
           <LinearGradient
             colors={['#1D47DC', '#0E7FBC']}
