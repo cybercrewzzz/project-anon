@@ -105,7 +105,7 @@ export class SessionService {
         `Idempotency hit for key ${idempotencyKey} — returning cached result`,
       );
       // The stored result is a JSON string. Parse and return it as-is.
-      const parsed = JSON.parse(existingResult) as unknown;
+      const parsed = JSON.parse(existingResult) as any;
       return parsed as ConnectResult;
     }
 
