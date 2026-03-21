@@ -1,23 +1,37 @@
 import { apiClient } from './client';
-import { parseApiError, ApiError } from './errors';
+import { parseApiError } from './errors';
 import {
   VolunteerApplyResponseSchema,
   VolunteerProfileSchema,
+  VolunteerStatusResponseSchema,
   type VolunteerApplyResponse,
   type VolunteerProfile,
+  type VolunteerStatusResponse,
 } from './schemas';
 import { ZodError } from 'zod';
 
-// ── GET /volunteer/profile ───────────────────────────────────────────────────
+// ── GET /volunteer/profile ────────────────────────────────────────────────────
 
 export async function fetchVolunteerProfile(): Promise<VolunteerProfile> {
   try {
     const { data } = await apiClient.get('/volunteer/profile');
     return VolunteerProfileSchema.parse(data);
   } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+// ── PATCH /volunteer/status ───────────────────────────────────────────────────
+
+export async function updateVolunteerStatus(
+  available: boolean,
+): Promise<VolunteerStatusResponse> {
+  try {
+    const { data } = await apiClient.patch('/volunteer/status', { available });
+    return VolunteerStatusResponseSchema.parse(data);
+  } catch (error) {
     if (error instanceof ZodError) {
       // The server responded, but the payload did not match the expected schema.
-      throw new ApiError(500, 'Invalid response from server');
     }
     throw parseApiError(error);
   }
