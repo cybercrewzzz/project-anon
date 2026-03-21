@@ -16,7 +16,7 @@ import {
 
 export async function fetchSpecialisations(): Promise<SpecialisationsResponse> {
   try {
-    const { data } = await apiClient.get('/specialisations');
+    const { data } = await apiClient.get('/lookup/specialisations');
     return SpecialisationsResponseSchema.parse(data);
   } catch (error) {
     throw parseApiError(error);
