@@ -3,10 +3,11 @@ import { fetchSpecialisations, fetchCategories } from '@/api/lookup-api';
 import { queryKeys } from '@/api/keys';
 
 // =============================================================================
-// TESTING MODE FLAG
+// TESTING MODE FLAG — Specialisations only
 // Driven by __DEV__ and EXPO_PUBLIC_USE_MOCK_LOOKUP
 // - In production builds (__DEV__ === false), real API is always used.
-// - In development, set EXPO_PUBLIC_USE_MOCK_LOOKUP='true' to use mock data.
+// - In development, set EXPO_PUBLIC_USE_MOCK_LOOKUP='true' to use mock data for specialisations.
+// - Categories always use the real API (no mock fallback)
 // =============================================================================
 const USE_MOCK =
   typeof __DEV__ !== 'undefined' &&
@@ -122,6 +123,11 @@ export function useSpecialisations() {
   });
 }
 
+// =============================================================================
+// ENDPOINT: GET /categories
+// SCREEN:   src/app/user/categorydropdownfilter/
+// PURPOSE:  Loads all problem categories to display as selectable tags
+// NOTE:     Always uses the real API (no mock fallback)
 // =============================================================================
 export function useCategories() {
   return useQuery({
