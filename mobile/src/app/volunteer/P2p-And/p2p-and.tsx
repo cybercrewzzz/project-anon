@@ -51,9 +51,11 @@ export default function Index() {
     }
     setStatusError(null);
     const available = option === 'Active';
+    const previousOption = selectedOption; // Capture previous state for rollback
     setSelectedOption(option); // update local UI immediately
     updateStatus(available, {
       onError: () => {
+        setSelectedOption(previousOption); // Revert on error
         setStatusError('Could not update availability. Please try again.');
       },
     }); // fire PATCH /volunteer/status
@@ -184,7 +186,7 @@ export default function Index() {
               {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
               <Pressable
                 onPress={() => handleToggle('Offline')}
-                disabled={isPending || isProfileLoading}
+                disabled={isPending || isProfileLoading || !profile}
               >
                 <Animated.View
                   style={[
@@ -200,7 +202,7 @@ export default function Index() {
               {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
               <Pressable
                 onPress={() => handleToggle('Active')}
-                disabled={isPending || isProfileLoading}
+                disabled={isPending || isProfileLoading || !profile}
               >
                 <Animated.View
                   style={[
