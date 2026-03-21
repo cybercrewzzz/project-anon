@@ -241,7 +241,13 @@ const SettingsScreen = () => {
     }
   };
 
-  const { data: profile, isLoading, isError, refetch } = useVolunteerProfile();
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useVolunteerProfile();
 
   // ── Loading state ──
   if (isLoading) {
@@ -261,11 +267,20 @@ const SettingsScreen = () => {
         </AppText>
         <Pressable
           onPress={() => refetch()}
-          style={{ marginTop: 16, paddingVertical: 12, paddingHorizontal: 24 }}
+          disabled={isFetching}
+          style={{
+            marginTop: 16,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            opacity: isFetching ? 0.5 : 1,
+          }}
         >
-          <AppText variant="body" emphasis="emphasized" color="accent">
-            Retry
-          </AppText>
+          {isFetching ?
+            <ActivityIndicator size="small" />
+          : <AppText variant="body" emphasis="emphasized" color="accent">
+              Retry
+            </AppText>
+          }
         </Pressable>
       </View>
     );
