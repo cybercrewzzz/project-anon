@@ -17,11 +17,6 @@ const USE_MOCK =
 // ENDPOINT: GET /lookup/specialisations
 // SCREEN:   src/app/volunteer/Specialisations/specialisationFilter.tsx
 // PURPOSE:  Loads all specialisations to display as selectable tags
-//
-// HOW TO TEST:
-//   STEP A → In development, set EXPO_PUBLIC_USE_MOCK_LOOKUP='true'
-//   STEP B → Open specialisation screen — tags render from MOCK_SPECIALISATIONS
-//   STEP C → Remove or change EXPO_PUBLIC_USE_MOCK_LOOKUP for real API
 // =============================================================================
 export function useSpecialisations() {
   return useQuery({

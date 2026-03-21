@@ -24,6 +24,7 @@ export default function SpecialisationFilter() {
     data: specialisations,
     isLoading,
     isError,
+    isFetching,
     refetch,
   } = useSpecialisations();
 
@@ -91,18 +92,24 @@ export default function SpecialisationFilter() {
               <AppText variant="body" emphasis="emphasized" textAlign="center">
                 Could not load specialisations. Please try again.
               </AppText>
-              <Pressable
-                onPress={() => refetch()}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 24,
-                  marginTop: 16,
-                }}
-              >
-                <AppText variant="body" emphasis="emphasized" color="accent">
-                  Retry
-                </AppText>
-              </Pressable>
+              {isFetching ? (
+                <ActivityIndicator size="small" style={{ marginTop: 16 }} />
+              ) : (
+                <Pressable
+                  onPress={() => refetch()}
+                  disabled={isFetching}
+                  style={{
+                    paddingVertical: 12,
+                    paddingHorizontal: 24,
+                    marginTop: 16,
+                    opacity: isFetching ? 0.5 : 1,
+                  }}
+                >
+                  <AppText variant="body" emphasis="emphasized" color="accent">
+                    Retry
+                  </AppText>
+                </Pressable>
+              )}
             </View>
           : <View style={styles.tagRow}>
               {(specialisations ?? []).map(spec => {
