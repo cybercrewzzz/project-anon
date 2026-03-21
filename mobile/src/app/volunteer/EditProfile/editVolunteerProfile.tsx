@@ -63,6 +63,7 @@ const EditVolunteerProfile = () => {
 
   const ABOUT_MAX = 500;
   const selectedCount = selectedIds.length;
+  const hasValidSelection = selectedCount > 0;
 
   return (
     <View style={styles.container}>
@@ -162,9 +163,14 @@ const EditVolunteerProfile = () => {
             {saveError}
           </AppText>
         )}
+        {!hasValidSelection && isDirty && (
+          <AppText variant="footnote" style={styles.validationMessage}>
+            Please select at least one specialisation
+          </AppText>
+        )}
         <FullWidthButton
           onPress={handleSavePress}
-          disabled={isSaving || !isDirty}
+          disabled={isSaving || !isDirty || !hasValidSelection}
         >
           <AppText variant="body" emphasis="emphasized" color="secondary">
             {isSaving ? 'Saving...' : 'Save changes'}
@@ -294,6 +300,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     marginTop: theme.spacing.s2,
   },
   saveError: {
+    color: theme.state.error,
+    textAlign: 'center',
+    marginBottom: theme.spacing.s2,
+  },
+  validationMessage: {
     color: theme.state.error,
     textAlign: 'center',
     marginBottom: theme.spacing.s2,
