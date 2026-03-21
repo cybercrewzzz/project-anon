@@ -135,7 +135,10 @@ export default function CategoryDropdownFilter() {
         {/* OK — just navigates back for now                                    */}
         {/* TODO: wire to problem creation endpoint when seeker flow is built   */}
         <Pressable
-          style={[styles.okBtn, (isLoading || selectedIds.length === 0) && { opacity: 0.5 }]}
+          style={[
+            styles.okBtn,
+            (isLoading || selectedIds.length === 0) && { opacity: 0.5 },
+          ]}
           onPress={() => router.back()}
           disabled={isLoading || selectedIds.length === 0}
         >
