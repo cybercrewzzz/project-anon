@@ -54,27 +54,31 @@ export function useVolunteerEditProfile(
     );
   };
 
+  // ── Dirty-check: true only when something actually changed ─────────────────
+  const aboutChanged = about.trim() !== (initialAbout ?? '').trim();
+  const sortedCurrent = [...selectedIds].sort().join(',');
+  const sortedInitial = [...initialSpecialisationIds].sort().join(',');
+  const specsChanged = sortedCurrent !== sortedInitial;
+  const isDirty = aboutChanged || specsChanged;
+
   // Call this when the save button is pressed on the screen
   const handleSave = (options: {
     onSuccess?: () => void;
     onError?: (err: any) => void;
   }) => {
-    updateProfile(
-      {
-        about: about.trim() || undefined,
-        specialisationIds: selectedIds,
+    // Build payload with only the fields that actually changed
+    const payload: { about?: string; specialisationIds?: string[] } = {};
+    if (aboutChanged) payload.about = about.trim();
+    if (specsChanged) payload.specialisationIds = selectedIds;
+
+    updateProfile(payload, {
+      onSuccess: () => {
+        options.onSuccess?.();
       },
-      {
-        onSuccess: () => {
-          console.log('Profile updated successfully');
-          options.onSuccess?.();
-        },
-        onError: (err: any) => {
-          console.error('Failed to update profile:', err?.message);
-          options.onError?.(err);
-        },
+      onError: (err: any) => {
+        options.onError?.(err);
       },
-    );
+    });
   };
 
   return {
@@ -89,5 +93,6 @@ export function useVolunteerEditProfile(
     // Submit
     handleSave,
     isSaving,
+    isDirty,
   };
 }

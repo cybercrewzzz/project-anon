@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   ScrollView,
@@ -27,20 +27,24 @@ const EditVolunteerProfile = () => {
     isLoadingSpecialisations,
     handleSave,
     isSaving,
+    isDirty,
   } = useVolunteerEditProfile(
     profile?.about ?? null,
     profile?.specialisations?.map(s => s.specialisationId) ?? [],
   );
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const isLoading = isLoadingProfile || isLoadingSpecialisations;
 
   const handleSavePress = () => {
+    setSaveError(null);
     handleSave({
       onSuccess: () => {
         router.back();
       },
-      onError: err => {
-        console.error('Save failed:', err);
+      onError: () => {
+        setSaveError('Could not save changes. Please try again.');
       },
     });
   };
@@ -81,7 +85,9 @@ const EditVolunteerProfile = () => {
             <TextInput
               style={[styles.input, styles.inputMultiline]}
               value={about}
+              editable={!isSaving}
               onChangeText={text => {
+                setSaveError(null);
                 if (text.length <= ABOUT_MAX) {
                   setAbout(text);
                 }
@@ -121,8 +127,11 @@ const EditVolunteerProfile = () => {
                 <Pressable
                   key={spec.specialisationId}
                   style={[styles.chip, isSelected && styles.chipSelected]}
-                  onPress={() => toggleSpecialisation(spec.specialisationId)}
-                >
+                  disabled={isSaving}
+                  onPress={() => {
+                    setSaveError(null);
+                    toggleSpecialisation(spec.specialisationId);
+                  }}>
                   <AppText
                     variant="callout"
                     emphasis="emphasized"
@@ -147,7 +156,12 @@ const EditVolunteerProfile = () => {
         </View>
 
         {/* Save Changes Button */}
-        <FullWidthButton onPress={handleSavePress} disabled={isSaving}>
+        {saveError !== null && (
+          <AppText variant="footnote" style={styles.saveError}>
+            {saveError}
+          </AppText>
+        )}
+        <FullWidthButton onPress={handleSavePress} disabled={isSaving || !isDirty}>
           <AppText variant="body" emphasis="emphasized" color="secondary">
             {isSaving ? 'Saving...' : 'Save changes'}
           </AppText>
@@ -274,5 +288,10 @@ const styles = StyleSheet.create((theme, rt) => ({
   footerText: {
     textAlign: 'center',
     marginTop: theme.spacing.s2,
+  },
+  saveError: {
+    color: theme.state.error,
+    textAlign: 'center',
+    marginBottom: theme.spacing.s2,
   },
 }));
