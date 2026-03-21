@@ -29,11 +29,32 @@ import { RegisterDeviceTokenDto } from './dto/register-device-token.dto';
 
 // ─── Store helpers ────────────────────────────────────────────────────────────
 
-const DATA_PATH = path.join(__dirname, '..', 'mock-account-data.json');
+const DATA_PATH = path.join(__dirname, 'mock-account-data.json');
+const EMPTY_STORE: AccountDataStore = {
+  accounts: [],
+  refreshTokens: [],
+  deviceTokens: [],
+  languages: [],
+  accountLanguages: [],
+};
+
+function normalizeStore(raw: unknown): AccountDataStore {
+  const data = (raw ?? {}) as Partial<AccountDataStore> & { availableLanguages?: Language[] };
+  return {
+    accounts: data.accounts ?? [],
+    refreshTokens: data.refreshTokens ?? [],
+    deviceTokens: data.deviceTokens ?? [],
+    languages: data.languages ?? data.availableLanguages ?? [],
+    accountLanguages: data.accountLanguages ?? [],
+  };
+}
 
 function readStore(): AccountDataStore {
+  if (!fs.existsSync(DATA_PATH)) {
+    fs.writeFileSync(DATA_PATH, JSON.stringify(EMPTY_STORE, null, 2), 'utf-8');
+  }
   const raw = fs.readFileSync(DATA_PATH, 'utf-8');
-  return JSON.parse(raw) as AccountDataStore;
+  return normalizeStore(JSON.parse(raw));
 }
 
 function writeStore(store: AccountDataStore): void {
@@ -97,6 +118,10 @@ export class AccountService {
 
     const now = new Date().toISOString();
     const nickname = generateNickname(store.accounts.map((a: Account) => a.nickname));
+    const defaultInterfaceLanguageId =
+      store.languages.length > 0
+        ? store.languages[0].languageId
+        : 'lang-0001-4000-8000-000000000001';
 
     const newAccount: Account = {
       accountId: generateId(),
@@ -108,7 +133,7 @@ export class AccountService {
       nickname,
       dateOfBirth: dto.dateOfBirth,
       gender: (dto.gender as Account['gender']) ?? 'prefer_not_to_say',
-      interfaceLanguageId: 'lang-0001',
+      interfaceLanguageId: defaultInterfaceLanguageId,
       status: 'active',
       roles: ['user'],
       createdAt: now,
@@ -198,12 +223,15 @@ export class AccountService {
 
   // ── POST /auth/logout ─────────────────────────────────────────────────────
 
-  async logout(dto: RefreshTokenDto): Promise<{ message: string }> {
+  async logout(dto: RefreshTokenDto, accountId: string): Promise<{ message: string }> {
     const store = readStore();
     const record = store.refreshTokens.find(
       (t: RefreshToken) => t.tokenHash === hashToken(dto.refreshToken),
     );
     if (record) {
+      if (record.accountId !== accountId) {
+        throw new ForbiddenException('Refresh token does not belong to this account');
+      }
       record.isRevoked = true;
       writeStore(store);
     }

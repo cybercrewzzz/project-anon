@@ -54,8 +54,8 @@ export class AccountController {
   @Post('auth/logout')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
-  logout(@Body() dto: RefreshTokenDto) {
-    return this.accountService.logout(dto);
+  logout(@Req() req: any, @Body() dto: RefreshTokenDto) {
+    return this.accountService.logout(dto, req.user.sub);
   }
 
   // ── GET /account/me ───────────────────────────────────────────────────────

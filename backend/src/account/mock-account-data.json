@@ -94,7 +94,7 @@
   }
   ],
 
-  "availableLanguages": [
+  "languages": [
     {
       "languageId": "lang-0001-4000-8000-000000000001",
       "code": "en",
@@ -111,6 +111,10 @@
       "name": "Tamil"
     }
   ],
+
+  "refreshTokens": [],
+  "deviceTokens": [],
+  "accountLanguages": [],
 
   "mockPasswords": {
     "a1b2c3d4-0001-4000-8000-000000000001": "Pass1234!",
