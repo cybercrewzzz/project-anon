@@ -54,7 +54,7 @@ export class AccountController {
   @Post('auth/logout')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
-  logout(@Req() req: any, @Body() dto: RefreshTokenDto) {
+  logout(@Req() req: { user: { sub: string } }, @Body() dto: RefreshTokenDto) {
     return this.accountService.logout(dto, req.user.sub);
   }
 
@@ -62,7 +62,7 @@ export class AccountController {
 
   @Get('account/me')
   @UseGuards(AuthGuard('jwt'))
-  getMe(@Req() req: any) {
+  getMe(@Req() req: { user: { sub: string } }) {
     return this.accountService.getMe(req.user.sub);
   }
 
@@ -70,7 +70,10 @@ export class AccountController {
 
   @Patch('account/me')
   @UseGuards(AuthGuard('jwt'))
-  updateMe(@Req() req: any, @Body() dto: UpdateAccountDto) {
+  updateMe(
+    @Req() req: { user: { sub: string } },
+    @Body() dto: UpdateAccountDto,
+  ) {
     return this.accountService.updateMe(req.user.sub, dto);
   }
 
@@ -79,7 +82,10 @@ export class AccountController {
   @Patch('account/me/password')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
-  changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
+  changePassword(
+    @Req() req: { user: { sub: string } },
+    @Body() dto: ChangePasswordDto,
+  ) {
     return this.accountService.changePassword(req.user.sub, dto);
   }
 
@@ -96,7 +102,10 @@ export class AccountController {
   @Post('device/token')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard('jwt'))
-  registerDeviceToken(@Req() req: any, @Body() dto: RegisterDeviceTokenDto) {
+  registerDeviceToken(
+    @Req() req: { user: { sub: string } },
+    @Body() dto: RegisterDeviceTokenDto,
+  ) {
     return this.accountService.registerDeviceToken(req.user.sub, dto);
   }
 
@@ -105,7 +114,10 @@ export class AccountController {
   @Delete('device/token/:deviceId')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
-  removeDeviceToken(@Req() req: any, @Param('deviceId') deviceId: string) {
+  removeDeviceToken(
+    @Req() req: { user: { sub: string } },
+    @Param('deviceId') deviceId: string,
+  ) {
     return this.accountService.removeDeviceToken(req.user.sub, deviceId);
   }
 }

@@ -117,6 +117,7 @@ function generateNickname(existing: (string | null)[]): string {
 // ─── Sanitiser ────────────────────────────────────────────────────────────────
 
 function sanitize(account: Account) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordHash, oauthId, deletedAt, ...safe } = account;
   return safe;
 }
@@ -168,7 +169,7 @@ export class AccountService {
     };
 
     store.accounts.push(newAccount);
-    const tokens = await this._issueTokens(newAccount, store);
+    const tokens = this._issueTokens(newAccount, store);
     writeStore(store);
 
     return {
@@ -202,7 +203,7 @@ export class AccountService {
       throw new ForbiddenException(`Account is ${account.status}`);
     }
 
-    const tokens = await this._issueTokens(account, store);
+    const tokens = this._issueTokens(account, store);
     writeStore(store);
 
     return {
@@ -220,7 +221,7 @@ export class AccountService {
 
   // ── POST /auth/refresh ────────────────────────────────────────────────────
 
-  async refresh(dto: RefreshTokenDto) {
+  refresh(dto: RefreshTokenDto) {
     const store = readStore();
     const record = store.refreshTokens.find(
       (t: RefreshToken) => t.tokenHash === hashToken(dto.refreshToken),
@@ -248,7 +249,7 @@ export class AccountService {
     if (!account) throw new UnauthorizedException('Account not found');
 
     record.isRevoked = true;
-    const tokens = await this._issueTokens(account, store, record.familyId);
+    const tokens = this._issueTokens(account, store, record.familyId);
     writeStore(store);
 
     return {
@@ -259,10 +260,7 @@ export class AccountService {
 
   // ── POST /auth/logout ─────────────────────────────────────────────────────
 
-  logout(
-    dto: RefreshTokenDto,
-    accountId: string,
-  ): { message: string } {
+  logout(dto: RefreshTokenDto, accountId: string): { message: string } {
     const store = readStore();
     const record = store.refreshTokens.find(
       (t: RefreshToken) => t.tokenHash === hashToken(dto.refreshToken),
@@ -415,10 +413,7 @@ export class AccountService {
 
   // ── DELETE /device/token/:deviceId ────────────────────────────────────────
 
-  removeDeviceToken(
-    accountId: string,
-    deviceId: string,
-  ): { message: string } {
+  removeDeviceToken(accountId: string, deviceId: string): { message: string } {
     const store = readStore();
 
     const index = store.deviceTokens.findIndex(
