@@ -39,7 +39,9 @@ const EMPTY_STORE: AccountDataStore = {
 };
 
 function normalizeStore(raw: unknown): AccountDataStore {
-  const data = (raw ?? {}) as Partial<AccountDataStore> & { availableLanguages?: Language[] };
+  const data = (raw ?? {}) as Partial<AccountDataStore> & {
+    availableLanguages?: Language[];
+  };
   return {
     accounts: data.accounts ?? [],
     refreshTokens: data.refreshTokens ?? [],
@@ -82,8 +84,26 @@ function hashToken(plain: string): string {
 // ─── Nickname generator ───────────────────────────────────────────────────────
 
 function generateNickname(existing: (string | null)[]): string {
-  const adjectives = ['Blue', 'Silent', 'Green', 'Red', 'Golden', 'Swift', 'Calm', 'Brave'];
-  const animals = ['Fox', 'Owl', 'Eagle', 'Wolf', 'Bear', 'Hawk', 'Deer', 'Lion'];
+  const adjectives = [
+    'Blue',
+    'Silent',
+    'Green',
+    'Red',
+    'Golden',
+    'Swift',
+    'Calm',
+    'Brave',
+  ];
+  const animals = [
+    'Fox',
+    'Owl',
+    'Eagle',
+    'Wolf',
+    'Bear',
+    'Hawk',
+    'Deer',
+    'Lion',
+  ];
   let nickname: string;
   do {
     const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -112,12 +132,18 @@ export class AccountService {
   async register(dto: RegisterDto) {
     const store = readStore();
 
-    if (store.accounts.find((a: Account) => a.email.toLowerCase() === dto.email.toLowerCase())) {
+    if (
+      store.accounts.find(
+        (a: Account) => a.email.toLowerCase() === dto.email.toLowerCase(),
+      )
+    ) {
       throw new ConflictException('Email is already registered');
     }
 
     const now = new Date().toISOString();
-    const nickname = generateNickname(store.accounts.map((a: Account) => a.nickname));
+    const nickname = generateNickname(
+      store.accounts.map((a: Account) => a.nickname),
+    );
     const defaultInterfaceLanguageId =
       store.languages.length > 0
         ? store.languages[0].languageId
@@ -165,7 +191,10 @@ export class AccountService {
       (a: Account) => a.email.toLowerCase() === dto.email.toLowerCase(),
     );
 
-    if (!account || !await verifyPassword(dto.password, account.passwordHash ?? '')) {
+    if (
+      !account ||
+      !(await verifyPassword(dto.password, account.passwordHash ?? ''))
+    ) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
@@ -201,7 +230,9 @@ export class AccountService {
       if (record) {
         store.refreshTokens
           .filter((t: RefreshToken) => t.familyId === record.familyId)
-          .forEach((t: RefreshToken) => { t.isRevoked = true; });
+          .forEach((t: RefreshToken) => {
+            t.isRevoked = true;
+          });
         writeStore(store);
       }
       throw new UnauthorizedException('Invalid or revoked refresh token');
@@ -211,26 +242,36 @@ export class AccountService {
       throw new UnauthorizedException('Refresh token has expired');
     }
 
-    const account = store.accounts.find((a: Account) => a.accountId === record.accountId);
+    const account = store.accounts.find(
+      (a: Account) => a.accountId === record.accountId,
+    );
     if (!account) throw new UnauthorizedException('Account not found');
 
     record.isRevoked = true;
     const tokens = await this._issueTokens(account, store, record.familyId);
     writeStore(store);
 
-    return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
   }
 
   // ── POST /auth/logout ─────────────────────────────────────────────────────
 
-  async logout(dto: RefreshTokenDto, accountId: string): Promise<{ message: string }> {
+  logout(
+    dto: RefreshTokenDto,
+    accountId: string,
+  ): { message: string } {
     const store = readStore();
     const record = store.refreshTokens.find(
       (t: RefreshToken) => t.tokenHash === hashToken(dto.refreshToken),
     );
     if (record) {
       if (record.accountId !== accountId) {
-        throw new ForbiddenException('Refresh token does not belong to this account');
+        throw new ForbiddenException(
+          'Refresh token does not belong to this account',
+        );
       }
       record.isRevoked = true;
       writeStore(store);
@@ -240,29 +281,41 @@ export class AccountService {
 
   // ── GET /account/me ───────────────────────────────────────────────────────
 
-  async getMe(accountId: string) {
+  getMe(accountId: string) {
     const store = readStore();
-    const account = store.accounts.find((a: Account) => a.accountId === accountId);
+    const account = store.accounts.find(
+      (a: Account) => a.accountId === accountId,
+    );
     if (!account) throw new NotFoundException('Account not found');
-    return { ...sanitize(account), languages: this._resolveLanguages(accountId, store) };
+    return {
+      ...sanitize(account),
+      languages: this._resolveLanguages(accountId, store),
+    };
   }
 
   // ── PATCH /account/me ─────────────────────────────────────────────────────
 
-  async updateMe(accountId: string, dto: UpdateAccountDto) {
+  updateMe(accountId: string, dto: UpdateAccountDto) {
     const store = readStore();
-    const account = store.accounts.find((a: Account) => a.accountId === accountId);
+    const account = store.accounts.find(
+      (a: Account) => a.accountId === accountId,
+    );
     if (!account) throw new NotFoundException('Account not found');
 
     if (dto.name !== undefined) account.name = dto.name;
-    if (dto.interfaceLanguageId !== undefined) account.interfaceLanguageId = dto.interfaceLanguageId;
+    if (dto.interfaceLanguageId !== undefined)
+      account.interfaceLanguageId = dto.interfaceLanguageId;
     account.updatedAt = new Date().toISOString();
 
     if (dto.languageIds !== undefined) {
       const validIds = store.languages.map((l: Language) => l.languageId);
-      const invalid = dto.languageIds.filter((id: string) => !validIds.includes(id));
+      const invalid = dto.languageIds.filter(
+        (id: string) => !validIds.includes(id),
+      );
       if (invalid.length) {
-        throw new BadRequestException(`Unknown languageId(s): ${invalid.join(', ')}`);
+        throw new BadRequestException(
+          `Unknown languageId(s): ${invalid.join(', ')}`,
+        );
       }
       store.accountLanguages = store.accountLanguages.filter(
         (al: AccountLanguage) => al.accountId !== accountId,
@@ -273,26 +326,38 @@ export class AccountService {
     }
 
     writeStore(store);
-    return { ...sanitize(account), languages: this._resolveLanguages(accountId, store) };
+    return {
+      ...sanitize(account),
+      languages: this._resolveLanguages(accountId, store),
+    };
   }
 
   // ── PATCH /account/me/password ────────────────────────────────────────────
 
-  async changePassword(accountId: string, dto: ChangePasswordDto): Promise<{ message: string }> {
+  async changePassword(
+    accountId: string,
+    dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
     const store = readStore();
-    const account = store.accounts.find((a: Account) => a.accountId === accountId);
+    const account = store.accounts.find(
+      (a: Account) => a.accountId === accountId,
+    );
     if (!account) throw new NotFoundException('Account not found');
 
     if (!account.passwordHash) {
-      throw new BadRequestException('This account uses social login and has no password to change');
+      throw new BadRequestException(
+        'This account uses social login and has no password to change',
+      );
     }
 
-    if (!await verifyPassword(dto.currentPassword, account.passwordHash)) {
+    if (!(await verifyPassword(dto.currentPassword, account.passwordHash))) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
     if (dto.currentPassword === dto.newPassword) {
-      throw new BadRequestException('New password must differ from the current password');
+      throw new BadRequestException(
+        'New password must differ from the current password',
+      );
     }
 
     account.passwordHash = await hashPassword(dto.newPassword);
@@ -300,7 +365,9 @@ export class AccountService {
 
     store.refreshTokens
       .filter((t: RefreshToken) => t.accountId === accountId && !t.isRevoked)
-      .forEach((t: RefreshToken) => { t.isRevoked = true; });
+      .forEach((t: RefreshToken) => {
+        t.isRevoked = true;
+      });
 
     writeStore(store);
     return { message: 'Password updated successfully' };
@@ -308,18 +375,22 @@ export class AccountService {
 
   // ── GET /languages ────────────────────────────────────────────────────────
 
-  async getLanguages(): Promise<Language[]> {
+  getLanguages(): Language[] {
     const store = readStore();
     return store.languages;
   }
 
   // ── POST /device/token ────────────────────────────────────────────────────
 
-  async registerDeviceToken(accountId: string, dto: RegisterDeviceTokenDto): Promise<{ deviceId: string }> {
+  registerDeviceToken(
+    accountId: string,
+    dto: RegisterDeviceTokenDto,
+  ): { deviceId: string } {
     const store = readStore();
 
     const existing = store.deviceTokens.find(
-      (d: DeviceToken) => d.accountId === accountId && d.fcmToken === dto.fcmToken,
+      (d: DeviceToken) =>
+        d.accountId === accountId && d.fcmToken === dto.fcmToken,
     );
 
     if (existing) {
@@ -344,7 +415,10 @@ export class AccountService {
 
   // ── DELETE /device/token/:deviceId ────────────────────────────────────────
 
-  async removeDeviceToken(accountId: string, deviceId: string): Promise<{ message: string }> {
+  removeDeviceToken(
+    accountId: string,
+    deviceId: string,
+  ): { message: string } {
     const store = readStore();
 
     const index = store.deviceTokens.findIndex(
@@ -360,8 +434,16 @@ export class AccountService {
 
   // ─── Private helpers ───────────────────────────────────────────────────────
 
-  private async _issueTokens(account: Account, store: AccountDataStore, existingFamilyId?: string) {
-    const payload = { sub: account.accountId, email: account.email, roles: account.roles };
+  private _issueTokens(
+    account: Account,
+    store: AccountDataStore,
+    existingFamilyId?: string,
+  ) {
+    const payload = {
+      sub: account.accountId,
+      email: account.email,
+      roles: account.roles,
+    };
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
     const rawRefresh = generateId();
     const familyId = existingFamilyId ?? generateId();
@@ -379,10 +461,15 @@ export class AccountService {
     return { accessToken, refreshToken: rawRefresh };
   }
 
-  private _resolveLanguages(accountId: string, store: AccountDataStore): Language[] {
+  private _resolveLanguages(
+    accountId: string,
+    store: AccountDataStore,
+  ): Language[] {
     const linkedIds = store.accountLanguages
       .filter((al: AccountLanguage) => al.accountId === accountId)
       .map((al: AccountLanguage) => al.languageId);
-    return store.languages.filter((l: Language) => linkedIds.includes(l.languageId));
+    return store.languages.filter((l: Language) =>
+      linkedIds.includes(l.languageId),
+    );
   }
 }
