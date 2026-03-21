@@ -92,10 +92,9 @@ export default function SpecialisationFilter() {
               <AppText variant="body" emphasis="emphasized" textAlign="center">
                 Could not load specialisations. Please try again.
               </AppText>
-              {isFetching ? (
+              {isFetching ?
                 <ActivityIndicator size="small" style={{ marginTop: 16 }} />
-              ) : (
-                <Pressable
+              : <Pressable
                   onPress={() => refetch()}
                   disabled={isFetching}
                   style={{
@@ -109,7 +108,7 @@ export default function SpecialisationFilter() {
                     Retry
                   </AppText>
                 </Pressable>
-              )}
+              }
             </View>
           : <View style={styles.tagRow}>
               {(specialisations ?? []).map(spec => {
@@ -141,7 +140,10 @@ export default function SpecialisationFilter() {
         {/* OK — just navigates back for now                              */}
         {/* TODO: wire to PATCH /volunteer/profile when screen is built   */}
         <Pressable
-          style={[styles.okBtnWrapper, (isLoading || isFetching) && { opacity: 0.5 }]}
+          style={[
+            styles.okBtnWrapper,
+            (isLoading || isFetching) && { opacity: 0.5 },
+          ]}
           onPress={() => router.back()}
           disabled={isLoading || isFetching}
         >
