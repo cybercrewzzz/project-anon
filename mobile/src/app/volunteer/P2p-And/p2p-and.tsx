@@ -11,12 +11,49 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useRef, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 
+// ── PATCH /volunteer/status ───────────────────────────────────────────────────
+// Added: these two hooks are the only new imports
+import {
+  useVolunteerProfile,
+  useUpdateVolunteerStatus,
+} from '@/hooks/useVolunteerProfile';
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function Index() {
   const { width: screenWidth } = useWindowDimensions();
   const isSmallScreen = screenWidth < 768;
+
+  // ── PATCH /volunteer/status ─────────────────────────────────────────────────
+  // Added: read isAvailable from profile to set initial toggle state
+  const { data: profile, isLoading: isProfileLoading } = useVolunteerProfile();
+  // Added: fires PATCH /volunteer/status when toggle is pressed
+  const { mutate: updateStatus, isPending } = useUpdateVolunteerStatus();
+  // ───────────────────────────────────────────────────────────────────────────
+
   const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>(
     'Offline',
   );
+
+  // ── PATCH /volunteer/status ─────────────────────────────────────────────────
+  // Added: syncs toggle to real isAvailable value when profile loads
+  useEffect(() => {
+    if (profile?.isAvailable !== undefined) {
+      setSelectedOption(profile.isAvailable ? 'Active' : 'Offline');
+    }
+  }, [profile?.isAvailable]);
+
+  // Added: replaces direct setSelectedOption calls on the toggle buttons
+  const handleToggle = (option: 'Offline' | 'Active') => {
+    // Prevent toggling if already selected or while mutation is in flight
+    if (option === selectedOption || isPending) {
+      return;
+    }
+    const available = option === 'Active';
+    setSelectedOption(option); // update local UI immediately
+    updateStatus(available); // fire PATCH /volunteer/status
+  };
+  // ───────────────────────────────────────────────────────────────────────────
+
   const [connectFilter, setConnectFilter] = useState<'Recommended' | 'All'>(
     'Recommended',
   );
@@ -138,7 +175,11 @@ export default function Index() {
           {/* Bubble Toggle Button */}
           <View style={styles.toggleWrapper}>
             <View style={styles.toggleContainer}>
-              <Pressable onPress={() => setSelectedOption('Offline')}>
+              {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
+              <Pressable
+                onPress={() => handleToggle('Offline')}
+                disabled={isPending || isProfileLoading}
+              >
                 <Animated.View
                   style={[
                     styles.toggleButton,
@@ -150,7 +191,11 @@ export default function Index() {
                   </Animated.Text>
                 </Animated.View>
               </Pressable>
-              <Pressable onPress={() => setSelectedOption('Active')}>
+              {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
+              <Pressable
+                onPress={() => handleToggle('Active')}
+                disabled={isPending || isProfileLoading}
+              >
                 <Animated.View
                   style={[
                     styles.toggleButton,
@@ -688,7 +733,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   toggleWrapperRight: {
     position: 'absolute',
-    fontSize: rt.screen.width < 560 ? 14 : 18,
     right: rt.screen.width < 560 ? 14 : 18,
     zIndex: 10,
     marginTop: rt.screen.width < 560 ? 0 : 8,

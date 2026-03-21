@@ -25,7 +25,7 @@ const USE_MOCK =
 // =============================================================================
 export function useSpecialisations() {
   return useQuery({
-    queryKey: ['specialisations'],
+    queryKey: queryKeys.specialisations,
     queryFn:
       USE_MOCK ?
         async () => {
