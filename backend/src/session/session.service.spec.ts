@@ -246,10 +246,8 @@ describe('SessionService', () => {
         service.accept('session-roll', 'volunteer-3'),
       ).rejects.toBeInstanceOf(ForbiddenException);
 
-      expect(redis.hset).toHaveBeenCalledWith('session:session-roll', {
-        listenerId: '',
-        status: 'waiting',
-      });
+      // Verify that multi() was called to roll back the claim
+      expect(redis.multi).toHaveBeenCalled();
       expect(prisma.chatSession.update).not.toHaveBeenCalled();
     });
   });

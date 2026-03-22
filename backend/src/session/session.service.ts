@@ -368,8 +368,13 @@ export class SessionService {
       `No match for seeker ${seekerId} — queuing push notifications`,
     );
 
+    // Declare session outside try block so we can clean it up in catch block if needed
+    let session: Awaited<
+      ReturnType<typeof this.prisma.chatSession.create>
+    > | null = null;
+
     try {
-      const session = await this.prisma.chatSession.create({
+      session = await this.prisma.chatSession.create({
         data: {
           seekerId,
           listenerId: null, // Not yet assigned — filled in when a volunteer accepts
@@ -453,14 +458,41 @@ export class SessionService {
       }
 
       // If anything in Path B fails (session creation, Redis, job scheduling),
-      // release the reserved ticket so the seeker isn't penalized.
-      this.logger.error(`Failed to create waiting session: ${error}`);
+      // we need to clean up and release resources.
+      this.logger.error(
+        'Failed to create waiting session',
+        error instanceof Error ? error.stack : String(error),
+      );
 
+      // Best-effort rollback: delete the session if it was created
+      // This prevents orphaned waiting sessions from blocking future reconnections
+      if (session) {
+        try {
+          await this.prisma.chatSession.delete({
+            where: { sessionId: session.sessionId },
+          });
+          this.logger.log(
+            `Successfully deleted orphaned waiting session ${session.sessionId}`,
+          );
+        } catch (deleteError) {
+          this.logger.error(
+            'Failed to delete orphaned waiting session',
+            deleteError instanceof Error
+              ? deleteError.stack
+              : String(deleteError),
+          );
+        }
+      }
+
+      // Release the reserved ticket (best-effort; do not mask original error)
       try {
         await this.tickets.releaseReserved(seekerId);
       } catch (ticketReleaseError) {
         this.logger.error(
-          `Failed to release reserved ticket for seeker ${seekerId}: ${ticketReleaseError}`,
+          `Failed to release reserved ticket for seeker ${seekerId}`,
+          ticketReleaseError instanceof Error
+            ? ticketReleaseError.stack
+            : String(ticketReleaseError),
         );
       }
 
@@ -555,11 +587,37 @@ export class SessionService {
     // Using MULTI/EXEC ensures no gap between status update and TTL extension.
     // The session was created with MATCH_TIMEOUT_MS (3 min) TTL, but now
     // that a volunteer has accepted, it needs the full SESSION_TIMEOUT_MS (45 min).
-    await this.redis
+    const redisTxnResult = await this.redis
       .multi()
       .hset(`session:${sessionId}`, 'status', 'active')
       .expire(`session:${sessionId}`, SESSION_TIMEOUT_MS / 1000)
       .exec();
+
+    // ioredis exec() returns [[err1, result1], [err2, result2], ...]
+    // We must check for per-command errors and roll back if any failed
+    const redisTxnFailed =
+      !redisTxnResult || redisTxnResult.some(([err]) => err != null);
+
+    if (redisTxnFailed) {
+      // Rollback: reset to waiting state with original short TTL
+      try {
+        await this.redis
+          .multi()
+          .hset(`session:${sessionId}`, 'listenerId', '')
+          .hset(`session:${sessionId}`, 'status', 'waiting')
+          .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
+          .exec();
+      } catch (rollbackErr) {
+        this.logger.error(
+          `Failed to roll back Redis claim for session ${sessionId}`,
+          rollbackErr instanceof Error ? rollbackErr : String(rollbackErr),
+        );
+      }
+      throw new HttpException(
+        'Failed to activate session in Redis.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
 
     // ── STEP 5: Bidirectional block check ────────────────────────────────
     //
@@ -578,11 +636,14 @@ export class SessionService {
     });
 
     if (block) {
-      // Undo the Redis claim so the session stays claimable by others.
-      await this.redis.hset(`session:${sessionId}`, {
-        listenerId: '',
-        status: 'waiting',
-      });
+      // Undo the Redis claim and restore the match timeout TTL
+      // so the session stays claimable by other volunteers for 3 minutes.
+      await this.redis
+        .multi()
+        .hset(`session:${sessionId}`, 'listenerId', '')
+        .hset(`session:${sessionId}`, 'status', 'waiting')
+        .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
+        .exec();
       throw new ForbiddenException({
         statusCode: 403,
         error: 'blocked',
@@ -611,12 +672,14 @@ export class SessionService {
         },
       });
     } catch (err) {
-      // Roll back the Redis claim so the session remains claimable and
-      // consistent with the database state if the DB update fails.
-      await this.redis.hset(`session:${sessionId}`, {
-        listenerId: '',
-        status: 'waiting',
-      });
+      // Roll back the Redis claim and restore the match timeout TTL
+      // so the session remains claimable and consistent with the database.
+      await this.redis
+        .multi()
+        .hset(`session:${sessionId}`, 'listenerId', '')
+        .hset(`session:${sessionId}`, 'status', 'waiting')
+        .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
+        .exec();
       throw err;
     }
 
