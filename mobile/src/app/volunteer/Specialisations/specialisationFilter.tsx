@@ -96,12 +96,10 @@ export default function SpecialisationFilter() {
                 <ActivityIndicator size="small" style={{ marginTop: 16 }} />
               : <Pressable
                   onPress={() => refetch()}
-                  disabled={isFetching}
                   style={{
                     paddingVertical: 12,
                     paddingHorizontal: 24,
                     marginTop: 16,
-                    opacity: isFetching ? 0.5 : 1,
                   }}
                 >
                   <AppText variant="body" emphasis="emphasized" color="accent">
