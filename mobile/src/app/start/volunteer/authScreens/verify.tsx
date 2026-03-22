@@ -315,7 +315,7 @@ const Verify = () => {
           onPress={handleSubmit}
           disabled={!isFormValid || isFormDisabled || isLoadingSpecs}
           style={{
-            opacity: (!isFormValid || isFormDisabled || isLoadingSpecs) ? 0.5 : 1,
+            opacity: !isFormValid || isFormDisabled || isLoadingSpecs ? 0.5 : 1,
           }}
         >
           <AppText variant="headline" color="secondary" emphasis="emphasized">
