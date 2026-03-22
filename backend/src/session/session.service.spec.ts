@@ -6,11 +6,55 @@ import { RedisService } from '../redis/redis.service';
 import { MatchingService } from './matching.service';
 import { TicketService } from './ticket.service';
 
+type MockPrismaService = {
+  chatSession: {
+    findFirst: jest.Mock;
+    create: jest.Mock;
+    update: jest.Mock;
+    findUnique: jest.Mock;
+    findMany: jest.Mock;
+    count: jest.Mock;
+  };
+  userProblem: {
+    create: jest.Mock;
+    update: jest.Mock;
+  };
+  accountLanguage: {
+    findMany: jest.Mock;
+  };
+  blocklist: {
+    findFirst: jest.Mock;
+  };
+  category: {
+    findUnique: jest.Mock;
+  };
+  volunteerProfile: {
+    findMany: jest.Mock;
+  };
+  $transaction: jest.Mock;
+};
+
+type MockRedisService = {
+  get: jest.Mock;
+  set: jest.Mock;
+  hset: jest.Mock;
+  hgetall: jest.Mock;
+  hsetnx: jest.Mock;
+  smembers: jest.Mock;
+  expire: jest.Mock;
+};
+
+type MockTicketService = {
+  tryReserve: jest.Mock;
+  releaseReserved: jest.Mock;
+  getRemaining: jest.Mock;
+};
+
 describe('SessionService', () => {
   let service: SessionService;
-  let prisma: any;
-  let redis: any;
-  let tickets: any;
+  let prisma: MockPrismaService;
+  let redis: MockRedisService;
+  let tickets: MockTicketService;
 
   beforeEach(async () => {
     const prismaMock = {
@@ -97,9 +141,9 @@ describe('SessionService', () => {
     }).compile();
 
     service = module.get<SessionService>(SessionService);
-    prisma = module.get(PrismaService);
-    redis = module.get(RedisService);
-    tickets = module.get(TicketService);
+    prisma = module.get<MockPrismaService>(PrismaService);
+    redis = module.get<MockRedisService>(RedisService);
+    tickets = module.get<MockTicketService>(TicketService);
     jest.clearAllMocks();
   });
 
@@ -163,9 +207,9 @@ describe('SessionService', () => {
       });
       redis.hsetnx.mockResolvedValue(0);
 
-      await expect(service.accept('session-abc', 'volunteer-1')).rejects.toBeInstanceOf(
-        ConflictException,
-      );
+      await expect(
+        service.accept('session-abc', 'volunteer-1'),
+      ).rejects.toBeInstanceOf(ConflictException);
 
       expect(redis.hsetnx).toHaveBeenCalledWith(
         'session:session-abc',
@@ -187,9 +231,9 @@ describe('SessionService', () => {
         blockedId: 'volunteer-3',
       });
 
-      await expect(service.accept('session-roll', 'volunteer-3')).rejects.toBeInstanceOf(
-        ForbiddenException,
-      );
+      await expect(
+        service.accept('session-roll', 'volunteer-3'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(redis.hset).toHaveBeenCalledWith('session:session-roll', {
         listenerId: '',

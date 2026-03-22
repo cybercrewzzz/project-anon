@@ -105,13 +105,13 @@ export class SessionService {
         `Idempotency hit for key ${idempotencyKey} — returning cached result`,
       );
       // The stored result is a JSON string. Parse and handle it.
-      const parsed = JSON.parse(existingResult) as any;
+      const parsed = JSON.parse(existingResult) as ConnectResult;
       // If this is a "waiting" result, preserve the original 202 semantics
       // by throwing an HttpException instead of returning normally.
-      if (parsed && typeof parsed === 'object' && parsed.status === 'waiting') {
+      if ('status' in parsed && parsed.status === 'waiting') {
         throw new HttpException(parsed, HttpStatus.ACCEPTED);
       }
-      return parsed as ConnectResult;
+      return parsed;
     }
 
     // ── STEP 2: Concurrent session check ────────────────────────────────
