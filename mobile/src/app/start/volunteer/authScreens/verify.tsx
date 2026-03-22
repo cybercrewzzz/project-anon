@@ -1,5 +1,5 @@
-import { View, Pressable, Alert } from 'react-native';
-import React, { useState } from 'react';
+import { View, Pressable, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import InputForm from '@/components/inputForm';
@@ -7,12 +7,17 @@ import { FullWidthButton } from '@/components/FullWidthButton';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
 import { useApplyAsVolunteer } from '@/hooks/useVolunteerProfile';
+import { useAuth } from '@/store/useAuth';
+import { parseApiError } from '@/api/errors';
+import { useSpecialisations } from '@/hooks/useLookup';
+import { common } from '@/theme/palettes/common';
 
 // ─── TODO: Replace with a real upload flow when image upload is implemented ───
 const PLACEHOLDER_IMAGE_URL = 'https://placeholder.com/institute-id.jpg';
 
 const Verify = () => {
   const router = useRouter();
+  const accountName = useAuth(state => state.account?.name ?? '');
 
   const [form, setForm] = useState({
     name: '',
@@ -23,8 +28,38 @@ const Verify = () => {
     aboutYou: '', // maps to about in the API (optional)
   });
   const [confirmed, setConfirmed] = useState(false);
+  const [isPermanentlyDisabled, setIsPermanentlyDisabled] = useState(false);
+  const [conflictError, setConflictError] = useState<string | null>(null);
 
-  const { mutate: apply, isPending, error } = useApplyAsVolunteer();
+  const [selectedSpecialisationIds, setSelectedSpecialisationIds] = useState<
+    string[]
+  >([]);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  const {
+    data: specialisations,
+    isLoading: isLoadingSpecs,
+    isError: isErrorSpecs,
+    refetch: refetchSpecs,
+  } = useSpecialisations();
+
+  const toggleSpecialisation = (id: string) => {
+    setSelectedSpecialisationIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
+    );
+  };
+
+  const { mutate: apply, isPending } = useApplyAsVolunteer();
+
+  // Common disabled state for all form controls
+  const isFormDisabled = isPending || isPermanentlyDisabled;
+
+  // ── Pre-fill name from auth store ───────────────────────────────────────────
+  useEffect(() => {
+    if (accountName) {
+      setForm(prev => ({ ...prev, name: accountName }));
+    }
+  }, [accountName]);
 
   const updateField = (field: keyof typeof form) => (text: string) => {
     setForm(prev => ({ ...prev, [field]: text }));
@@ -41,11 +76,13 @@ const Verify = () => {
     isInstituteEmailValid &&
     form.grade.trim().length > 0 &&
     form.instituteName.trim().length > 0 &&
-    form.instituteId.trim().length > 0;
+    form.instituteId.trim().length > 0 &&
+    selectedSpecialisationIds.length > 0;
 
   // ── Submit ──────────────────────────────────────────────────────────────────
 
   const handleSubmit = () => {
+    setHasAttemptedSubmit(true);
     if (!isFormValid) return;
 
     apply(
@@ -56,7 +93,7 @@ const Verify = () => {
         studentId: form.instituteId.trim(),
         grade: form.grade.trim(),
         about: form.aboutYou.trim() || undefined,
-        // TODO: add specialisationIds once a specialisation picker is implemented
+        specialisationIds: selectedSpecialisationIds,
         instituteIdImageUrl: PLACEHOLDER_IMAGE_URL,
       },
       {
@@ -70,9 +107,25 @@ const Verify = () => {
           );
         },
         onError: (err: any) => {
+          const apiError = parseApiError(err);
+
+          if (apiError.statusCode === 409) {
+            setConflictError('You have already submitted an application.');
+            setIsPermanentlyDisabled(true);
+            return;
+          }
+
+          if (apiError.statusCode === 400) {
+            Alert.alert(
+              'Submission Failed',
+              'Please check your inputs and try again.',
+            );
+            return;
+          }
+
           Alert.alert(
             'Submission Failed',
-            err?.message ?? 'Something went wrong. Please try again.',
+            apiError.message || 'Something went wrong. Please try again.',
           );
         },
       },
@@ -94,13 +147,27 @@ const Verify = () => {
         Verification
       </AppText>
 
+      {/* ── Error message ── */}
+      {conflictError && (
+        <AppText
+          variant="caption1"
+          textAlign="center"
+          style={styles.errorMessage}
+        >
+          {conflictError}
+        </AppText>
+      )}
+
       <View style={styles.form}>
+        {/* Name is pre-filled from the sign-up screen and cannot be edited */}
         <InputForm
           placeholder="Name"
           placeholderColor="subtle2"
           onChangeText={updateField('name')}
           value={form.name}
           placeholderVariant="subhead"
+          editable={false}
+          style={{ opacity: 0.6 }}
         />
         <InputForm
           placeholder="Institute Email"
@@ -111,6 +178,7 @@ const Verify = () => {
           keyboardType="email-address"
           autoCapitalize="none"
           placeholderVariant="subhead"
+          editable={!isPending && !isPermanentlyDisabled}
         />
         <InputForm
           placeholder="Grade"
@@ -118,6 +186,7 @@ const Verify = () => {
           onChangeText={updateField('grade')}
           value={form.grade}
           placeholderVariant="subhead"
+          editable={!isPending && !isPermanentlyDisabled}
         />
         <InputForm
           placeholder="Institute Name"
@@ -125,6 +194,7 @@ const Verify = () => {
           onChangeText={updateField('instituteName')}
           value={form.instituteName}
           placeholderVariant="subhead"
+          editable={!isPending && !isPermanentlyDisabled}
         />
 
         <View style={styles.instituteIdWrapper}>
@@ -135,6 +205,7 @@ const Verify = () => {
             value={form.instituteId}
             contentContainerStyle={styles.instituteIdInput}
             placeholderVariant="subhead"
+            editable={!isPending && !isPermanentlyDisabled}
           />
           {/* TODO: wire this up to expo-image-picker when ready */}
           <Pressable style={styles.attachmentIcon}>
@@ -142,6 +213,73 @@ const Verify = () => {
               {'\u{1F4CE}'}
             </AppText>
           </Pressable>
+        </View>
+
+        {/* ── SPECIALISATIONS SECTION ── */}
+        <View style={styles.specialisationSection}>
+          <AppText
+            variant="caption1"
+            emphasis="emphasized"
+            color="subtle2"
+            style={styles.specialisationLabel}
+          >
+            Select your specialisations
+          </AppText>
+
+          {isLoadingSpecs ?
+            <ActivityIndicator size="small" />
+          : isErrorSpecs ?
+            <View style={{ alignItems: 'flex-start', paddingVertical: 8 }}>
+              <AppText variant="body" emphasis="emphasized" color="subtle2">
+                Could not load specialisations. Tap to retry.
+              </AppText>
+              <Pressable
+                onPress={() => refetchSpecs()}
+                style={{ paddingVertical: 8 }}
+              >
+                <AppText variant="body" emphasis="emphasized" color="accent">
+                  Retry
+                </AppText>
+              </Pressable>
+            </View>
+          : <View style={styles.tagRow}>
+              {(specialisations ?? []).map(spec => {
+                const selected = selectedSpecialisationIds.includes(
+                  spec.specialisationId,
+                );
+                return (
+                  <Pressable
+                    key={spec.specialisationId}
+                    style={[
+                      styles.tagPill,
+                      selected && styles.tagPillSelected,
+                      isFormDisabled && { opacity: 0.5 },
+                    ]}
+                    onPress={() => toggleSpecialisation(spec.specialisationId)}
+                    disabled={isFormDisabled}
+                  >
+                    <AppText
+                      variant="caption1"
+                      emphasis="emphasized"
+                      style={
+                        selected ?
+                          styles.tagTextSelected
+                        : styles.tagTextDefault
+                      }
+                    >
+                      {spec.name}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          }
+
+          {hasAttemptedSubmit && selectedSpecialisationIds.length === 0 && (
+            <AppText variant="caption1" style={styles.errorMessage}>
+              Select at least one specialisation
+            </AppText>
+          )}
         </View>
 
         <InputForm
@@ -154,23 +292,14 @@ const Verify = () => {
           contentContainerStyle={styles.aboutYouInput}
           style={styles.aboutYouTextInput}
           placeholderVariant="subhead"
+          editable={!isPending && !isPermanentlyDisabled}
         />
       </View>
 
-      {/* ── Error message ── */}
-      {error && (
-        <AppText
-          variant="caption1"
-          textAlign="center"
-          style={styles.errorMessage}
-        >
-          {(error as any)?.message ?? 'Submission failed. Please try again.'}
-        </AppText>
-      )}
-
       <Pressable
-        style={styles.checkboxRow}
+        style={[styles.checkboxRow, isFormDisabled && { opacity: 0.5 }]}
         onPress={() => setConfirmed(prev => !prev)}
+        disabled={isFormDisabled}
       >
         <View style={styles.checkbox}>
           {confirmed && <View style={styles.checkboxFill} />}
@@ -181,11 +310,13 @@ const Verify = () => {
       </Pressable>
 
       <View style={styles.buttonWrapper}>
-        {/* Button is disabled until form is valid and not loading */}
+        {/* Button is disabled until form is valid, not loading, and specialisations finished loading */}
         <FullWidthButton
           onPress={handleSubmit}
-          disabled={!isFormValid || isPending}
-          style={{ opacity: !isFormValid || isPending ? 0.5 : 1 }}
+          disabled={!isFormValid || isFormDisabled || isLoadingSpecs}
+          style={{
+            opacity: !isFormValid || isFormDisabled || isLoadingSpecs ? 0.5 : 1,
+          }}
         >
           <AppText variant="headline" color="secondary" emphasis="emphasized">
             {isPending ? 'Submitting...' : 'Verify Me'}
@@ -262,5 +393,45 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   buttonWrapper: {
     marginTop: theme.spacing.s7,
+    backgroundColor: theme.action.secondary,
+    paddingVertical: theme.spacing.s3 + theme.spacing.s2,
+    paddingHorizontal: theme.spacing.s5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    borderRadius: theme.radius.full,
+  },
+  specialisationSection: {
+    gap: theme.spacing.s2,
+  },
+  specialisationLabel: {
+    marginLeft: theme.spacing.s2,
+  },
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    rowGap: theme.spacing.s4,
+    columnGap: theme.spacing.s3,
+    marginTop: theme.spacing.s1,
+  },
+  tagPill: {
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.surface.primary,
+    borderWidth: 1,
+    borderColor: common.gray[300],
+    paddingVertical: theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s3,
+    minHeight: 30,
+    justifyContent: 'center',
+  },
+  tagPillSelected: {
+    backgroundColor: theme.action.secondary,
+    borderColor: theme.action.secondary,
+  },
+  tagTextDefault: {
+    color: theme.text.accent,
+  },
+  tagTextSelected: {
+    color: theme.text.secondary,
   },
 }));
