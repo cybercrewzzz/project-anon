@@ -11,7 +11,6 @@ export class LookupController {
   constructor(private readonly lookupService: LookupService) {}
 
   // GET /specialisations
-
   @Get('specialisations')
   getSpecialisations() {
     return this.lookupService.getSpecialisations();
@@ -22,4 +21,11 @@ export class LookupController {
   getCategories() {
     return this.lookupService.getCategories();
   }
+
+  // GET /languages
+  @Get('languages')
+  getLanguages() {
+    return this.lookupService.getLanguages();
+  }
 }
+

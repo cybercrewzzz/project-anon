@@ -9,6 +9,9 @@ const createMockPrisma = () => ({
   category: {
     findMany: jest.fn(),
   },
+  language: {
+    findMany: jest.fn(),
+  },
 });
 
 describe('LookupService', () => {
@@ -122,4 +125,44 @@ describe('LookupService', () => {
       expect(result).toEqual([]);
     });
   });
+
+  // ── getLanguages ──────────────────────────────────────────────────
+
+  describe('getLanguages', () => {
+    it('returns all languages', async () => {
+      const languages = [
+        { languageId: 'lang-1', code: 'en', name: 'English' },
+        { languageId: 'lang-2', code: 'si', name: 'Sinhala' },
+      ];
+      db.language.findMany.mockResolvedValue(languages);
+
+      const result = await service.getLanguages();
+
+      expect(result).toEqual(languages);
+    });
+
+    it('queries with correct select and orderBy', async () => {
+      db.language.findMany.mockResolvedValue([]);
+
+      await service.getLanguages();
+
+      expect(db.language.findMany).toHaveBeenCalledWith({
+        select: {
+          languageId: true,
+          code: true,
+          name: true,
+        },
+        orderBy: { name: 'asc' },
+      });
+    });
+
+    it('returns empty array when no languages exist', async () => {
+      db.language.findMany.mockResolvedValue([]);
+
+      const result = await service.getLanguages();
+
+      expect(result).toEqual([]);
+    });
+  });
 });
+
