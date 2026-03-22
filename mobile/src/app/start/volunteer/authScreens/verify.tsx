@@ -393,6 +393,15 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   buttonWrapper: {
     marginTop: theme.spacing.s7,
+    backgroundColor: theme.action.secondary,
+    paddingVertical: theme.spacing.s3 + theme.spacing.s2,
+    paddingHorizontal: theme.spacing.s5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    borderRadius: theme.radius.full,
+
+
   },
   specialisationSection: {
     gap: theme.spacing.s2,

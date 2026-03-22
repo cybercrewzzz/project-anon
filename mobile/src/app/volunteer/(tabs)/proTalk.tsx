@@ -22,6 +22,12 @@ const ProTalk = () => {
             router.push('/volunteer/Specialisations/specialisationFilter')
           }
         />
+        <Button
+          text=" Volunteer Verify"
+          onPress={() =>
+            router.push('/start/volunteer/authScreens/verify')
+          }
+        />
       </View>
     </View>
   );
