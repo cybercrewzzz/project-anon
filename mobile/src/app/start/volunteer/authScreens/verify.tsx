@@ -1,4 +1,4 @@
-import { View, Pressable, Alert } from 'react-native';
+import { View, Pressable, Alert, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
@@ -9,6 +9,8 @@ import { useRouter } from 'expo-router';
 import { useApplyAsVolunteer } from '@/hooks/useVolunteerProfile';
 import { useAuth } from '@/store/useAuth';
 import { parseApiError } from '@/api/errors';
+import { useSpecialisations } from '@/hooks/useLookup';
+import { common } from '@/theme/palettes/common';
 
 // ─── TODO: Replace with a real upload flow when image upload is implemented ───
 const PLACEHOLDER_IMAGE_URL = 'https://placeholder.com/institute-id.jpg';
@@ -29,7 +31,25 @@ const Verify = () => {
   const [isPermanentlyDisabled, setIsPermanentlyDisabled] = useState(false);
   const [conflictError, setConflictError] = useState<string | null>(null);
 
-  const { mutate: apply, isPending} = useApplyAsVolunteer();
+  const [selectedSpecialisationIds, setSelectedSpecialisationIds] = useState<
+    string[]
+  >([]);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  const {
+    data: specialisations,
+    isLoading: isLoadingSpecs,
+    isError: isErrorSpecs,
+    refetch: refetchSpecs,
+  } = useSpecialisations();
+
+  const toggleSpecialisation = (id: string) => {
+    setSelectedSpecialisationIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
+    );
+  };
+
+  const { mutate: apply, isPending } = useApplyAsVolunteer();
 
   // ── Pre-fill name from auth store ───────────────────────────────────────────
   useEffect(() => {
@@ -53,11 +73,13 @@ const Verify = () => {
     isInstituteEmailValid &&
     form.grade.trim().length > 0 &&
     form.instituteName.trim().length > 0 &&
-    form.instituteId.trim().length > 0;
+    form.instituteId.trim().length > 0 &&
+    selectedSpecialisationIds.length > 0;
 
   // ── Submit ──────────────────────────────────────────────────────────────────
 
   const handleSubmit = () => {
+    setHasAttemptedSubmit(true);
     if (!isFormValid) return;
 
     apply(
@@ -68,7 +90,7 @@ const Verify = () => {
         studentId: form.instituteId.trim(),
         grade: form.grade.trim(),
         about: form.aboutYou.trim() || undefined,
-        // TODO: add specialisationIds once a specialisation picker is implemented
+        specialisationIds: selectedSpecialisationIds,
         instituteIdImageUrl: PLACEHOLDER_IMAGE_URL,
       },
       {
@@ -190,6 +212,68 @@ const Verify = () => {
           </Pressable>
         </View>
 
+        {/* ── SPECIALISATIONS SECTION ── */}
+        <View style={styles.specialisationSection}>
+          <AppText
+            variant="caption1"
+            emphasis="emphasized"
+            color="subtle2"
+            style={styles.specialisationLabel}
+          >
+            Select your specialisations
+          </AppText>
+
+          {isLoadingSpecs ?
+            <ActivityIndicator size="small" />
+          : isErrorSpecs ?
+            <View style={{ alignItems: 'flex-start', paddingVertical: 8 }}>
+              <AppText variant="body" emphasis="emphasized" color="subtle2">
+                Could not load specialisations. Tap to retry.
+              </AppText>
+              <Pressable
+                onPress={() => refetchSpecs()}
+                style={{ paddingVertical: 8 }}
+              >
+                <AppText variant="body" emphasis="emphasized" color="accent">
+                  Retry
+                </AppText>
+              </Pressable>
+            </View>
+          : <View style={styles.tagRow}>
+              {(specialisations ?? []).map(spec => {
+                const selected = selectedSpecialisationIds.includes(
+                  spec.specialisationId,
+                );
+                return (
+                  <Pressable
+                    key={spec.specialisationId}
+                    style={[styles.tagPill, selected && styles.tagPillSelected]}
+                    onPress={() => toggleSpecialisation(spec.specialisationId)}
+                  >
+                    <AppText
+                      variant="caption1"
+                      emphasis="emphasized"
+                      style={
+                        selected ?
+                          styles.tagTextSelected
+                        : styles.tagTextDefault
+                      }
+                    >
+                      {spec.name}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          }
+
+          {hasAttemptedSubmit && selectedSpecialisationIds.length === 0 && (
+            <AppText variant="caption1" style={styles.errorMessage}>
+              Select at least one specialisation
+            </AppText>
+          )}
+        </View>
+
         <InputForm
           placeholder="About You :"
           placeholderColor="subtle2"
@@ -217,11 +301,23 @@ const Verify = () => {
       </Pressable>
 
       <View style={styles.buttonWrapper}>
-        {/* Button is disabled until form is valid and not loading */}
+        {/* Button is disabled until form is valid, not loading, and specialisations finished loading */}
         <FullWidthButton
           onPress={handleSubmit}
-          disabled={!isFormValid || isPending || isPermanentlyDisabled}
-          style={{ opacity: !isFormValid || isPending || isPermanentlyDisabled ? 0.5 : 1 }}
+          disabled={
+            !isFormValid || isPending || isPermanentlyDisabled || isLoadingSpecs
+          }
+          style={{
+            opacity:
+              (
+                !isFormValid ||
+                isPending ||
+                isPermanentlyDisabled ||
+                isLoadingSpecs
+              ) ?
+                0.5
+              : 1,
+          }}
         >
           <AppText variant="headline" color="secondary" emphasis="emphasized">
             {isPending ? 'Submitting...' : 'Verify Me'}
@@ -298,5 +394,38 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   buttonWrapper: {
     marginTop: theme.spacing.s7,
+  },
+  specialisationSection: {
+    gap: theme.spacing.s2,
+  },
+  specialisationLabel: {
+    marginLeft: theme.spacing.s2,
+  },
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    rowGap: theme.spacing.s4,
+    columnGap: theme.spacing.s3,
+    marginTop: theme.spacing.s1,
+  },
+  tagPill: {
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.surface.primary,
+    borderWidth: 1,
+    borderColor: common.gray[300],
+    paddingVertical: theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s3,
+    minHeight: 30,
+    justifyContent: 'center',
+  },
+  tagPillSelected: {
+    backgroundColor: '#0E7FBC',
+    borderColor: '#0E7FBC',
+  },
+  tagTextDefault: {
+    color: theme.text.accent,
+  },
+  tagTextSelected: {
+    color: common.white,
   },
 }));
