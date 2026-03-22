@@ -302,23 +302,34 @@ export class SessionService {
 
         return result;
       } catch (error) {
-        // Best-effort rollback of the problem status if we changed it but
+        // Best-effort rollback of BOTH the session and problem status if
         // later steps failed (Redis, job scheduling, etc.).
         this.logger.error(
           `Failed to finalize match for seeker ${seekerId} and volunteer ${matchedVolunteerId}: ${error}`,
         );
         try {
-          if (problem.status !== originalProblemStatus) {
-            await this.prisma.userProblem.update({
+          // Rollback BOTH the ChatSession and UserProblem in a transaction
+          await this.prisma.$transaction([
+            this.prisma.chatSession.delete({
+              where: { sessionId: session.sessionId },
+            }),
+            this.prisma.userProblem.update({
               where: { problemId: problem.problemId },
               data: { status: originalProblemStatus },
-            });
-          }
+            }),
+          ]);
+          this.logger.log(
+            `Successfully rolled back session ${session.sessionId} and problem ${problem.problemId}`,
+          );
         } catch (rollbackError) {
           this.logger.error(
-            `Failed to rollback userProblem status for problem ${problem.problemId}: ${rollbackError}`,
+            `Failed to rollback session and problem: ${rollbackError}`,
           );
         }
+
+        // Also release the reserved ticket
+        await this.tickets.releaseReserved(seekerId);
+
         throw error;
       }
     }
@@ -353,10 +364,12 @@ export class SessionService {
       startedAt: new Date().toISOString(),
     });
 
-    // Set a TTL on the session hash so Redis auto-cleans it.
+    // Set a TTL on the session hash to match the match timeout.
+    // For waiting sessions, TTL should be 3 minutes (MATCH_TIMEOUT_MS),
+    // not 45 minutes, to avoid volunteers accepting expired sessions.
     await this.redis.expire(
       `session:${session.sessionId}`,
-      SESSION_TIMEOUT_MS / 1000,
+      MATCH_TIMEOUT_MS / 1000,
     );
 
     // Find offline volunteers who could help (available in DB but not in pool).
@@ -415,7 +428,28 @@ export class SessionService {
   // Only the first one wins — Redis HSETNX guarantees this atomically.
   // ─────────────────────────────────────────────────────────────────────────
   async accept(sessionId: string, volunteerId: string) {
-    // ── STEP 1: Check the session exists in Redis ─────────────────────────
+    // ── STEP 1: Check if volunteer already has an active session ─────────
+    //
+    // A volunteer should only be in ONE session at a time (same rule as seekers).
+    // Check the DB for any session where this volunteer is already the listener.
+    // If found → 409 Conflict.
+    const activeVolunteerSession = await this.prisma.chatSession.findFirst({
+      where: {
+        listenerId: volunteerId,
+        status: SessionStatus.active,
+      },
+    });
+
+    if (activeVolunteerSession) {
+      throw new ConflictException({
+        statusCode: 409,
+        error: 'already_in_session',
+        message: 'You already have an active session',
+        sessionId: activeVolunteerSession.sessionId,
+      });
+    }
+
+    // ── STEP 2: Check the session exists in Redis ─────────────────────────
     //
     // We check Redis first (not the DB) because it's faster and the session
     // hash was written there when the seeker connected in Path B.
@@ -430,7 +464,7 @@ export class SessionService {
       });
     }
 
-    // ── STEP 2: Confirm the session is still waiting ──────────────────────
+    // ── STEP 3: Confirm the session is still waiting ──────────────────────
     //
     // The session could have already been accepted by another volunteer in
     // the milliseconds before this request arrived. Or it could have timed out.
@@ -443,7 +477,7 @@ export class SessionService {
       });
     }
 
-    // ── STEP 3: Atomic claim with HSETNX ─────────────────────────────────
+    // ── STEP 4: Atomic claim with HSETNX ─────────────────────────────────
     //
     // HSETNX = "Hash SET if Not eXists"
     // It sets a field in the Redis Hash ONLY IF that field currently has no value.
@@ -473,7 +507,7 @@ export class SessionService {
     // so any subsequent accept calls hit the status check in Step 2.
     await this.redis.hset(`session:${sessionId}`, 'status', 'active');
 
-    // ── STEP 4: Bidirectional block check ────────────────────────────────
+    // ── STEP 5: Bidirectional block check ────────────────────────────────
     //
     // Even though matching already filtered blocks for Path A, in Path B the
     // volunteer self-selects by tapping Accept. We must verify there's no
@@ -502,7 +536,7 @@ export class SessionService {
       });
     }
 
-    // ── STEP 5: Update the ChatSession in the DB ──────────────────────────
+    // ── STEP 6: Update the ChatSession in the DB ──────────────────────────
     //
     // Now that we've atomically claimed the session in Redis, persist the
     // volunteer assignment to the database as the permanent record.
@@ -532,7 +566,7 @@ export class SessionService {
       throw err;
     }
 
-    // ── STEP 6: Cancel the match:timeout BullMQ job ───────────────────────
+    // ── STEP 7: Cancel the match:timeout BullMQ job ───────────────────────
     //
     // When the seeker connected (Path B), we scheduled a `match:timeout` job
     // to fire after 3 minutes if nobody accepted.
@@ -570,7 +604,7 @@ export class SessionService {
       { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${sessionId}` },
     );
 
-    // ── STEP 7: Emit WebSocket event to the seeker ────────────────────────
+    // ── STEP 8: Emit WebSocket event to the seeker ────────────────────────
     //
     // The seeker is waiting in the app connected via WebSocket.
     // We need to tell them "your volunteer has arrived!".
@@ -598,7 +632,7 @@ export class SessionService {
       );
     }
 
-    // ── STEP 8: Return the response to the volunteer ──────────────────────
+    // ── STEP 9: Return the response to the volunteer ──────────────────────
     return {
       sessionId,
       seekerId,
@@ -898,3 +932,4 @@ export class SessionService {
     };
   }
 }
+
