@@ -524,7 +524,16 @@ export class SessionService {
     // The lock is volunteer-specific, not session-specific, because we need to
     // serialize all accept attempts BY THE SAME VOLUNTEER across different sessions.
     const lockKey = `volunteer:${volunteerId}:accepting`;
-    const lockAcquired = await this.redis.set(lockKey, '1', 'EX', 10, 'NX');
+    // Use a unique token to ensure we only release OUR lock, not a re-acquired one
+    const lockToken = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    // Use 60s TTL to handle slow operations under load
+    const lockAcquired = await this.redis.set(
+      lockKey,
+      lockToken,
+      'EX',
+      60,
+      'NX',
+    );
 
     if (!lockAcquired) {
       throw new ConflictException({
@@ -787,8 +796,29 @@ export class SessionService {
         turnCredentials: this.generateTurnCredentials(sessionId),
       };
     } finally {
-      // Always release the volunteer lock, regardless of success or failure
-      await this.redis.del(lockKey);
+      // Release the volunteer lock safely using atomic compare-and-delete.
+      // This ensures we only delete OUR lock, not one re-acquired by another request
+      // if our lock expired during processing.
+      try {
+        // Lua script for atomic "delete if value matches" operation
+        const unlockScript = `
+          if redis.call("get", KEYS[1]) == ARGV[1] then
+            return redis.call("del", KEYS[1])
+          else
+            return 0
+          end
+        `;
+        await this.redis.eval(unlockScript, 1, lockKey, lockToken);
+      } catch (unlockError) {
+        // Lock release failed - log but don't mask the original result
+        this.logger.warn(
+          `Failed to release volunteer lock for ${volunteerId}: ${
+            unlockError instanceof Error
+              ? unlockError.message
+              : String(unlockError)
+          }`,
+        );
+      }
     }
   }
 
