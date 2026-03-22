@@ -13,7 +13,6 @@ describe('LookupController', () => {
       getLanguages: jest.fn(),
     };
 
-
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LookupController],
       providers: [{ provide: LookupService, useValue: mockService }],
@@ -99,8 +98,16 @@ describe('LookupController', () => {
 
   describe('getLanguages', () => {
     const mockLanguages = [
-      { languageId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', code: 'en', name: 'English' },
-      { languageId: 'ffffffff-ffff-ffff-ffff-ffffffffffff', code: 'si', name: 'Sinhala' },
+      {
+        languageId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+        code: 'en',
+        name: 'English',
+      },
+      {
+        languageId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+        code: 'si',
+        name: 'Sinhala',
+      },
     ];
 
     it('delegates to service and returns its result', async () => {
@@ -121,4 +128,3 @@ describe('LookupController', () => {
     });
   });
 });
-

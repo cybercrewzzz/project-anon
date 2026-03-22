@@ -28,4 +28,3 @@ export class LookupController {
     return this.lookupService.getLanguages();
   }
 }
-

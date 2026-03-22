@@ -125,7 +125,10 @@ export class AccountService {
         }
         throw e;
       }
-    } else if (dto.name !== undefined || dto.interfaceLanguageId !== undefined) {
+    } else if (
+      dto.name !== undefined ||
+      dto.interfaceLanguageId !== undefined
+    ) {
       try {
         await this.prisma.account.update({
           where: { accountId },
