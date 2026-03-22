@@ -117,7 +117,9 @@ export class SessionService {
     // ── STEP 2: Concurrent session check ────────────────────────────────
     //
     // A seeker should only be in ONE session at a time.
-    // Check the DB for any session that is currently active or waiting.
+    // Check the DB for any session that is currently active (both matched
+    // and waiting sessions have status=active in DB; waiting sessions have
+    // listenerId=null while matched sessions have a volunteer assigned).
     //
     // If found → 409 Conflict. The client should show "you already have an
     // active session" and let the seeker continue or end it first.
@@ -366,80 +368,104 @@ export class SessionService {
       `No match for seeker ${seekerId} — queuing push notifications`,
     );
 
-    const session = await this.prisma.chatSession.create({
-      data: {
-        seekerId,
-        listenerId: null, // Not yet assigned — filled in when a volunteer accepts
-        problemId: problem.problemId,
-        status: SessionStatus.active,
-        startedAt: new Date(),
-      },
-    });
-
-    // Store a waiting session hash in Redis.
-    // The `listenerId` field is intentionally empty — the /accept endpoint
-    // will use HSETNX to atomically fill it in (only one volunteer can win).
-    await this.redis.hset(`session:${session.sessionId}`, {
-      seekerId,
-      listenerId: '',
-      status: 'waiting',
-      startedAt: new Date().toISOString(),
-    });
-
-    // Set a TTL on the session hash to match the match timeout.
-    // For waiting sessions, TTL should be 3 minutes (MATCH_TIMEOUT_MS),
-    // not 45 minutes, to avoid volunteers accepting expired sessions.
-    await this.redis.expire(
-      `session:${session.sessionId}`,
-      MATCH_TIMEOUT_MS / 1000,
-    );
-
-    // Find offline volunteers who could help (available in DB but not in pool).
-    // We look for volunteers with matching specialisations.
-    const offlineVolunteers = await this.findOfflineVolunteers(
-      categoryId,
-      seekerId,
-    );
-
-    if (offlineVolunteers.length > 0) {
-      // Queue a push notification job.
-      // Thusirui's notification worker processes this and sends FCM pushes.
-      await this.notificationQueue.add('notify:volunteers', {
-        volunteerIds: offlineVolunteers,
-        sessionId: session.sessionId,
-        categoryId,
-        message: 'A seeker needs your help! Tap to accept.',
+    try {
+      const session = await this.prisma.chatSession.create({
+        data: {
+          seekerId,
+          listenerId: null, // Not yet assigned — filled in when a volunteer accepts
+          problemId: problem.problemId,
+          status: SessionStatus.active,
+          startedAt: new Date(),
+        },
       });
+
+      // Store a waiting session hash in Redis.
+      // The `listenerId` field is intentionally empty — the /accept endpoint
+      // will use HSETNX to atomically fill it in (only one volunteer can win).
+      await this.redis.hset(`session:${session.sessionId}`, {
+        seekerId,
+        listenerId: '',
+        status: 'waiting',
+        startedAt: new Date().toISOString(),
+      });
+
+      // Set a TTL on the session hash to match the match timeout.
+      // For waiting sessions, TTL should be 3 minutes (MATCH_TIMEOUT_MS),
+      // not 45 minutes, to avoid volunteers accepting expired sessions.
+      await this.redis.expire(
+        `session:${session.sessionId}`,
+        MATCH_TIMEOUT_MS / 1000,
+      );
+
+      // Find offline volunteers who could help (available in DB but not in pool).
+      // We look for volunteers with matching specialisations.
+      const offlineVolunteers = await this.findOfflineVolunteers(
+        categoryId,
+        seekerId,
+      );
+
+      if (offlineVolunteers.length > 0) {
+        // Queue a push notification job.
+        // Thusirui's notification worker processes this and sends FCM pushes.
+        await this.notificationQueue.add('notify:volunteers', {
+          volunteerIds: offlineVolunteers,
+          sessionId: session.sessionId,
+          categoryId,
+          message: 'A seeker needs your help! Tap to accept.',
+        });
+      }
+
+      // Schedule the match timeout job.
+      // If no volunteer accepts within 3 minutes, this job fires, notifies the
+      // seeker that no match was found, and releases their ticket.
+      await this.sessionQueue.add(
+        'match:timeout',
+        { sessionId: session.sessionId, seekerId },
+        {
+          delay: MATCH_TIMEOUT_MS,
+          jobId: `match-timeout:${session.sessionId}`,
+        },
+      );
+
+      // The response for "queued" (HTTP 202 Accepted).
+      // 202 means "we received your request and are working on it".
+      // The seeker connects via WebSocket and waits for the `session:matched` event.
+      const result = {
+        status: 'waiting',
+        sessionId: session.sessionId,
+      };
+
+      // Store for idempotency.
+      await this.redis.set(
+        idempotencyRedisKey,
+        JSON.stringify(result),
+        'EX',
+        300,
+      );
+
+      // Throw an HttpException with 202 status.
+      // NestJS doesn't have a built-in 202 exception, so we throw a generic one.
+      throw new HttpException(result, HttpStatus.ACCEPTED);
+    } catch (error) {
+      // If this is the successful 202 response, re-throw it
+      if (error instanceof HttpException && error.getStatus() === 202) {
+        throw error;
+      }
+
+      // If anything in Path B fails (session creation, Redis, job scheduling),
+      // release the reserved ticket so the seeker isn't penalized.
+      this.logger.error(`Failed to create waiting session: ${error}`);
+
+      try {
+        await this.tickets.releaseReserved(seekerId);
+      } catch (ticketReleaseError) {
+        this.logger.error(
+          `Failed to release reserved ticket for seeker ${seekerId}: ${ticketReleaseError}`,
+        );
+      }
+
+      throw error;
     }
-
-    // Schedule the match timeout job.
-    // If no volunteer accepts within 3 minutes, this job fires, notifies the
-    // seeker that no match was found, and releases their ticket.
-    await this.sessionQueue.add(
-      'match:timeout',
-      { sessionId: session.sessionId, seekerId },
-      { delay: MATCH_TIMEOUT_MS, jobId: `match-timeout:${session.sessionId}` },
-    );
-
-    // The response for "queued" (HTTP 202 Accepted).
-    // 202 means "we received your request and are working on it".
-    // The seeker connects via WebSocket and waits for the `session:matched` event.
-    const result = {
-      status: 'waiting',
-      sessionId: session.sessionId,
-    };
-
-    // Store for idempotency.
-    await this.redis.set(
-      idempotencyRedisKey,
-      JSON.stringify(result),
-      'EX',
-      300,
-    );
-
-    // Throw an HttpException with 202 status.
-    // NestJS doesn't have a built-in 202 exception, so we throw a generic one.
-    throw new HttpException(result, HttpStatus.ACCEPTED);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -525,14 +551,15 @@ export class SessionService {
       });
     }
 
-    // We won the race. Update the session status in Redis immediately
-    // so any subsequent accept calls hit the status check in Step 3.
-    await this.redis.hset(`session:${sessionId}`, 'status', 'active');
-
-    // Extend the TTL to the full session timeout now that it's active.
+    // We won the race. Update the session status in Redis and extend TTL atomically.
+    // Using MULTI/EXEC ensures no gap between status update and TTL extension.
     // The session was created with MATCH_TIMEOUT_MS (3 min) TTL, but now
     // that a volunteer has accepted, it needs the full SESSION_TIMEOUT_MS (45 min).
-    await this.redis.expire(`session:${sessionId}`, SESSION_TIMEOUT_MS / 1000);
+    await this.redis
+      .multi()
+      .hset(`session:${sessionId}`, 'status', 'active')
+      .expire(`session:${sessionId}`, SESSION_TIMEOUT_MS / 1000)
+      .exec();
 
     // ── STEP 5: Bidirectional block check ────────────────────────────────
     //
@@ -812,11 +839,14 @@ export class SessionService {
     // The OR means: "give me sessions where I was either the seeker OR
     // the volunteer." One query, one endpoint, works for everyone.
     //
-    // We also exclude active/waiting sessions — those aren't history yet,
-    // they're live. Only ended sessions belong in the history list.
+    // We exclude:
+    //   1. Active sessions (not history yet, they're live)
+    //   2. Waiting sessions (listenerId=null) — these are incomplete/unmatched
+    // Only ended sessions that were actually matched belong in history.
     const where: Prisma.ChatSessionWhereInput = {
       OR: [{ seekerId: callerId }, { listenerId: callerId }],
       status: { notIn: [SessionStatus.active] },
+      listenerId: { not: null }, // Exclude waiting sessions (unmatched)
     };
 
     // ── STEP 3: Fetch sessions + total count in parallel ─────────────────
@@ -959,3 +989,4 @@ export class SessionService {
     };
   }
 }
+
