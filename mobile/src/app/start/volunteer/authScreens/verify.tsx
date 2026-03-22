@@ -400,8 +400,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     alignSelf: 'stretch',
     borderRadius: theme.radius.full,
-
-
   },
   specialisationSection: {
     gap: theme.spacing.s2,

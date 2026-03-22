@@ -24,9 +24,7 @@ const ProTalk = () => {
         />
         <Button
           text=" Volunteer Verify"
-          onPress={() =>
-            router.push('/start/volunteer/authScreens/verify')
-          }
+          onPress={() => router.push('/start/volunteer/authScreens/verify')}
         />
       </View>
     </View>
