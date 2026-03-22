@@ -8,6 +8,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
 import { useApplyAsVolunteer } from '@/hooks/useVolunteerProfile';
 import { useAuth } from '@/store/useAuth';
+import { parseApiError } from '@/api/errors';
 
 // ─── TODO: Replace with a real upload flow when image upload is implemented ───
 const PLACEHOLDER_IMAGE_URL = 'https://placeholder.com/institute-id.jpg';
@@ -25,8 +26,10 @@ const Verify = () => {
     aboutYou: '', // maps to about in the API (optional)
   });
   const [confirmed, setConfirmed] = useState(false);
+  const [isPermanentlyDisabled, setIsPermanentlyDisabled] = useState(false);
+  const [conflictError, setConflictError] = useState<string | null>(null);
 
-  const { mutate: apply, isPending, error } = useApplyAsVolunteer();
+  const { mutate: apply, isPending} = useApplyAsVolunteer();
 
   // ── Pre-fill name from auth store ───────────────────────────────────────────
   useEffect(() => {
@@ -79,9 +82,25 @@ const Verify = () => {
           );
         },
         onError: (err: any) => {
+          const apiError = parseApiError(err);
+
+          if (apiError.statusCode === 409) {
+            setConflictError('You have already submitted an application.');
+            setIsPermanentlyDisabled(true);
+            return;
+          }
+
+          if (apiError.statusCode === 400) {
+            Alert.alert(
+              'Submission Failed',
+              'Please check your inputs and try again.',
+            );
+            return;
+          }
+
           Alert.alert(
             'Submission Failed',
-            err?.message ?? 'Something went wrong. Please try again.',
+            apiError.message || 'Something went wrong. Please try again.',
           );
         },
       },
@@ -103,6 +122,17 @@ const Verify = () => {
         Verification
       </AppText>
 
+      {/* ── Error message ── */}
+      {conflictError && (
+        <AppText
+          variant="caption1"
+          textAlign="center"
+          style={styles.errorMessage}
+        >
+          {conflictError}
+        </AppText>
+      )}
+
       <View style={styles.form}>
         {/* Name is pre-filled from the sign-up screen and cannot be edited */}
         <InputForm
@@ -123,6 +153,7 @@ const Verify = () => {
           keyboardType="email-address"
           autoCapitalize="none"
           placeholderVariant="subhead"
+          editable={!isPending && !isPermanentlyDisabled}
         />
         <InputForm
           placeholder="Grade"
@@ -130,6 +161,7 @@ const Verify = () => {
           onChangeText={updateField('grade')}
           value={form.grade}
           placeholderVariant="subhead"
+          editable={!isPending && !isPermanentlyDisabled}
         />
         <InputForm
           placeholder="Institute Name"
@@ -137,6 +169,7 @@ const Verify = () => {
           onChangeText={updateField('instituteName')}
           value={form.instituteName}
           placeholderVariant="subhead"
+          editable={!isPending && !isPermanentlyDisabled}
         />
 
         <View style={styles.instituteIdWrapper}>
@@ -147,6 +180,7 @@ const Verify = () => {
             value={form.instituteId}
             contentContainerStyle={styles.instituteIdInput}
             placeholderVariant="subhead"
+            editable={!isPending && !isPermanentlyDisabled}
           />
           {/* TODO: wire this up to expo-image-picker when ready */}
           <Pressable style={styles.attachmentIcon}>
@@ -166,19 +200,9 @@ const Verify = () => {
           contentContainerStyle={styles.aboutYouInput}
           style={styles.aboutYouTextInput}
           placeholderVariant="subhead"
+          editable={!isPending && !isPermanentlyDisabled}
         />
       </View>
-
-      {/* ── Error message ── */}
-      {error && (
-        <AppText
-          variant="caption1"
-          textAlign="center"
-          style={styles.errorMessage}
-        >
-          {(error as any)?.message ?? 'Submission failed. Please try again.'}
-        </AppText>
-      )}
 
       <Pressable
         style={styles.checkboxRow}
@@ -196,8 +220,8 @@ const Verify = () => {
         {/* Button is disabled until form is valid and not loading */}
         <FullWidthButton
           onPress={handleSubmit}
-          disabled={!isFormValid || isPending}
-          style={{ opacity: !isFormValid || isPending ? 0.5 : 1 }}
+          disabled={!isFormValid || isPending || isPermanentlyDisabled}
+          style={{ opacity: !isFormValid || isPending || isPermanentlyDisabled ? 0.5 : 1 }}
         >
           <AppText variant="headline" color="secondary" emphasis="emphasized">
             {isPending ? 'Submitting...' : 'Verify Me'}
