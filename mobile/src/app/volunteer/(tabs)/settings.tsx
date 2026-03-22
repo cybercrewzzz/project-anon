@@ -241,7 +241,13 @@ const SettingsScreen = () => {
     }
   };
 
-  const { data: profile, isLoading, isError } = useVolunteerProfile();
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useVolunteerProfile();
 
   // ── Loading state ──
   if (isLoading) {
@@ -257,8 +263,25 @@ const SettingsScreen = () => {
     return (
       <View style={styles.centered}>
         <AppText variant="body" color="primary">
-          Could not load profile. Please try again.
+          Could not load profile. Check your connection.
         </AppText>
+        <Pressable
+          onPress={() => refetch()}
+          disabled={isFetching}
+          style={{
+            marginTop: 16,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            opacity: isFetching ? 0.5 : 1,
+          }}
+        >
+          {isFetching ?
+            <ActivityIndicator size="small" />
+          : <AppText variant="body" emphasis="emphasized" color="accent">
+              Retry
+            </AppText>
+          }
+        </Pressable>
       </View>
     );
   }
@@ -348,7 +371,7 @@ const SettingsScreen = () => {
           <View style={styles.xpCardsContainer}>
             <XpCard
               text="Daily login"
-              value={3}
+              value={0}
               icon={require('@/assets/images/fireIconOPT.webp')}
             />
             <XpCard
