@@ -7,16 +7,10 @@ import { ActivityIndicator, Pressable, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 // =============================================================================
-// ENDPOINT: GET /lookup/categories
+// ENDPOINT: GET /categories
 // SCREEN:   src/app/user/categorydropdownfilter/
 // ACCESS:   Any authenticated user (JwtAuthGuard only, no RolesGuard)
 // PURPOSE:  Loads all problem categories to display as selectable tags
-//
-// HOW TO TEST:
-//   → Set EXPO_PUBLIC_USE_MOCK_LOOKUP='true' as environment variable
-//   → Open this screen — tags should load from MOCK_CATEGORIES
-//   → Toggle tags and verify selectedIds updates
-//   → Remove EXPO_PUBLIC_USE_MOCK_LOOKUP when backend is running
 // =============================================================================
 import { useCategories } from '@/hooks/useLookup';
 
@@ -24,7 +18,7 @@ export default function CategoryDropdownFilter() {
   const router = useRouter();
   const [categoryText, setCategoryText] = useState('Family stress');
 
-  // ── GET /lookup/categories ──────────────────────────────────────────────────
+  // ── GET /categories ────────────────────────────────────────────────────────
   // Replaces the hardcoded feelingTags array with real data from the API
   const { data: categories, isLoading, isError, refetch } = useCategories();
 
@@ -92,16 +86,13 @@ export default function CategoryDropdownFilter() {
               <AppText
                 variant="body"
                 emphasis="emphasized"
+                textAlign="center"
                 style={styles.errorText}
               >
-                Unable to load categories. Please try again.
+                Could not load categories. Please try again.
               </AppText>
               <Pressable style={styles.retryBtn} onPress={() => refetch()}>
-                <AppText
-                  variant="caption1"
-                  emphasis="emphasized"
-                  color="secondary"
-                >
+                <AppText variant="body" emphasis="emphasized" color="secondary">
                   Retry
                 </AppText>
               </Pressable>
@@ -135,7 +126,14 @@ export default function CategoryDropdownFilter() {
 
         {/* OK — just navigates back for now                                    */}
         {/* TODO: wire to problem creation endpoint when seeker flow is built   */}
-        <Pressable style={styles.okBtn} onPress={() => router.back()}>
+        <Pressable
+          style={[
+            styles.okBtn,
+            (isLoading || selectedIds.length === 0) && { opacity: 0.5 },
+          ]}
+          onPress={() => router.back()}
+          disabled={isLoading || selectedIds.length === 0}
+        >
           <AppText variant="title2" emphasis="emphasized" color="secondary">
             OK
           </AppText>
@@ -222,10 +220,10 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   errorContainer: {
     alignItems: 'center',
-    gap: theme.spacing.s2,
+    padding: theme.spacing.s4,
+    gap: theme.spacing.s4,
   },
   errorText: {
-    color: theme.state.error || theme.text.primary,
     textAlign: 'center',
   },
   retryBtn: {
