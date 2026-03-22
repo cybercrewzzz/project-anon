@@ -51,6 +51,9 @@ const Verify = () => {
 
   const { mutate: apply, isPending } = useApplyAsVolunteer();
 
+  // Common disabled state for all form controls
+  const isFormDisabled = isPending || isPermanentlyDisabled;
+
   // ── Pre-fill name from auth store ───────────────────────────────────────────
   useEffect(() => {
     if (accountName) {
@@ -247,8 +250,13 @@ const Verify = () => {
                 return (
                   <Pressable
                     key={spec.specialisationId}
-                    style={[styles.tagPill, selected && styles.tagPillSelected]}
+                    style={[
+                      styles.tagPill,
+                      selected && styles.tagPillSelected,
+                      isFormDisabled && { opacity: 0.5 },
+                    ]}
                     onPress={() => toggleSpecialisation(spec.specialisationId)}
+                    disabled={isFormDisabled}
                   >
                     <AppText
                       variant="caption1"
@@ -289,8 +297,9 @@ const Verify = () => {
       </View>
 
       <Pressable
-        style={styles.checkboxRow}
+        style={[styles.checkboxRow, isFormDisabled && { opacity: 0.5 }]}
         onPress={() => setConfirmed(prev => !prev)}
+        disabled={isFormDisabled}
       >
         <View style={styles.checkbox}>
           {confirmed && <View style={styles.checkboxFill} />}
@@ -304,19 +313,9 @@ const Verify = () => {
         {/* Button is disabled until form is valid, not loading, and specialisations finished loading */}
         <FullWidthButton
           onPress={handleSubmit}
-          disabled={
-            !isFormValid || isPending || isPermanentlyDisabled || isLoadingSpecs
-          }
+          disabled={!isFormValid || isFormDisabled || isLoadingSpecs}
           style={{
-            opacity:
-              (
-                !isFormValid ||
-                isPending ||
-                isPermanentlyDisabled ||
-                isLoadingSpecs
-              ) ?
-                0.5
-              : 1,
+            opacity: (!isFormValid || isFormDisabled || isLoadingSpecs) ? 0.5 : 1,
           }}
         >
           <AppText variant="headline" color="secondary" emphasis="emphasized">
@@ -419,13 +418,13 @@ const styles = StyleSheet.create((theme, rt) => ({
     justifyContent: 'center',
   },
   tagPillSelected: {
-    backgroundColor: '#0E7FBC',
-    borderColor: '#0E7FBC',
+    backgroundColor: theme.action.secondary,
+    borderColor: theme.action.secondary,
   },
   tagTextDefault: {
     color: theme.text.accent,
   },
   tagTextSelected: {
-    color: common.white,
+    color: theme.text.secondary,
   },
 }));
