@@ -37,6 +37,8 @@ type MockPrismaService = {
 type MockRedisService = {
   get: jest.Mock;
   set: jest.Mock;
+  del: jest.Mock;
+  eval: jest.Mock;
   hset: jest.Mock;
   hgetall: jest.Mock;
   hsetnx: jest.Mock;
@@ -88,7 +90,9 @@ describe('SessionService', () => {
 
     const redisMock = {
       get: jest.fn(),
-      set: jest.fn(),
+      set: jest.fn().mockResolvedValue('OK'), // Default: lock acquired successfully
+      del: jest.fn().mockResolvedValue(1), // For lock release
+      eval: jest.fn().mockResolvedValue(1), // For atomic lock release (Lua script)
       hset: jest.fn(),
       hgetall: jest.fn(),
       hsetnx: jest.fn(),

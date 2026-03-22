@@ -468,15 +468,21 @@ export class SessionService {
       // This prevents orphaned waiting sessions from blocking future reconnections
       if (session) {
         try {
-          await this.prisma.chatSession.delete({
-            where: { sessionId: session.sessionId },
-          });
+          await this.prisma.$transaction([
+            this.prisma.chatSession.delete({
+              where: { sessionId: session.sessionId },
+            }),
+            this.prisma.userProblem.update({
+              where: { problemId: problem.problemId },
+              data: { status: UserProblemStatus.waiting },
+            }),
+          ]);
           this.logger.log(
-            `Successfully deleted orphaned waiting session ${session.sessionId}`,
+            `Successfully deleted orphaned waiting session ${session.sessionId} and updated problem ${problem.problemId}`,
           );
         } catch (deleteError) {
           this.logger.error(
-            'Failed to delete orphaned waiting session',
+            'Failed to delete orphaned waiting session and update problem',
             deleteError instanceof Error
               ? deleteError.stack
               : String(deleteError),
@@ -508,255 +514,312 @@ export class SessionService {
   // Only the first one wins — Redis HSETNX guarantees this atomically.
   // ─────────────────────────────────────────────────────────────────────────
   async accept(sessionId: string, volunteerId: string) {
-    // ── STEP 1: Check if volunteer already has an active session ─────────
+    // ── STEP 0: Acquire volunteer-level distributed lock ─────────────────
     //
-    // A volunteer should only be in ONE session at a time (same rule as seekers).
-    // Check the DB for any session where this volunteer is already the listener.
-    // If found → 409 Conflict.
-    const activeVolunteerSession = await this.prisma.chatSession.findFirst({
-      where: {
-        listenerId: volunteerId,
-        status: SessionStatus.active,
-      },
-    });
-
-    if (activeVolunteerSession) {
-      throw new ConflictException({
-        statusCode: 409,
-        error: 'already_in_session',
-        message: 'You already have an active session',
-        sessionId: activeVolunteerSession.sessionId,
-      });
-    }
-
-    // ── STEP 2: Check the session exists in Redis ─────────────────────────
+    // Prevents the same volunteer from accepting multiple sessions concurrently
+    // (TOCTOU race condition). Without this lock, a volunteer tapping "Accept"
+    // on two notifications simultaneously could bypass the active session check
+    // and end up in multiple sessions.
     //
-    // We check Redis first (not the DB) because it's faster and the session
-    // hash was written there when the seeker connected in Path B.
-    // If the key doesn't exist, the session has already expired or never existed.
-    const sessionHash = await this.redis.hgetall(`session:${sessionId}`);
-
-    if (!sessionHash || Object.keys(sessionHash).length === 0) {
-      throw new NotFoundException({
-        statusCode: 404,
-        error: 'session_not_found',
-        message: 'This session no longer exists or has already expired.',
-      });
-    }
-
-    // ── STEP 3: Confirm the session is still waiting ──────────────────────
-    //
-    // The session could have already been accepted by another volunteer in
-    // the milliseconds before this request arrived. Or it could have timed out.
-    // Either way, if it's not 'waiting', we reject immediately.
-    if (sessionHash.status !== 'waiting') {
-      throw new ConflictException({
-        statusCode: 409,
-        error: 'session_not_waiting',
-        message: 'This session has already been accepted or has expired.',
-      });
-    }
-
-    // ── STEP 4: Atomic claim with HSETNX ─────────────────────────────────
-    //
-    // HSETNX = "Hash SET if Not eXists"
-    // It sets a field in the Redis Hash ONLY IF that field currently has no value.
-    // Returns 1 if it set the value (we won), 0 if the field already had a value
-    // (another volunteer got there first).
-    //
-    // WHY is this better than a regular HSET?
-    // HSET would overwrite any existing value — two volunteers could both
-    // think they won. HSETNX is atomic: only one caller can ever get a `1`.
-    // This is the core of the race-condition protection for Path B.
-    const claimed = await this.redis.hsetnx(
-      `session:${sessionId}`,
-      'listenerId',
-      volunteerId,
+    // The lock is volunteer-specific, not session-specific, because we need to
+    // serialize all accept attempts BY THE SAME VOLUNTEER across different sessions.
+    const lockKey = `volunteer:${volunteerId}:accepting`;
+    // Use a unique token to ensure we only release OUR lock, not a re-acquired one
+    const lockToken = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    // Use 60s TTL to handle slow operations under load
+    const lockAcquired = await this.redis.set(
+      lockKey,
+      lockToken,
+      'EX',
+      60,
+      'NX',
     );
 
-    if (claimed === 0) {
-      // Another volunteer beat us by milliseconds. Return 409.
+    if (!lockAcquired) {
       throw new ConflictException({
         statusCode: 409,
-        error: 'already_accepted',
-        message: 'Another volunteer has already accepted this session.',
+        error: 'concurrent_accept',
+        message: 'You are already accepting a session. Please wait.',
       });
     }
 
-    // We won the race. Update the session status in Redis and extend TTL atomically.
-    // Using MULTI/EXEC ensures no gap between status update and TTL extension.
-    // The session was created with MATCH_TIMEOUT_MS (3 min) TTL, but now
-    // that a volunteer has accepted, it needs the full SESSION_TIMEOUT_MS (45 min).
-    const redisTxnResult = await this.redis
-      .multi()
-      .hset(`session:${sessionId}`, 'status', 'active')
-      .expire(`session:${sessionId}`, SESSION_TIMEOUT_MS / 1000)
-      .exec();
+    try {
+      // ── STEP 1: Check if volunteer already has an active session ─────────
+      //
+      // A volunteer should only be in ONE session at a time (same rule as seekers).
+      // Check the DB for any session where this volunteer is already the listener.
+      // If found → 409 Conflict.
+      const activeVolunteerSession = await this.prisma.chatSession.findFirst({
+        where: {
+          listenerId: volunteerId,
+          status: SessionStatus.active,
+        },
+      });
 
-    // ioredis exec() returns [[err1, result1], [err2, result2], ...]
-    // We must check for per-command errors and roll back if any failed
-    const redisTxnFailed =
-      !redisTxnResult || redisTxnResult.some(([err]) => err != null);
+      if (activeVolunteerSession) {
+        throw new ConflictException({
+          statusCode: 409,
+          error: 'already_in_session',
+          message: 'You already have an active session',
+          sessionId: activeVolunteerSession.sessionId,
+        });
+      }
 
-    if (redisTxnFailed) {
-      // Rollback: reset to waiting state with original short TTL
-      try {
+      // ── STEP 2: Check the session exists in Redis ─────────────────────────
+      //
+      // We check Redis first (not the DB) because it's faster and the session
+      // hash was written there when the seeker connected in Path B.
+      // If the key doesn't exist, the session has already expired or never existed.
+      const sessionHash = await this.redis.hgetall(`session:${sessionId}`);
+
+      if (!sessionHash || Object.keys(sessionHash).length === 0) {
+        throw new NotFoundException({
+          statusCode: 404,
+          error: 'session_not_found',
+          message: 'This session no longer exists or has already expired.',
+        });
+      }
+
+      // ── STEP 3: Confirm the session is still waiting ──────────────────────
+      //
+      // The session could have already been accepted by another volunteer in
+      // the milliseconds before this request arrived. Or it could have timed out.
+      // Either way, if it's not 'waiting', we reject immediately.
+      if (sessionHash.status !== 'waiting') {
+        throw new ConflictException({
+          statusCode: 409,
+          error: 'session_not_waiting',
+          message: 'This session has already been accepted or has expired.',
+        });
+      }
+
+      // ── STEP 4: Atomic claim with HSETNX ─────────────────────────────────
+      //
+      // HSETNX = "Hash SET if Not eXists"
+      // It sets a field in the Redis Hash ONLY IF that field currently has no value.
+      // Returns 1 if it set the value (we won), 0 if the field already had a value
+      // (another volunteer got there first).
+      //
+      // WHY is this better than a regular HSET?
+      // HSET would overwrite any existing value — two volunteers could both
+      // think they won. HSETNX is atomic: only one caller can ever get a `1`.
+      // This is the core of the race-condition protection for Path B.
+      const claimed = await this.redis.hsetnx(
+        `session:${sessionId}`,
+        'listenerId',
+        volunteerId,
+      );
+
+      if (claimed === 0) {
+        // Another volunteer beat us by milliseconds. Return 409.
+        throw new ConflictException({
+          statusCode: 409,
+          error: 'already_accepted',
+          message: 'Another volunteer has already accepted this session.',
+        });
+      }
+
+      // We won the race. Update the session status in Redis and extend TTL atomically.
+      // Using MULTI/EXEC ensures no gap between status update and TTL extension.
+      // The session was created with MATCH_TIMEOUT_MS (3 min) TTL, but now
+      // that a volunteer has accepted, it needs the full SESSION_TIMEOUT_MS (45 min).
+      const redisTxnResult = await this.redis
+        .multi()
+        .hset(`session:${sessionId}`, 'status', 'active')
+        .expire(`session:${sessionId}`, SESSION_TIMEOUT_MS / 1000)
+        .exec();
+
+      // ioredis exec() returns [[err1, result1], [err2, result2], ...]
+      // We must check for per-command errors and roll back if any failed
+      const redisTxnFailed =
+        !redisTxnResult || redisTxnResult.some(([err]) => err != null);
+
+      if (redisTxnFailed) {
+        // Rollback: reset to waiting state with original short TTL
+        try {
+          await this.redis
+            .multi()
+            .hset(`session:${sessionId}`, 'listenerId', '')
+            .hset(`session:${sessionId}`, 'status', 'waiting')
+            .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
+            .exec();
+        } catch (rollbackErr) {
+          this.logger.error(
+            `Failed to roll back Redis claim for session ${sessionId}`,
+            rollbackErr instanceof Error ? rollbackErr : String(rollbackErr),
+          );
+        }
+        throw new HttpException(
+          'Failed to activate session in Redis.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // ── STEP 5: Bidirectional block check ────────────────────────────────
+      //
+      // Even though matching already filtered blocks for Path A, in Path B the
+      // volunteer self-selects by tapping Accept. We must verify there's no
+      // block between them before proceeding.
+      const seekerId = sessionHash.seekerId;
+
+      const block = await this.prisma.blocklist.findFirst({
+        where: {
+          OR: [
+            { blockerId: volunteerId, blockedId: seekerId },
+            { blockerId: seekerId, blockedId: volunteerId },
+          ],
+        },
+      });
+
+      if (block) {
+        // Undo the Redis claim and restore the match timeout TTL
+        // so the session stays claimable by other volunteers for 3 minutes.
         await this.redis
           .multi()
           .hset(`session:${sessionId}`, 'listenerId', '')
           .hset(`session:${sessionId}`, 'status', 'waiting')
           .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
           .exec();
-      } catch (rollbackErr) {
-        this.logger.error(
-          `Failed to roll back Redis claim for session ${sessionId}`,
-          rollbackErr instanceof Error ? rollbackErr : String(rollbackErr),
+        throw new ForbiddenException({
+          statusCode: 403,
+          error: 'blocked',
+          message: 'You cannot join this session.',
+        });
+      }
+
+      // ── STEP 6: Update the ChatSession in the DB ──────────────────────────
+      //
+      // Now that we've atomically claimed the session in Redis, persist the
+      // volunteer assignment to the database as the permanent record.
+      let session;
+      try {
+        session = await this.prisma.chatSession.update({
+          where: { sessionId },
+          data: {
+            listenerId: volunteerId,
+            status: SessionStatus.active,
+          },
+          include: {
+            // Include the problem + category so we can return the category name
+            // in the response (the volunteer's app displays what they're helping with).
+            problem: {
+              include: { category: true },
+            },
+          },
+        });
+      } catch (err) {
+        // Roll back the Redis claim and restore the match timeout TTL
+        // so the session remains claimable and consistent with the database.
+        await this.redis
+          .multi()
+          .hset(`session:${sessionId}`, 'listenerId', '')
+          .hset(`session:${sessionId}`, 'status', 'waiting')
+          .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
+          .exec();
+        throw err;
+      }
+
+      // ── STEP 7: Cancel the match:timeout BullMQ job ───────────────────────
+      //
+      // When the seeker connected (Path B), we scheduled a `match:timeout` job
+      // to fire after 3 minutes if nobody accepted.
+      // Since someone DID accept, we must cancel that job — otherwise it would
+      // incorrectly end the session and notify the seeker of "no match found"
+      // even though a match exists.
+      //
+      // BullMQ jobs can be cancelled by their jobId if they haven't fired yet.
+      try {
+        const timeoutJob = await this.sessionQueue.getJob(
+          `match-timeout:${sessionId}`,
+        );
+        if (timeoutJob) {
+          await timeoutJob.remove();
+          this.logger.log(
+            `Cancelled match:timeout job for session ${sessionId}`,
+          );
+        }
+      } catch (err) {
+        // Non-fatal — log but don't fail the request. The job may have already
+        // fired or been removed. The DB status is already 'active' so the job's
+        // handler will see that and do nothing harmful.
+        const errMessage = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`Could not cancel match:timeout job: ${errMessage}`);
+      }
+
+      // Schedule the standard session jobs now that it's active:
+      // (same jobs as Path A in connect())
+      await this.sessionQueue.add(
+        'session:grace-end',
+        { sessionId, seekerId },
+        { delay: GRACE_END_MS, jobId: `grace-end:${sessionId}` },
+      );
+      await this.sessionQueue.add(
+        'session:timeout',
+        { sessionId },
+        { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${sessionId}` },
+      );
+
+      // ── STEP 8: Emit WebSocket event to the seeker ────────────────────────
+      //
+      // The seeker is waiting in the app connected via WebSocket.
+      // We need to tell them "your volunteer has arrived!".
+      //
+      // HOW: Look up the seeker's socket ID from Redis, then emit
+      // `session:matched` to that socket via the WebSocket gateway.
+      //
+      // The WebSocket gateway is Thusirui's code (Task 6). We call it via
+      // a shared service or event emitter so we don't import the whole ChatModule.
+      // For now we log it — wire up the actual emit when Task 6 is merged.
+      const seekerSocketId = await this.redis.get(`account:${seekerId}:socket`);
+
+      if (seekerSocketId) {
+        // TODO: call ChatGateway.emitToSocket(seekerSocketId, 'session:matched', payload)
+        // This will be wired up once Thusirui's ChatModule is merged.
+        this.logger.log(
+          `Should emit session:matched to seeker socket ${seekerSocketId} — wire up ChatGateway here`,
+        );
+      } else {
+        // Seeker disconnected between connecting and now. The reconnect logic
+        // in the WebSocket gateway handles this case — it reads the Redis session
+        // hash on reconnect and sees status='active'.
+        this.logger.warn(
+          `Seeker ${seekerId} has no active socket — they may have disconnected`,
         );
       }
-      throw new HttpException(
-        'Failed to activate session in Redis.',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
 
-    // ── STEP 5: Bidirectional block check ────────────────────────────────
-    //
-    // Even though matching already filtered blocks for Path A, in Path B the
-    // volunteer self-selects by tapping Accept. We must verify there's no
-    // block between them before proceeding.
-    const seekerId = sessionHash.seekerId;
-
-    const block = await this.prisma.blocklist.findFirst({
-      where: {
-        OR: [
-          { blockerId: volunteerId, blockedId: seekerId },
-          { blockerId: seekerId, blockedId: volunteerId },
-        ],
-      },
-    });
-
-    if (block) {
-      // Undo the Redis claim and restore the match timeout TTL
-      // so the session stays claimable by other volunteers for 3 minutes.
-      await this.redis
-        .multi()
-        .hset(`session:${sessionId}`, 'listenerId', '')
-        .hset(`session:${sessionId}`, 'status', 'waiting')
-        .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
-        .exec();
-      throw new ForbiddenException({
-        statusCode: 403,
-        error: 'blocked',
-        message: 'You cannot join this session.',
-      });
-    }
-
-    // ── STEP 6: Update the ChatSession in the DB ──────────────────────────
-    //
-    // Now that we've atomically claimed the session in Redis, persist the
-    // volunteer assignment to the database as the permanent record.
-    let session;
-    try {
-      session = await this.prisma.chatSession.update({
-        where: { sessionId },
-        data: {
-          listenerId: volunteerId,
-          status: SessionStatus.active,
-        },
-        include: {
-          // Include the problem + category so we can return the category name
-          // in the response (the volunteer's app displays what they're helping with).
-          problem: {
-            include: { category: true },
-          },
-        },
-      });
-    } catch (err) {
-      // Roll back the Redis claim and restore the match timeout TTL
-      // so the session remains claimable and consistent with the database.
-      await this.redis
-        .multi()
-        .hset(`session:${sessionId}`, 'listenerId', '')
-        .hset(`session:${sessionId}`, 'status', 'waiting')
-        .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
-        .exec();
-      throw err;
-    }
-
-    // ── STEP 7: Cancel the match:timeout BullMQ job ───────────────────────
-    //
-    // When the seeker connected (Path B), we scheduled a `match:timeout` job
-    // to fire after 3 minutes if nobody accepted.
-    // Since someone DID accept, we must cancel that job — otherwise it would
-    // incorrectly end the session and notify the seeker of "no match found"
-    // even though a match exists.
-    //
-    // BullMQ jobs can be cancelled by their jobId if they haven't fired yet.
-    try {
-      const timeoutJob = await this.sessionQueue.getJob(
-        `match-timeout:${sessionId}`,
-      );
-      if (timeoutJob) {
-        await timeoutJob.remove();
-        this.logger.log(`Cancelled match:timeout job for session ${sessionId}`);
+      // ── STEP 9: Return the response to the volunteer ──────────────────────
+      return {
+        sessionId,
+        seekerId,
+        category: session.problem?.category?.name ?? null,
+        wsRoom: `session:${sessionId}`,
+        turnCredentials: this.generateTurnCredentials(sessionId),
+      };
+    } finally {
+      // Release the volunteer lock safely using atomic compare-and-delete.
+      // This ensures we only delete OUR lock, not one re-acquired by another request
+      // if our lock expired during processing.
+      try {
+        // Lua script for atomic "delete if value matches" operation
+        const unlockScript = `
+          if redis.call("get", KEYS[1]) == ARGV[1] then
+            return redis.call("del", KEYS[1])
+          else
+            return 0
+          end
+        `;
+        await this.redis.eval(unlockScript, 1, lockKey, lockToken);
+      } catch (unlockError) {
+        // Lock release failed - log but don't mask the original result
+        this.logger.warn(
+          `Failed to release volunteer lock for ${volunteerId}: ${
+            unlockError instanceof Error
+              ? unlockError.message
+              : String(unlockError)
+          }`,
+        );
       }
-    } catch (err) {
-      // Non-fatal — log but don't fail the request. The job may have already
-      // fired or been removed. The DB status is already 'active' so the job's
-      // handler will see that and do nothing harmful.
-      const errMessage = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Could not cancel match:timeout job: ${errMessage}`);
     }
-
-    // Schedule the standard session jobs now that it's active:
-    // (same jobs as Path A in connect())
-    await this.sessionQueue.add(
-      'session:grace-end',
-      { sessionId, seekerId },
-      { delay: GRACE_END_MS, jobId: `grace-end:${sessionId}` },
-    );
-    await this.sessionQueue.add(
-      'session:timeout',
-      { sessionId },
-      { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${sessionId}` },
-    );
-
-    // ── STEP 8: Emit WebSocket event to the seeker ────────────────────────
-    //
-    // The seeker is waiting in the app connected via WebSocket.
-    // We need to tell them "your volunteer has arrived!".
-    //
-    // HOW: Look up the seeker's socket ID from Redis, then emit
-    // `session:matched` to that socket via the WebSocket gateway.
-    //
-    // The WebSocket gateway is Thusirui's code (Task 6). We call it via
-    // a shared service or event emitter so we don't import the whole ChatModule.
-    // For now we log it — wire up the actual emit when Task 6 is merged.
-    const seekerSocketId = await this.redis.get(`account:${seekerId}:socket`);
-
-    if (seekerSocketId) {
-      // TODO: call ChatGateway.emitToSocket(seekerSocketId, 'session:matched', payload)
-      // This will be wired up once Thusirui's ChatModule is merged.
-      this.logger.log(
-        `Should emit session:matched to seeker socket ${seekerSocketId} — wire up ChatGateway here`,
-      );
-    } else {
-      // Seeker disconnected between connecting and now. The reconnect logic
-      // in the WebSocket gateway handles this case — it reads the Redis session
-      // hash on reconnect and sees status='active'.
-      this.logger.warn(
-        `Seeker ${seekerId} has no active socket — they may have disconnected`,
-      );
-    }
-
-    // ── STEP 9: Return the response to the volunteer ──────────────────────
-    return {
-      sessionId,
-      seekerId,
-      category: session.problem?.category?.name ?? null,
-      wsRoom: `session:${sessionId}`,
-      turnCredentials: this.generateTurnCredentials(sessionId),
-    };
   }
 
   // ─────────────────────────────────────────────────────────────────────────
