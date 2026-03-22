@@ -97,15 +97,20 @@ export class SessionService {
     //   - Second time (retry) → return the stored result immediately
     //
     // This protects against: network retries, double-taps, browser refreshes.
-    const idempotencyRedisKey = `idempotency:${idempotencyKey}`;
+    const idempotencyRedisKey = `idempotency:session-connect:${seekerId}:${idempotencyKey}`;
     const existingResult = await this.redis.get(idempotencyRedisKey);
 
     if (existingResult) {
       this.logger.log(
         `Idempotency hit for key ${idempotencyKey} — returning cached result`,
       );
-      // The stored result is a JSON string. Parse and return it as-is.
+      // The stored result is a JSON string. Parse and handle it.
       const parsed = JSON.parse(existingResult) as any;
+      // If this is a "waiting" result, preserve the original 202 semantics
+      // by throwing an HttpException instead of returning normally.
+      if (parsed && typeof parsed === 'object' && parsed.status === 'waiting') {
+        throw new HttpException(parsed, HttpStatus.ACCEPTED);
+      }
       return parsed as ConnectResult;
     }
 
@@ -202,88 +207,120 @@ export class SessionService {
         `Match found: seeker ${seekerId} → volunteer ${matchedVolunteerId}`,
       );
 
-      // Create the ChatSession row in the DB.
-      // This is the official record of the conversation (no messages stored here).
-      const session = await this.prisma.chatSession.create({
-        data: {
+      // Preserve the original problem status so we can best-effort revert it
+      // if anything in the "match found" flow fails after DB updates.
+      const originalProblemStatus = problem.status;
+
+      try {
+        // Create the ChatSession row in the DB and update the UserProblem
+        // status to 'matched' in a single transaction so they succeed/fail
+        // together.
+        const [session] = await this.prisma.$transaction([
+          this.prisma.chatSession.create({
+            data: {
+              seekerId,
+              listenerId: matchedVolunteerId,
+              problemId: problem.problemId,
+              status: SessionStatus.active,
+              startedAt: new Date(),
+            },
+          }),
+          this.prisma.userProblem.update({
+            where: { problemId: problem.problemId },
+            data: { status: UserProblemStatus.matched },
+          }),
+        ]);
+
+        // Store session state in Redis Hash.
+        //
+        // WHY Redis AND the DB?
+        // The DB is the source of truth (persistent, for history/admin).
+        // The Redis Hash is the "live state" that the WebSocket gateway reads
+        // in real-time — DB queries would be too slow for every message relay.
+        //
+        // Redis Hash fields:
+        //   seekerId    — so the gateway knows who the seeker is
+        //   listenerId  — so the gateway knows who the volunteer is
+        //   status      — 'active', used to validate room joins
+        //   startedAt   — ISO string timestamp
+        await this.redis.hset(`session:${session.sessionId}`, {
           seekerId,
           listenerId: matchedVolunteerId,
-          problemId: problem.problemId,
-          status: SessionStatus.active,
-          startedAt: new Date(),
-        },
-      });
+          status: 'active',
+          startedAt: new Date().toISOString(),
+        });
 
-      // Update the UserProblem status to 'matched'.
-      await this.prisma.userProblem.update({
-        where: { problemId: problem.problemId },
-        data: { status: UserProblemStatus.matched },
-      });
+        // Set a TTL on the session hash so Redis auto-cleans it.
+        await this.redis.expire(
+          `session:${session.sessionId}`,
+          SESSION_TIMEOUT_MS / 1000,
+        );
 
-      // Store session state in Redis Hash.
-      //
-      // WHY Redis AND the DB?
-      // The DB is the source of truth (persistent, for history/admin).
-      // The Redis Hash is the "live state" that the WebSocket gateway reads
-      // in real-time — DB queries would be too slow for every message relay.
-      //
-      // Redis Hash fields:
-      //   seekerId    — so the gateway knows who the seeker is
-      //   listenerId  — so the gateway knows who the volunteer is
-      //   status      — 'active', used to validate room joins
-      //   startedAt   — ISO string timestamp
-      await this.redis.hset(`session:${session.sessionId}`, {
-        seekerId,
-        listenerId: matchedVolunteerId,
-        status: 'active',
-        startedAt: new Date().toISOString(),
-      });
+        // Set an empty messages list key with TTL so Redis auto-cleans it.
+        // The WebSocket gateway will RPUSH messages to session:{id}:msgs.
+        await this.redis.expire(
+          `session:${session.sessionId}:msgs`,
+          SESSION_TIMEOUT_MS / 1000,
+        );
 
-      // Set an empty messages list key with TTL so Redis auto-cleans it.
-      // The WebSocket gateway will RPUSH messages to session:{id}:msgs.
-      await this.redis.expire(
-        `session:${session.sessionId}:msgs`,
-        SESSION_TIMEOUT_MS / 1000,
-      );
+        // Schedule BullMQ jobs:
+        //
+        // 1. session:grace-end (3 min delay)
+        //    If the session ends within 3 minutes, the ticket is released.
+        //    After 3 minutes, it gets consumed. This job triggers the consumption.
+        await this.sessionQueue.add(
+          'session:grace-end',
+          { sessionId: session.sessionId, seekerId },
+          { delay: GRACE_END_MS, jobId: `grace-end:${session.sessionId}` },
+        );
 
-      // Schedule BullMQ jobs:
-      //
-      // 1. session:grace-end (3 min delay)
-      //    If the session ends within 3 minutes, the ticket is released.
-      //    After 3 minutes, it gets consumed. This job triggers the consumption.
-      await this.sessionQueue.add(
-        'session:grace-end',
-        { sessionId: session.sessionId, seekerId },
-        { delay: GRACE_END_MS, jobId: `grace-end:${session.sessionId}` },
-      );
+        // 2. session:timeout (45 min delay)
+        //    Safety net — force-ends the session if still active after 45 min.
+        await this.sessionQueue.add(
+          'session:timeout',
+          { sessionId: session.sessionId },
+          { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${session.sessionId}` },
+        );
 
-      // 2. session:timeout (45 min delay)
-      //    Safety net — force-ends the session if still active after 45 min.
-      await this.sessionQueue.add(
-        'session:timeout',
-        { sessionId: session.sessionId },
-        { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${session.sessionId}` },
-      );
+        // The response for "match found" (HTTP 200).
+        // turnCredentials are TURN server creds for WebRTC — generate them here
+        // or call a TURN credential service. Placeholder shown below.
+        const result = {
+          sessionId: session.sessionId,
+          volunteerId: matchedVolunteerId,
+          wsRoom: `session:${session.sessionId}`,
+          turnCredentials: this.generateTurnCredentials(session.sessionId),
+        };
 
-      // The response for "match found" (HTTP 200).
-      // turnCredentials are TURN server creds for WebRTC — generate them here
-      // or call a TURN credential service. Placeholder shown below.
-      const result = {
-        sessionId: session.sessionId,
-        volunteerId: matchedVolunteerId,
-        wsRoom: `session:${session.sessionId}`,
-        turnCredentials: this.generateTurnCredentials(session.sessionId),
-      };
+        // Store the result in Redis for idempotency (5-minute TTL).
+        await this.redis.set(
+          idempotencyRedisKey,
+          JSON.stringify(result),
+          'EX',
+          300,
+        );
 
-      // Store the result in Redis for idempotency (5-minute TTL).
-      await this.redis.set(
-        idempotencyRedisKey,
-        JSON.stringify(result),
-        'EX',
-        300,
-      );
-
-      return result;
+        return result;
+      } catch (error) {
+        // Best-effort rollback of the problem status if we changed it but
+        // later steps failed (Redis, job scheduling, etc.).
+        this.logger.error(
+          `Failed to finalize match for seeker ${seekerId} and volunteer ${matchedVolunteerId}: ${error}`,
+        );
+        try {
+          if (problem.status !== originalProblemStatus) {
+            await this.prisma.userProblem.update({
+              where: { problemId: problem.problemId },
+              data: { status: originalProblemStatus },
+            });
+          }
+        } catch (rollbackError) {
+          this.logger.error(
+            `Failed to rollback userProblem status for problem ${problem.problemId}: ${rollbackError}`,
+          );
+        }
+        throw error;
+      }
     }
 
     // ── STEP 7B: PATH B — No match, queue for push notification ─────────
@@ -315,6 +352,12 @@ export class SessionService {
       status: 'waiting',
       startedAt: new Date().toISOString(),
     });
+
+    // Set a TTL on the session hash so Redis auto-cleans it.
+    await this.redis.expire(
+      `session:${session.sessionId}`,
+      SESSION_TIMEOUT_MS / 1000,
+    );
 
     // Find offline volunteers who could help (available in DB but not in pool).
     // We look for volunteers with matching specialisations.
@@ -463,20 +506,31 @@ export class SessionService {
     //
     // Now that we've atomically claimed the session in Redis, persist the
     // volunteer assignment to the database as the permanent record.
-    const session = await this.prisma.chatSession.update({
-      where: { sessionId },
-      data: {
-        listenerId: volunteerId,
-        status: SessionStatus.active,
-      },
-      include: {
-        // Include the problem + category so we can return the category name
-        // in the response (the volunteer's app displays what they're helping with).
-        problem: {
-          include: { category: true },
+    let session;
+    try {
+      session = await this.prisma.chatSession.update({
+        where: { sessionId },
+        data: {
+          listenerId: volunteerId,
+          status: SessionStatus.active,
         },
-      },
-    });
+        include: {
+          // Include the problem + category so we can return the category name
+          // in the response (the volunteer's app displays what they're helping with).
+          problem: {
+            include: { category: true },
+          },
+        },
+      });
+    } catch (err) {
+      // Roll back the Redis claim so the session remains claimable and
+      // consistent with the database state if the DB update fails.
+      await this.redis.hset(`session:${sessionId}`, {
+        listenerId: '',
+        status: 'waiting',
+      });
+      throw err;
+    }
 
     // ── STEP 6: Cancel the match:timeout BullMQ job ───────────────────────
     //
@@ -568,6 +622,12 @@ export class SessionService {
     dto: { rating: number; starred: boolean },
   ) {
     const { rating, starred } = dto;
+
+    this.logger.debug(
+      `rate() called for sessionId=${sessionId}, callerId=${callerId}, roles=${JSON.stringify(
+        roles,
+      )}`,
+    );
 
     // ── STEP 1: Fetch the session from the DB ─────────────────────────────
     //
@@ -822,10 +882,19 @@ export class SessionService {
   // In production, use a proper TURN credential service (e.g. Twilio, Metered).
   // This is a placeholder — replace with your actual TURN server logic.
   private generateTurnCredentials(sessionId: string) {
+    const turnServerUrl = process.env.TURN_SERVER_URL;
+    const turnServerSecret = process.env.TURN_SERVER_SECRET;
+
+    if (!turnServerUrl || !turnServerSecret) {
+      throw new Error(
+        'TURN server is not properly configured: TURN_SERVER_URL and TURN_SERVER_SECRET must be set.',
+      );
+    }
+
     return {
-      urls: [process.env.TURN_SERVER_URL ?? 'turn:your-turn-server.com:3478'],
+      urls: [turnServerUrl],
       username: `session-${sessionId}`,
-      credential: process.env.TURN_SERVER_SECRET ?? 'placeholder-secret',
+      credential: turnServerSecret,
     };
   }
 }
