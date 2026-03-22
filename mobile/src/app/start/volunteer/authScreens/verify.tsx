@@ -1,5 +1,5 @@
 import { View, Pressable, Alert } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import InputForm from '@/components/inputForm';
@@ -7,12 +7,14 @@ import { FullWidthButton } from '@/components/FullWidthButton';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
 import { useApplyAsVolunteer } from '@/hooks/useVolunteerProfile';
+import { useAuth } from '@/store/useAuth';
 
 // ─── TODO: Replace with a real upload flow when image upload is implemented ───
 const PLACEHOLDER_IMAGE_URL = 'https://placeholder.com/institute-id.jpg';
 
 const Verify = () => {
   const router = useRouter();
+  const accountName = useAuth(state => state.account?.name ?? '');
 
   const [form, setForm] = useState({
     name: '',
@@ -25,6 +27,13 @@ const Verify = () => {
   const [confirmed, setConfirmed] = useState(false);
 
   const { mutate: apply, isPending, error } = useApplyAsVolunteer();
+
+  // ── Pre-fill name from auth store ───────────────────────────────────────────
+  useEffect(() => {
+    if (accountName) {
+      setForm(prev => ({ ...prev, name: accountName }));
+    }
+  }, [accountName]);
 
   const updateField = (field: keyof typeof form) => (text: string) => {
     setForm(prev => ({ ...prev, [field]: text }));
@@ -95,12 +104,15 @@ const Verify = () => {
       </AppText>
 
       <View style={styles.form}>
+        {/* Name is pre-filled from the sign-up screen and cannot be edited */}
         <InputForm
           placeholder="Name"
           placeholderColor="subtle2"
           onChangeText={updateField('name')}
           value={form.name}
           placeholderVariant="subhead"
+          editable={false}
+          style={{ opacity: 0.6 }}
         />
         <InputForm
           placeholder="Institute Email"
