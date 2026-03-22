@@ -24,6 +24,7 @@ const UserTabsLayout = () => {
       <Tabs.Screen
         name="connect"
         options={{
+          href: '/user/PeertoPeer/peertopeer',
           title: 'Connect',
           tabBarIcon: () => (
             <Image
@@ -63,6 +64,7 @@ const UserTabsLayout = () => {
       <Tabs.Screen
         name="settings"
         options={{
+          href: '/user/userProfile/UserProfile',
           title: 'Settings',
           tabBarIcon: () => (
             <Image

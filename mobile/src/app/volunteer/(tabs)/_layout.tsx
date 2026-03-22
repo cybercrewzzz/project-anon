@@ -24,6 +24,7 @@ const VolunteerTabsLayout = () => {
       <Tabs.Screen
         name="connect"
         options={{
+          href: '/volunteer/P2p-And/p2p-and',
           title: 'Connect',
           tabBarIcon: () => (
             <Image

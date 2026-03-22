@@ -1,7 +1,10 @@
 import { AppText, AppTextProps } from '@/components/AppText';
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { Image, ImageSource } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/store/useAuth';
+import { logout } from '@/api/auth';
 
 interface MenuItemProps {
   leftIcon: ImageSource;
@@ -15,9 +18,10 @@ const MenuItem = ({
   text,
   color = 'primary',
   rightIcon,
-}: MenuItemProps) => {
+  onPress,
+}: MenuItemProps & { onPress?: () => void }) => {
   return (
-    <View style={styles.menuItem}>
+    <Pressable style={styles.menuItem} onPress={onPress}>
       <View style={styles.menuItemText}>
         <Image source={leftIcon} style={{ width: 18, height: 18 }} />
         <AppText variant="body" emphasis="emphasized" color={color}>
@@ -27,11 +31,26 @@ const MenuItem = ({
       <View>
         <Image source={rightIcon} style={styles.menuItemicon} />
       </View>
-    </View>
+    </Pressable>
   );
 };
 
 const UserProfile = () => {
+  const router = useRouter();
+  const refreshToken = useAuth(state => state.refreshToken);
+  const signOut = useAuth(state => state.signOut);
+
+  const handleLogout = async () => {
+    try {
+      if (refreshToken) await logout(refreshToken);
+    } catch {
+      // Ignore API errors
+    } finally {
+      await signOut();
+      router.replace('/start/welcome' as any);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.screenTitle}>
@@ -97,6 +116,7 @@ const UserProfile = () => {
           leftIcon={require('@/assets/icons/logOutOPT.svg')}
           text="Log Out"
           rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          onPress={handleLogout}
         />
       </View>
     </View>

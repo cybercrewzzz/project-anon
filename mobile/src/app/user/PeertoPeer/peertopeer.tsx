@@ -103,7 +103,10 @@ export default function PeerToPeer() {
             What&apos;s troubling you today?
           </AppText>
 
-          <Pressable style={styles.dropdown}>
+          <Pressable
+            style={styles.dropdown}
+            onPress={() => router.push('/user/categorydropdown1/categorydrop1')}
+          >
             <AppText variant="callout" color="muted">
               Select Category
             </AppText>

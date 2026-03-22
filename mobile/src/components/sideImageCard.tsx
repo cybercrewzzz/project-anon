@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import React from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from './AppText';
@@ -26,7 +26,7 @@ const SideImageCard = ({
   ImagePosition = 'right',
 }: SideImageCardProps) => {
   return (
-    <View style={styles.Card}>
+    <Pressable style={styles.Card} onPress={onPress}>
       <View style={styles.Left}>
         <AppText variant="subhead" emphasis="emphasized">
           {title}
@@ -42,7 +42,7 @@ const SideImageCard = ({
       <View style={styles.Right}>
         <Image source={image} style={styles.Image} />
       </View>
-    </View>
+    </Pressable>
   );
 };
 

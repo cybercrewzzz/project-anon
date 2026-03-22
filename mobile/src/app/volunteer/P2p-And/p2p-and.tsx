@@ -1,718 +1,266 @@
 import { AppText } from '@/components/AppText';
-import {
-  Animated,
-  Pressable,
-  View,
-  useWindowDimensions,
-  ScrollView,
-} from 'react-native';
+import { Pressable, View, ScrollView } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
 // ── PATCH /volunteer/status ───────────────────────────────────────────────────
-// Added: these two hooks are the only new imports
 import {
   useVolunteerProfile,
   useUpdateVolunteerStatus,
 } from '@/hooks/useVolunteerProfile';
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function Index() {
-  const { width: screenWidth } = useWindowDimensions();
-  const isSmallScreen = screenWidth < 768;
+interface ProfileCardProps {
+  initials: string;
+  name: string;
+  issue: string;
+  time: string;
+  colors: readonly [string, string, ...string[]];
+  history?: boolean;
+}
+
+const ProfileCard = ({ initials, name, issue, time, colors, history }: ProfileCardProps) => (
+  <View style={styles.profileCard}>
+    <View style={styles.profileInfo}>
+      <LinearGradient
+        colors={colors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.profileImage}
+      >
+        <AppText style={styles.profileImageText}>{initials}</AppText>
+      </LinearGradient>
+      <View style={styles.profileTextContainer}>
+        <AppText variant="callout" style={styles.profileName}>
+          {name}
+        </AppText>
+        <AppText variant="caption1" style={styles.profileIssueText}>
+          Issue - {issue}
+        </AppText>
+        <AppText variant="caption1" style={styles.profileIssueText}>
+          {history ? 'Session' : 'Waiting'} - {time}
+        </AppText>
+      </View>
+    </View>
+    {history ? (
+      <View style={styles.historyTimeBadge}>
+        <AppText style={styles.historyTimeText}>2 days ago</AppText>
+      </View>
+    ) : (
+      <Pressable>
+        <LinearGradient
+          colors={colors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.connectButton}
+        >
+          <AppText style={styles.connectButtonText}>Connect</AppText>
+        </LinearGradient>
+      </Pressable>
+    )}
+  </View>
+);
+
+export default function VolunteerP2P() {
+  const router = useRouter();
 
   // ── PATCH /volunteer/status ─────────────────────────────────────────────────
-  // Added: read isAvailable from profile to set initial toggle state
   const { data: profile, isLoading: isProfileLoading } = useVolunteerProfile();
-  // Added: fires PATCH /volunteer/status when toggle is pressed
   const { mutate: updateStatus, isPending } = useUpdateVolunteerStatus();
   const [statusError, setStatusError] = useState<string | null>(null);
   // ───────────────────────────────────────────────────────────────────────────
 
-  const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>(
-    'Offline',
-  );
+  const [selectedOption, setSelectedOption] = useState<'Offline' | 'Active'>('Offline');
+  const [connectFilter, setConnectFilter] = useState<'Recommended' | 'All'>('Recommended');
+  const [historyExpanded, setHistoryExpanded] = useState(false);
 
-  // ── PATCH /volunteer/status ─────────────────────────────────────────────────
-  // Added: syncs toggle to real isAvailable value when profile loads
   useEffect(() => {
     if (profile?.isAvailable !== undefined) {
       setSelectedOption(profile.isAvailable ? 'Active' : 'Offline');
     }
   }, [profile?.isAvailable]);
 
-  // Added: replaces direct setSelectedOption calls on the toggle buttons
   const handleToggle = (option: 'Offline' | 'Active') => {
-    // Prevent toggling if already selected or while mutation is in flight
-    if (option === selectedOption || isPending) {
-      return;
-    }
+    if (option === selectedOption || isPending) return;
     setStatusError(null);
     const available = option === 'Active';
-    const previousOption = selectedOption; // Capture previous state for rollback
-    setSelectedOption(option); // update local UI immediately
+    const previousOption = selectedOption;
+    setSelectedOption(option);
     updateStatus(available, {
       onError: () => {
-        setSelectedOption(previousOption); // Revert on error
+        setSelectedOption(previousOption);
         setStatusError('Could not update availability. Please try again.');
       },
-    }); // fire PATCH /volunteer/status
+    });
   };
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const [connectFilter, setConnectFilter] = useState<'Recommended' | 'All'>(
-    'Recommended',
-  );
-  const [historyExpanded, setHistoryExpanded] = useState(false);
-  const offlineAnim = useRef(new Animated.Value(1)).current;
-  const activeAnim = useRef(new Animated.Value(0)).current;
-  const recommendedAnim = useRef(new Animated.Value(1)).current;
-  const allAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (selectedOption === 'Offline') {
-      Animated.parallel([
-        Animated.timing(offlineAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-        Animated.timing(activeAnim, {
-          toValue: 0,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(offlineAnim, {
-          toValue: 0,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-        Animated.timing(activeAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-      ]).start();
-    }
-  });
-
-  useEffect(() => {
-    if (connectFilter === 'Recommended') {
-      Animated.parallel([
-        Animated.timing(recommendedAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-        Animated.timing(allAnim, {
-          toValue: 0,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(recommendedAnim, {
-          toValue: 0,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-        Animated.timing(allAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-      ]).start();
-    }
-  });
-
-  const offlineBackgroundColor = offlineAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['transparent', '#9500FF'],
-  });
-
-  const activeBackgroundColor = activeAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['transparent', '#00C853'],
-  });
-
-  const offlineTextColor = offlineAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#666', '#FFFFFF'],
-  });
-
-  const activeTextColor = activeAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#666', '#FFFFFF'],
-  });
-
-  const recommendedBackgroundColor = recommendedAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['transparent', '#9500FF'],
-  });
-
-  const allBackgroundColor = allAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['transparent', '#9500FF'],
-  });
-
-  // const recommendedTextColor = recommendedAnim.interpolate({
-  //   inputRange: [0, 1],
-  //   outputRange: ['#666', '#FFFFFF'],
-  // });
-
-  // const allTextColor = allAnim.interpolate({
-  //   inputRange: [0, 1],
-  //   outputRange: ['#666', '#FFFFFF'],
-  // });
 
   return (
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Top Toggle Buttons Row */}
+        {/* Top Toggle Row */}
         <View style={styles.topButtonsRow}>
-          {/* Bubble Toggle Button */}
-          <View style={styles.toggleWrapper}>
-            <View style={styles.toggleContainer}>
-              {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
-              <Pressable
-                onPress={() => handleToggle('Offline')}
-                disabled={isPending || isProfileLoading || !profile}
-              >
-                <Animated.View
-                  style={[
-                    styles.toggleButton,
-                    { backgroundColor: offlineBackgroundColor },
-                  ]}
-                >
-                  <Animated.Text style={{ color: offlineTextColor }}>
-                    Offline
-                  </Animated.Text>
-                </Animated.View>
-              </Pressable>
-              {/* ── PATCH /volunteer/status: changed setSelectedOption → handleToggle */}
-              <Pressable
-                onPress={() => handleToggle('Active')}
-                disabled={isPending || isProfileLoading || !profile}
-              >
-                <Animated.View
-                  style={[
-                    styles.toggleButton,
-                    { backgroundColor: activeBackgroundColor },
-                  ]}
-                >
-                  <Animated.Text style={{ color: activeTextColor }}>
-                    Active
-                  </Animated.Text>
-                </Animated.View>
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Right Top Bubble Button */}
-          <View style={styles.toggleWrapperRight}>
-            <Pressable onPress={() => console.log('Button pressed')}>
-              <LinearGradient
-                colors={['#D2ECFE', '#F9FBFF', '#F6ECFF']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.singleButton}
-              >
-                <AppText style={styles.singleButtonText}>🌟 185</AppText>
-              </LinearGradient>
-            </Pressable>
-          </View>
-        </View>
-        {statusError !== null && (
-          <AppText variant="footnote" style={styles.toggleError}>
-            {statusError}
-          </AppText>
-        )}
-        {/* Specialisations section */}
-        <View
-          style={{
-            alignItems: 'flex-start',
-            gap: 5,
-            width: '100%',
-            maxWidth: isSmallScreen ? 500 : 800,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              marginLeft: screenWidth < 560 ? 10 : 5,
-            }}
-          >
-            <AppText
-              variant="callout"
-              color="primary"
-              style={{ textAlign: 'left' }}
-            >
-              Your Specialisations:
-            </AppText>
+          <View style={styles.toggleContainer}>
             <Pressable
-              style={styles.plusButton}
-              onPress={() => console.log('Add specialisation')}
+              onPress={() => handleToggle('Offline')}
+              disabled={isPending || isProfileLoading || !profile}
+              style={[
+                styles.toggleButton,
+                selectedOption === 'Offline' && styles.toggleButtonOffline,
+              ]}
             >
-              <AppText style={styles.plusButtonText}>+</AppText>
+              <AppText
+                style={[
+                  styles.toggleText,
+                  selectedOption === 'Offline' && styles.toggleTextActive,
+                ]}
+              >
+                Offline
+              </AppText>
             </Pressable>
-          </View>
-          <View style={styles.specialisations}>
-            <Pressable style={styles.specialisationButton}>
-              <AppText style={styles.specialisationButtonText}>Anxiety</AppText>
-            </Pressable>
-            <Pressable style={styles.specialisationButton}>
-              <AppText style={styles.specialisationButtonText}>Stress</AppText>
-            </Pressable>
-            <Pressable style={styles.specialisationButton}>
-              <AppText style={styles.specialisationButtonText}>
-                Depression
+
+            <Pressable
+              onPress={() => handleToggle('Active')}
+              disabled={isPending || isProfileLoading || !profile}
+              style={[
+                styles.toggleButton,
+                selectedOption === 'Active' && styles.toggleButtonOnline,
+              ]}
+            >
+              <AppText
+                style={[
+                  styles.toggleText,
+                  selectedOption === 'Active' && styles.toggleTextActive,
+                ]}
+              >
+                Active
               </AppText>
             </Pressable>
           </View>
 
-          {/* Connect With Section */}
-          <AppText
-            variant="callout"
-            style={{
-              textAlign: 'left',
-              marginTop: 20,
-              marginLeft: screenWidth < 560 ? 10 : 5,
-            }}
+          <LinearGradient
+            colors={['#D2ECFE', '#F9FBFF', '#F6ECFF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.pointsBadge}
           >
+            <AppText style={styles.pointsText}>🌟 185</AppText>
+          </LinearGradient>
+        </View>
+
+        {statusError && (
+          <AppText variant="footnote" style={styles.errorText}>
+            {statusError}
+          </AppText>
+        )}
+
+        {/* Specialisations */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <AppText variant="callout" color="primary">
+              Your Specialisations:
+            </AppText>
+            <Pressable
+              style={styles.plusButton}
+              onPress={() => router.push('/volunteer/Specialisations/specialisationFilter')}
+            >
+              <AppText style={styles.plusButtonText}>+</AppText>
+            </Pressable>
+          </View>
+          
+          <View style={styles.specialisationsBox}>
+            {['Anxiety', 'Stress', 'Depression'].map(spec => (
+              <View key={spec} style={styles.specPill}>
+                <AppText style={styles.specPillText}>{spec}</AppText>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Connect With */}
+        <View style={styles.sectionContainer}>
+          <AppText variant="callout" style={styles.sectionTitleSpaced}>
             You Can Connect With:
           </AppText>
 
-          <View style={styles.connectwith}>
-            {/* Connect Filter Toggle */}
-            <View style={styles.connectToggleContainer}>
-              <Pressable onPress={() => setConnectFilter('Recommended')}>
-                <Animated.View
-                  style={[
-                    styles.connectToggleButton,
-                    {
-                      borderColor: recommendedBackgroundColor,
-                      borderWidth: 2,
-                    },
-                  ]}
-                >
-                  <Animated.Text
+          <View style={styles.connectBox}>
+            <View style={styles.filterToggleContainer}>
+              {['Recommended', 'All'].map(filter => {
+                const isActive = connectFilter === filter;
+                return (
+                  <Pressable
+                    key={filter}
+                    onPress={() => setConnectFilter(filter as any)}
                     style={[
-                      styles.connectToggleText,
-                      { color: recommendedBackgroundColor },
+                      styles.filterToggleButton,
+                      isActive && styles.filterToggleButtonActive,
                     ]}
                   >
-                    Recommended
-                  </Animated.Text>
-                </Animated.View>
-              </Pressable>
-              <Pressable onPress={() => setConnectFilter('All')}>
-                <Animated.View
-                  style={[
-                    styles.connectToggleButton,
-                    {
-                      borderColor: allBackgroundColor,
-                      borderWidth: 2,
-                    },
-                  ]}
-                >
-                  <Animated.Text
-                    style={[
-                      styles.connectToggleText,
-                      { color: allBackgroundColor },
-                    ]}
-                  >
-                    All
-                  </Animated.Text>
-                </Animated.View>
-              </Pressable>
+                    <AppText
+                      style={[
+                        styles.filterToggleText,
+                        isActive && styles.filterToggleTextActive,
+                      ]}
+                    >
+                      {filter}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
             </View>
 
-            {/* Profile Cards */}
-            <View style={styles.connectProfilesContainer}>
-              {/* Profile Card 1 */}
-              <View style={styles.profileCard}>
-                <View style={styles.profileInfo}>
-                  <LinearGradient
-                    colors={['#1D47DC', '#0E7FBC']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.profileImage}
-                  >
-                    <AppText style={styles.profileImageText}>JD</AppText>
-                  </LinearGradient>
-                  <View style={styles.profileTextContainer}>
-                    <AppText
-                      variant="callout"
-                      style={{
-                        fontSize: isSmallScreen ? 14 : 16,
-                        fontWeight: '600',
-                      }}
-                    >
-                      RecAnonUser89
-                    </AppText>
-                    <AppText
-                      variant="caption1"
-                      style={{
-                        fontSize: isSmallScreen ? 10 : 12,
-                        color: '#666666',
-                      }}
-                    >
-                      Issue - Stress
-                    </AppText>
-                    <AppText
-                      variant="caption1"
-                      style={{
-                        fontSize: isSmallScreen ? 10 : 12,
-                        color: '#666666',
-                      }}
-                    >
-                      Waiting - 8 minutes
-                    </AppText>
-                  </View>
-                </View>
-                <Pressable>
-                  <LinearGradient
-                    colors={['#1D47DC', '#0E7FBC']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.connectButton}
-                  >
-                    <AppText style={styles.connectButtonText}>Connect</AppText>
-                  </LinearGradient>
-                </Pressable>
-              </View>
-
-              {/* Profile Card 2 */}
-              <View style={styles.profileCard}>
-                <View style={styles.profileInfo}>
-                  <LinearGradient
-                    colors={['#1D47DC', '#0E7FBC']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.profileImage}
-                  >
-                    <AppText style={styles.profileImageText}>SA</AppText>
-                  </LinearGradient>
-                  <View style={styles.profileTextContainer}>
-                    <AppText
-                      variant="callout"
-                      style={{
-                        fontSize: isSmallScreen ? 14 : 16,
-                        fontWeight: '600',
-                      }}
-                    >
-                      RecAnonUser159
-                    </AppText>
-                    <AppText
-                      variant="caption1"
-                      style={{
-                        fontSize: isSmallScreen ? 10 : 12,
-                        color: '#666666',
-                      }}
-                    >
-                      Issue - Anxiety
-                    </AppText>
-                    <AppText
-                      variant="caption1"
-                      style={{
-                        fontSize: isSmallScreen ? 10 : 12,
-                        color: '#666666',
-                      }}
-                    >
-                      Waiting - 5 minutes
-                    </AppText>
-                  </View>
-                </View>
-                <Pressable>
-                  <LinearGradient
-                    colors={['#1D47DC', '#0E7FBC']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.connectButton}
-                  >
-                    <AppText style={styles.connectButtonText}>Connect</AppText>
-                  </LinearGradient>
-                </Pressable>
-              </View>
-
-              {/* Profile Card 3 */}
-              <View style={styles.profileCard}>
-                <View style={styles.profileInfo}>
-                  <LinearGradient
-                    colors={['#1D47DC', '#0E7FBC']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.profileImage}
-                  >
-                    <AppText style={styles.profileImageText}>MJ</AppText>
-                  </LinearGradient>
-                  <View style={styles.profileTextContainer}>
-                    <AppText
-                      variant="callout"
-                      style={{
-                        fontSize: isSmallScreen ? 14 : 16,
-                        fontWeight: '600',
-                      }}
-                    >
-                      RecAnonUser289
-                    </AppText>
-                    <AppText
-                      variant="caption1"
-                      style={{
-                        fontSize: isSmallScreen ? 10 : 12,
-                        color: '#666666',
-                      }}
-                    >
-                      Issue - Depression
-                    </AppText>
-                    <AppText
-                      variant="caption1"
-                      style={{
-                        fontSize: isSmallScreen ? 10 : 12,
-                        color: '#666666',
-                      }}
-                    >
-                      Waiting - 2 minutes
-                    </AppText>
-                  </View>
-                </View>
-                <Pressable>
-                  <LinearGradient
-                    colors={['#1D47DC', '#0E7FBC']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.connectButton}
-                  >
-                    <AppText style={styles.connectButtonText}>Connect</AppText>
-                  </LinearGradient>
-                </Pressable>
-              </View>
+            <View style={styles.profileList}>
+              <ProfileCard 
+                initials="JD" name="RecAnonUser89" issue="Stress" time="8 minutes" 
+                colors={['#1D47DC', '#0E7FBC']} 
+              />
+              <ProfileCard 
+                initials="SA" name="RecAnonUser159" issue="Anxiety" time="5 minutes" 
+                colors={['#1D47DC', '#0E7FBC']} 
+              />
+              <ProfileCard 
+                initials="MJ" name="RecAnonUser289" issue="Depression" time="2 minutes" 
+                colors={['#1D47DC', '#0E7FBC']} 
+              />
             </View>
           </View>
         </View>
 
-        {/* Connection History Section */}
-        <View
-          style={{
-            alignItems: 'flex-start',
-            gap: 5,
-            width: '100%',
-            maxWidth: isSmallScreen ? 500 : 800,
-          }}
-        >
+        {/* Connection History */}
+        <View style={styles.sectionContainer}>
           <Pressable
             onPress={() => setHistoryExpanded(!historyExpanded)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              marginLeft: screenWidth < 560 ? 10 : 5,
-            }}
+            style={styles.historyHeader}
           >
-            <AppText
-              variant="callout"
-              color="primary"
-              style={{ textAlign: 'left' }}
-            >
+            <AppText variant="callout" color="primary">
               Connection History
             </AppText>
-            <AppText style={{ fontSize: 20, color: '#349EDB' }}>
+            <AppText style={styles.historyIcon}>
               {historyExpanded ? '▼' : '▶'}
             </AppText>
           </Pressable>
 
           {historyExpanded && (
-            <View style={styles.connectionhistory}>
-              {/* Profile Cards from History */}
-              <View style={styles.connectProfilesContainer}>
-                {/* History Profile Card 1 */}
-                <View style={styles.profileCard}>
-                  <View style={styles.profileInfo}>
-                    <LinearGradient
-                      colors={['#9500FF', '#7B00D6']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.profileImage}
-                    >
-                      <AppText style={styles.profileImageText}>AL</AppText>
-                    </LinearGradient>
-                    <View style={styles.profileTextContainer}>
-                      <AppText
-                        variant="callout"
-                        style={{
-                          fontSize: isSmallScreen ? 14 : 16,
-                          fontWeight: '600',
-                        }}
-                      >
-                        AnonUser42
-                      </AppText>
-                      <AppText
-                        variant="caption1"
-                        style={{
-                          fontSize: isSmallScreen ? 10 : 12,
-                          color: '#666666',
-                        }}
-                      >
-                        Issue - Anxiety
-                      </AppText>
-                      <AppText
-                        variant="caption1"
-                        style={{
-                          fontSize: isSmallScreen ? 10 : 12,
-                          color: '#666666',
-                        }}
-                      >
-                        Session - 45 minutes
-                      </AppText>
-                    </View>
-                  </View>
-                  <View
-                    style={{
-                      paddingVertical: isSmallScreen ? 6 : 8,
-                      paddingHorizontal: isSmallScreen ? 12 : 20,
-                    }}
-                  >
-                    <AppText
-                      style={{
-                        fontSize: isSmallScreen ? 12 : 14,
-                        color: '#666666',
-                        fontWeight: '600',
-                      }}
-                    >
-                      2 days ago
-                    </AppText>
-                  </View>
-                </View>
-
-                {/* History Profile Card 2 */}
-                <View style={styles.profileCard}>
-                  <View style={styles.profileInfo}>
-                    <LinearGradient
-                      colors={['#9500FF', '#7B00D6']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.profileImage}
-                    >
-                      <AppText style={styles.profileImageText}>TC</AppText>
-                    </LinearGradient>
-                    <View style={styles.profileTextContainer}>
-                      <AppText
-                        variant="callout"
-                        style={{
-                          fontSize: isSmallScreen ? 14 : 16,
-                          fontWeight: '600',
-                        }}
-                      >
-                        AnonUser231
-                      </AppText>
-                      <AppText
-                        variant="caption1"
-                        style={{
-                          fontSize: isSmallScreen ? 10 : 12,
-                          color: '#666666',
-                        }}
-                      >
-                        Issue - Stress
-                      </AppText>
-                      <AppText
-                        variant="caption1"
-                        style={{
-                          fontSize: isSmallScreen ? 10 : 12,
-                          color: '#666666',
-                        }}
-                      >
-                        Session - 30 minutes
-                      </AppText>
-                    </View>
-                  </View>
-                  <View
-                    style={{
-                      paddingVertical: isSmallScreen ? 6 : 8,
-                      paddingHorizontal: isSmallScreen ? 12 : 20,
-                    }}
-                  >
-                    <AppText
-                      style={{
-                        fontSize: isSmallScreen ? 12 : 14,
-                        color: '#666666',
-                        fontWeight: '600',
-                      }}
-                    >
-                      5 days ago
-                    </AppText>
-                  </View>
-                </View>
-
-                {/* History Profile Card 3 */}
-                <View style={styles.profileCard}>
-                  <View style={styles.profileInfo}>
-                    <LinearGradient
-                      colors={['#9500FF', '#7B00D6']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.profileImage}
-                    >
-                      <AppText style={styles.profileImageText}>RK</AppText>
-                    </LinearGradient>
-                    <View style={styles.profileTextContainer}>
-                      <AppText
-                        variant="callout"
-                        style={{
-                          fontSize: isSmallScreen ? 14 : 16,
-                          fontWeight: '600',
-                        }}
-                      >
-                        AnonUser567
-                      </AppText>
-                      <AppText
-                        variant="caption1"
-                        style={{
-                          fontSize: isSmallScreen ? 10 : 12,
-                          color: '#666666',
-                        }}
-                      >
-                        Issue - Depression
-                      </AppText>
-                      <AppText
-                        variant="caption1"
-                        style={{
-                          fontSize: isSmallScreen ? 10 : 12,
-                          color: '#666666',
-                        }}
-                      >
-                        Session - 60 minutes
-                      </AppText>
-                    </View>
-                  </View>
-                  <View
-                    style={{
-                      paddingVertical: isSmallScreen ? 6 : 8,
-                      paddingHorizontal: isSmallScreen ? 12 : 20,
-                    }}
-                  >
-                    <AppText
-                      style={{
-                        fontSize: isSmallScreen ? 12 : 14,
-                        color: '#666666',
-                        fontWeight: '600',
-                      }}
-                    >
-                      1 week ago
-                    </AppText>
-                  </View>
-                </View>
+            <View style={styles.historyBox}>
+              <View style={styles.profileList}>
+                <ProfileCard 
+                  initials="AL" name="AnonUser42" issue="Anxiety" time="45 minutes" 
+                  colors={['#9500FF', '#7B00D6']} history 
+                />
+                <ProfileCard 
+                  initials="TC" name="AnonUser231" issue="Stress" time="30 minutes" 
+                  colors={['#9500FF', '#7B00D6']} history 
+                />
+                <ProfileCard 
+                  initials="RK" name="AnonUser567" issue="Depression" time="60 minutes" 
+                  colors={['#9500FF', '#7B00D6']} history 
+                />
               </View>
             </View>
           )}
@@ -728,208 +276,218 @@ const styles = StyleSheet.create((theme, rt) => ({
     flex: 1,
     backgroundColor: theme.background.default,
   },
-  topButtonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    width: '100%',
-    marginBottom: 30,
-    marginTop: 0,
-    paddingHorizontal: 0,
-  },
-  toggleWrapper: {
-    position: 'absolute',
-    left: rt.screen.width < 768 ? 10 : 16,
-    zIndex: 10,
-    marginTop: rt.screen.width < 560 ? 0 : 8,
-    marginLeft: rt.screen.width < 560 ? 14 : 18,
-  },
-  toggleWrapperRight: {
-    position: 'absolute',
-    right: rt.screen.width < 560 ? 14 : 18,
-    zIndex: 10,
-    marginTop: rt.screen.width < 560 ? 0 : 8,
-    borderColor: '#9500FF',
-    borderWidth: 2,
-    borderRadius: 25,
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#E5E5E5',
-    borderRadius: 25,
-    padding: 4,
-    gap: 4,
-  },
-  toggleButton: {
-    paddingVertical: rt.screen.width < 768 ? 8 : 10,
-    paddingHorizontal: rt.screen.width < 768 ? 16 : 24,
-    borderRadius: 20,
-    minWidth: rt.screen.width < 768 ? 80 : 120,
-    alignItems: 'center',
-  },
-  singleButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 20,
-    alignItems: 'center',
-  },
-  singleButtonText: {
-    color: '#9500FF',
-    fontWeight: '600',
-  },
-  toggleError: {
-    color: theme.state.error,
-    textAlign: 'center',
-    marginTop: theme.spacing.s2,
-  },
-  textContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  specialisations: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    backgroundColor: '#349EDB33',
-    padding: rt.screen.width < 560 ? 10 : 15,
-    borderRadius: 30,
-    gap: rt.screen.width < 560 ? 8 : 10,
-    width: '85%',
-    maxWidth: rt.screen.width < 560 ? 500 : 800,
-    alignSelf: 'center',
-  },
-  specialisationButton: {
-    backgroundColor: '#349EDB',
-    paddingVertical: rt.screen.width < 768 ? 4 : 5,
-    paddingHorizontal: rt.screen.width < 768 ? 8 : 10,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: '#4a6fa5',
-  },
-  specialisationButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: rt.screen.width < 768 ? 12 : 14,
-  },
-  plusButton: {
-    backgroundColor: '#349EDB',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#4a6fa5',
-  },
-  plusButtonText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 22,
-  },
-  connectwith: {
-    flexDirection: 'column',
-    backgroundColor: '#349EDB33',
-    padding: rt.screen.width < 560 ? 10 : 20,
-    borderRadius: 30,
-    gap: rt.screen.width < 560 ? 8 : 10,
-    width: '85%',
-    maxWidth: rt.screen.width < 560 ? 500 : 800,
-    alignSelf: 'center',
-  },
-  connectToggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#E5E5E5',
-    borderRadius: 30,
-    padding: 4,
-    gap: 4,
-    alignSelf: 'flex-start',
-  },
-  connectToggleButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    minWidth: 100,
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  connectToggleText: {
-    fontWeight: '600',
-  },
-  connectProfilesContainer: {
-    width: '100%',
-    gap: 10,
-  },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: rt.screen.width < 560 ? 20 : 30,
-    padding: rt.screen.width < 560 ? 8 : 12,
-    paddingLeft: rt.screen.width < 560 ? 6 : 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  profileInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: rt.screen.width < 560 ? 8 : 12,
-    flex: 1,
-  },
-  profileTextContainer: {
-    flexDirection: 'column',
-    gap: 2,
-    flex: 1,
-  },
-  profileImage: {
-    width: rt.screen.width < 560 ? 40 : 45,
-    height: rt.screen.width < 560 ? 40 : 45,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileImageText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#000000',
-  },
-  connectButton: {
-    paddingVertical: rt.screen.width < 560 ? 6 : 8,
-    paddingHorizontal: rt.screen.width < 560 ? 12 : 20,
-    borderRadius: 20,
-  },
-  connectButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: rt.screen.width < 560 ? 12 : 14,
-  },
-  connectionhistory: {
-    flexDirection: 'column',
-    backgroundColor: '#349EDB33',
-    padding: rt.screen.width < 560 ? 10 : 20,
-    borderRadius: 30,
-    gap: rt.screen.width < 560 ? 8 : 10,
-    width: '85%',
-    maxWidth: rt.screen.width < 560 ? 500 : 800,
-    alignSelf: 'center',
-  },
   scrollView: {
     flex: 1,
     width: '100%',
   },
   scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'flex-start',
+    paddingTop: rt.insets.top + theme.spacing.s6,
+    paddingHorizontal: theme.spacing.s4,
+    paddingBottom: rt.insets.bottom + theme.spacing.s7,
+    gap: theme.spacing.s6,
+  },
+  topButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: rt.screen.width < 768 ? 35 : 55,
-    paddingHorizontal: rt.screen.width < 768 ? 15 : 50,
-    paddingBottom: 30,
-    gap: rt.screen.width < 768 ? 30 : 50,
+    width: '100%',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: theme.surface.muted,
+    borderRadius: theme.radius.full,
+    padding: 4,
+  },
+  toggleButton: {
+    paddingVertical: theme.spacing.s2,
+    paddingHorizontal: theme.spacing.s4,
+    borderRadius: theme.radius.full,
+    minWidth: 90,
+    alignItems: 'center',
+  },
+  toggleButtonOffline: {
+    backgroundColor: theme.action.primary, // Using purple
+  },
+  toggleButtonOnline: {
+    backgroundColor: common.green[500] || '#00C853',
+  },
+  toggleText: {
+    color: theme.text.muted,
+    fontWeight: '600',
+  },
+  toggleTextActive: {
+    color: common.white,
+  },
+  pointsBadge: {
+    paddingVertical: theme.spacing.s2,
+    paddingHorizontal: theme.spacing.s4,
+    borderRadius: theme.radius.full,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: theme.border.primary, // Using purple border
+  },
+  pointsText: {
+    color: theme.text.primary, // Using purple
+    fontWeight: '600',
+  },
+  errorText: {
+    color: theme.state.error,
+    textAlign: 'center',
+  },
+  sectionContainer: {
+    width: '100%',
+    alignSelf: 'center',
+    maxWidth: 600, // Bound width for large screens
+    gap: theme.spacing.s2,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s3,
+    marginBottom: theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s2,
+  },
+  sectionTitleSpaced: {
+    paddingHorizontal: theme.spacing.s2,
+    marginTop: theme.spacing.s3,
+  },
+  plusButton: {
+    backgroundColor: theme.action.secondary, // Light blue
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.border.secondary,
+  },
+  plusButtonText: {
+    color: common.white,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 22,
+  },
+  specialisationsBox: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    backgroundColor: theme.surface.secondary, // Light blue tint
+    padding: theme.spacing.s4,
+    borderRadius: theme.radius.lg,
+    gap: theme.spacing.s3,
+  },
+  specPill: {
+    backgroundColor: theme.action.secondary,
+    paddingVertical: theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s3,
+    borderRadius: theme.radius.full,
+  },
+  specPillText: {
+    color: common.white,
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  connectBox: {
+    backgroundColor: theme.surface.secondary,
+    padding: theme.spacing.s4,
+    borderRadius: theme.radius.lg,
+    gap: theme.spacing.s4,
+  },
+  filterToggleContainer: {
+    flexDirection: 'row',
+    gap: theme.spacing.s3,
+  },
+  filterToggleButton: {
+    paddingVertical: theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s4,
+    borderRadius: theme.radius.full,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  filterToggleButtonActive: {
+    borderColor: theme.border.primary, // Purple border
+  },
+  filterToggleText: {
+    color: theme.text.muted,
+    fontWeight: '600',
+  },
+  filterToggleTextActive: {
+    color: theme.text.primary,
+  },
+  profileList: {
+    gap: theme.spacing.s3,
+  },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.background.default,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.s3,
+    borderWidth: 1,
+    borderColor: theme.border.default,
+  },
+  profileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s3,
+    flex: 1,
+  },
+  profileImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileImageText: {
+    color: common.white,
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  profileTextContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  profileName: {
+    fontWeight: '600',
+  },
+  profileIssueText: {
+    color: theme.text.muted,
+  },
+  connectButton: {
+    paddingVertical: theme.spacing.s2,
+    paddingHorizontal: theme.spacing.s4,
+    borderRadius: theme.radius.full,
+  },
+  connectButtonText: {
+    color: common.white,
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s2,
+  },
+  historyIcon: {
+    fontSize: 18,
+    color: theme.text.secondary, // Light blue
+  },
+  historyBox: {
+    backgroundColor: theme.surface.secondary,
+    padding: theme.spacing.s4,
+    borderRadius: theme.radius.lg,
+  },
+  historyTimeBadge: {
+    paddingVertical: theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s3,
+    backgroundColor: theme.surface.muted,
+    borderRadius: theme.radius.full,
+  },
+  historyTimeText: {
+    fontSize: 12,
+    color: theme.text.muted,
+    fontWeight: '600',
   },
 }));

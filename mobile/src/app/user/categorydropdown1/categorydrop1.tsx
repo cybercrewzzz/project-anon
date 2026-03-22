@@ -57,6 +57,9 @@ export default function CategoryDrop1() {
             onChangeText={setSearchQuery}
             placeholder="Search or Select Source"
             returnKeyType="search"
+            onSubmitEditing={() =>
+              router.push('/user/categorydropdownfilter/categorydropdownfilter')
+            }
           />
           <Ionicons name="search" size={26} style={styles.searchIcon} />
         </View>
@@ -91,7 +94,12 @@ export default function CategoryDrop1() {
             </View>
           ))}
 
-          <Pressable style={styles.otherCard}>
+          <Pressable
+            style={styles.otherCard}
+            onPress={() =>
+              router.push('/user/categorydropdownother/categorydropother')
+            }
+          >
             <Ionicons name="add" size={36} style={styles.otherIcon} />
             <AppText variant="headline" emphasis="emphasized">
               <AppText variant="headline" color="accent" emphasis="emphasized">

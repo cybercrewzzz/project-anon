@@ -6,6 +6,7 @@ import { StyleSheet, withUnistyles } from 'react-native-unistyles';
 import Toggle from '@/components/Toggle';
 import { purple } from '@/theme/palettes/purple';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
 const HistoryBarGradient = withUnistyles(LinearGradient, theme => ({
   colors: theme.gradient.backgroundSecondary,
@@ -17,6 +18,7 @@ const ConnectButtonGradient = withUnistyles(LinearGradient, theme => ({
 
 const P2P_P2V_withCategory = () => {
   const [problemText, setProblemText] = useState('');
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -179,15 +181,17 @@ const P2P_P2V_withCategory = () => {
               <Toggle label="Same-Gender" initialValue={false} />
               <Toggle label="Volunteer Only" initialValue={true} />
             </View>
-            <ConnectButtonGradient
-              style={styles.connectButton}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-            >
-              <AppText variant="body" emphasis="emphasized" color="secondary">
-                Connect
-              </AppText>
-            </ConnectButtonGradient>
+            <Pressable onPress={() => router.push('/user/connecting')}>
+              <ConnectButtonGradient
+                style={styles.connectButton}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+              >
+                <AppText variant="body" emphasis="emphasized" color="secondary">
+                  Connect
+                </AppText>
+              </ConnectButtonGradient>
+            </Pressable>
             <AppText variant="caption1" style={styles.anonymousText}>
               Your match will remain anonymous!
             </AppText>

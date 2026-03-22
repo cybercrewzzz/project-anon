@@ -112,7 +112,12 @@ export default function CategoryDropOther() {
           </View>
         </View>
 
-        <Pressable style={styles.okBtn}>
+        <Pressable
+          style={styles.okBtn}
+          onPress={() =>
+            router.push('/user/p2p-p2v-withCategory/P2P-P2V-withCategory')
+          }
+        >
           <AppText variant="title2" emphasis="emphasized" color="secondary">
             OK
           </AppText>

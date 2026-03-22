@@ -131,7 +131,9 @@ export default function CategoryDropdownFilter() {
             styles.okBtn,
             (isLoading || selectedIds.length === 0) && { opacity: 0.5 },
           ]}
-          onPress={() => router.back()}
+          onPress={() =>
+            router.push('/user/p2p-p2v-withCategory/P2P-P2V-withCategory')
+          }
           disabled={isLoading || selectedIds.length === 0}
         >
           <AppText variant="title2" emphasis="emphasized" color="secondary">
