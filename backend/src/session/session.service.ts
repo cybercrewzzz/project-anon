@@ -211,11 +211,16 @@ export class SessionService {
       // if anything in the "match found" flow fails after DB updates.
       const originalProblemStatus = problem.status;
 
+      // Declare session outside try block so it's accessible in catch block for rollback
+      let session: Awaited<
+        ReturnType<typeof this.prisma.chatSession.create>
+      > | null = null;
+
       try {
         // Create the ChatSession row in the DB and update the UserProblem
         // status to 'matched' in a single transaction so they succeed/fail
         // together.
-        const [session] = await this.prisma.$transaction([
+        [session] = await this.prisma.$transaction([
           this.prisma.chatSession.create({
             data: {
               seekerId,
@@ -308,19 +313,30 @@ export class SessionService {
           `Failed to finalize match for seeker ${seekerId} and volunteer ${matchedVolunteerId}: ${error}`,
         );
         try {
-          // Rollback BOTH the ChatSession and UserProblem in a transaction
-          await this.prisma.$transaction([
-            this.prisma.chatSession.delete({
-              where: { sessionId: session.sessionId },
-            }),
-            this.prisma.userProblem.update({
-              where: { problemId: problem.problemId },
-              data: { status: originalProblemStatus },
-            }),
-          ]);
-          this.logger.log(
-            `Successfully rolled back session ${session.sessionId} and problem ${problem.problemId}`,
-          );
+          // Only rollback if the transaction succeeded (session was created)
+          if (session) {
+            // Rollback BOTH the ChatSession and UserProblem in a transaction
+            await this.prisma.$transaction([
+              this.prisma.chatSession.delete({
+                where: { sessionId: session.sessionId },
+              }),
+              this.prisma.userProblem.update({
+                where: { problemId: problem.problemId },
+                data: { status: originalProblemStatus },
+              }),
+            ]);
+            this.logger.log(
+              `Successfully rolled back session ${session.sessionId} and problem ${problem.problemId}`,
+            );
+          } else {
+            // Transaction failed, so only revert the problem status change if needed
+            if (problem.status !== originalProblemStatus) {
+              await this.prisma.userProblem.update({
+                where: { problemId: problem.problemId },
+                data: { status: originalProblemStatus },
+              });
+            }
+          }
         } catch (rollbackError) {
           this.logger.error(
             `Failed to rollback session and problem: ${rollbackError}`,
@@ -932,4 +948,3 @@ export class SessionService {
     };
   }
 }
-
