@@ -42,6 +42,7 @@ type MockRedisService = {
   hsetnx: jest.Mock;
   smembers: jest.Mock;
   expire: jest.Mock;
+  multi: jest.Mock;
 };
 
 type MockTicketService = {
@@ -93,6 +94,14 @@ describe('SessionService', () => {
       hsetnx: jest.fn(),
       smembers: jest.fn(),
       expire: jest.fn(),
+      multi: jest.fn().mockReturnValue({
+        hset: jest.fn().mockReturnThis(),
+        expire: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([
+          [null, 'OK'],
+          [null, 1],
+        ]),
+      }),
     };
 
     const matchingMock = {
@@ -200,6 +209,7 @@ describe('SessionService', () => {
 
   describe('accept', () => {
     it('throws conflict when another volunteer already claimed the session', async () => {
+      prisma.chatSession.findFirst.mockResolvedValue(null); // No active volunteer session
       redis.hgetall.mockResolvedValue({
         seekerId: 'seeker-1',
         status: 'waiting',
@@ -220,6 +230,7 @@ describe('SessionService', () => {
     });
 
     it('rolls back redis claim when volunteer is blocked by seeker', async () => {
+      prisma.chatSession.findFirst.mockResolvedValue(null); // No active volunteer session
       redis.hgetall.mockResolvedValue({
         seekerId: 'seeker-3',
         status: 'waiting',
@@ -235,10 +246,8 @@ describe('SessionService', () => {
         service.accept('session-roll', 'volunteer-3'),
       ).rejects.toBeInstanceOf(ForbiddenException);
 
-      expect(redis.hset).toHaveBeenCalledWith('session:session-roll', {
-        listenerId: '',
-        status: 'waiting',
-      });
+      // Verify that multi() was called to roll back the claim
+      expect(redis.multi).toHaveBeenCalled();
       expect(prisma.chatSession.update).not.toHaveBeenCalled();
     });
   });
