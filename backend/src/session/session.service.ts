@@ -343,8 +343,14 @@ export class SessionService {
           );
         }
 
-        // Also release the reserved ticket
-        await this.tickets.releaseReserved(seekerId);
+        // Also release the reserved ticket (best-effort; do not mask original error)
+        try {
+          await this.tickets.releaseReserved(seekerId);
+        } catch (ticketReleaseError) {
+          this.logger.error(
+            `Failed to release reserved ticket for seeker ${seekerId}: ${ticketReleaseError}`,
+          );
+        }
 
         throw error;
       }
@@ -520,8 +526,13 @@ export class SessionService {
     }
 
     // We won the race. Update the session status in Redis immediately
-    // so any subsequent accept calls hit the status check in Step 2.
+    // so any subsequent accept calls hit the status check in Step 3.
     await this.redis.hset(`session:${sessionId}`, 'status', 'active');
+
+    // Extend the TTL to the full session timeout now that it's active.
+    // The session was created with MATCH_TIMEOUT_MS (3 min) TTL, but now
+    // that a volunteer has accepted, it needs the full SESSION_TIMEOUT_MS (45 min).
+    await this.redis.expire(`session:${sessionId}`, SESSION_TIMEOUT_MS / 1000);
 
     // ── STEP 5: Bidirectional block check ────────────────────────────────
     //
