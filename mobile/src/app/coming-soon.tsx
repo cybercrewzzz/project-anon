@@ -27,7 +27,7 @@ export default function ComingSoon() {
 
       <View style={styles.content}>
         <Image
-          source={require('@/assets/images/logo.webp')}
+          source={require('@/assets/images/anoraLogo.png')}
           style={styles.logo}
           contentFit="contain"
         />

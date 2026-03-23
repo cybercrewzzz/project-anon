@@ -6,8 +6,10 @@ import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import SideImageCard from '@/components/sideImageCard';
 import HomeTile from '@/components/homeTile';
+import { useRouter } from 'expo-router';
 
 const Home = () => {
+  const router = useRouter();
   return (
     <View style={styles.screen}>
       <LinearGradient
@@ -38,17 +40,20 @@ const Home = () => {
           ctaText="Join now"
           ctaIcon={require('@/assets/icons/start.svg')}
           image={require('@/assets/images/startOutreachVector.webp')}
+          onPress={() => router.push('/volunteer/P2p-And/p2p-and')}
         />
         <View style={styles.tileContainer}>
           <HomeTile
             title="Manage Rooms"
             description="Host and moderate topic-based community support rooms"
             icon={require('@/assets/icons/groupRooms.svg')}
+            onPress={() => router.push('/coming-soon')}
           />
           <HomeTile
             title="Community Space"
             description="You're creating safe spaces with every conversation"
             icon={require('@/assets/icons/communitySpace.svg')}
+            onPress={() => router.push('/coming-soon')}
           />
         </View>
         <View>
@@ -56,6 +61,7 @@ const Home = () => {
             title="Rapid Response"
             description="Lend your ear, share strength, empower others with your compassion"
             image={require('@/assets/images/rapidResponseVector.webp')}
+            onPress={() => router.push('/coming-soon')}
           />
         </View>
       </ScrollView>

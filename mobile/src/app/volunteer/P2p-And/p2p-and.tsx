@@ -5,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { common } from '@/theme/palettes/common';
+import { purple } from '@/theme/palettes/purple';
 
 // ── PATCH /volunteer/status ───────────────────────────────────────────────────
 import {
@@ -324,7 +326,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderRadius: theme.radius.full,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: theme.border.primary, // Using purple border
+    borderColor: purple[500],
   },
   pointsText: {
     color: theme.text.primary, // Using purple
@@ -359,7 +361,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.border.secondary,
+    borderColor: theme.border.default,
   },
   plusButtonText: {
     color: common.white,
@@ -404,7 +406,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderColor: 'transparent',
   },
   filterToggleButtonActive: {
-    borderColor: theme.border.primary, // Purple border
+    borderColor: purple[500],
   },
   filterToggleText: {
     color: theme.text.muted,

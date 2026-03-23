@@ -1,8 +1,9 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 
 const UserTabsLayout = () => {
+  const router = useRouter();
   return (
     <Tabs
       initialRouteName="home"
@@ -37,6 +38,12 @@ const UserTabsLayout = () => {
       />
       <Tabs.Screen
         name="groups"
+        listeners={{
+          tabPress: (e: any) => {
+            e.preventDefault();
+            router.push('/coming-soon');
+          },
+        }}
         options={{
           title: 'Groups',
           tabBarIcon: () => (
@@ -50,6 +57,12 @@ const UserTabsLayout = () => {
       />
       <Tabs.Screen
         name="proTalk"
+        listeners={{
+          tabPress: (e: any) => {
+            e.preventDefault();
+            router.push('/coming-soon');
+          },
+        }}
         options={{
           title: 'ProTalk',
           tabBarIcon: () => (
