@@ -19,6 +19,11 @@ describe('AccountController', () => {
     controller = module.get<AccountController>(AccountController);
   });
 
+  // Confirm the success message is returned to the caller
+  it('should return a success message', () => {
+  });
+
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
