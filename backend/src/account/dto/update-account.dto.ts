@@ -1,23 +1,32 @@
-import {
-  IsString,
-  IsOptional,
-  IsUUID,
-  IsArray,
-  MaxLength,
-} from 'class-validator';
+/**
+ * UpdateAccountDto
+ * Defines the request body for the PATCH /account/me endpoint.
+ * All fields are optional — only provided fields will be updated.
+ */
+
+import { IsOptional, IsString, IsArray } from 'class-validator';
 
 export class UpdateAccountDto {
+  /**
+   * Optional display name for the user's profile.
+   */
   @IsOptional()
   @IsString()
-  @MaxLength(100)
   name?: string;
 
+  /**
+   * Optional ID of the language used for the app interface.
+   */
   @IsOptional()
-  @IsUUID('4')
+  @IsString()
   interfaceLanguageId?: string;
 
+  /**
+   * Optional list of language IDs representing the user's spoken languages.
+   * Replaces all existing spoken languages when provided.
+   */
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true })
+  @IsString({ each: true })
   languageIds?: string[];
 }
