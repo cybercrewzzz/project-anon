@@ -41,6 +41,7 @@ interface AuthState {
 
 /** Derive the primary role from the account's roles array */
 function deriveRole(roles: AccountRole[]): MobileRole {
+  if (!roles || !Array.isArray(roles)) return 'user';
   if (roles.includes('volunteer')) return 'volunteer';
   return 'user';
 }

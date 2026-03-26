@@ -45,8 +45,17 @@ const SignUp = () => {
         ageRange: AGE_RANGE_MAP[selectedAge],
       }),
     onSuccess: async data => {
-      await signIn(data.accessToken, data.refreshToken, data.account);
-      router.replace('/start/user/authScreens/registerSuccessful' as any);
+      try {
+        await signIn(data.accessToken, data.refreshToken, data.account);
+        router.replace('/start/user/authScreens/registerSuccessful' as any);
+      } catch (err) {
+        console.error('Sign-up onSuccess error:', err);
+        Alert.alert(
+          'Error',
+          'Registration succeeded but sign-in failed. Please log in manually.',
+        );
+        router.replace('/start/user/authScreens/signIn' as any);
+      }
     },
     onError: error => {
       const apiError = parseApiError(error);
