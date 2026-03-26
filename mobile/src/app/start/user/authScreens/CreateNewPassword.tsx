@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
@@ -36,18 +36,20 @@ const styles = StyleSheet.create((theme, rt) => ({
     justifyContent: 'flex-end',
     paddingBottom: theme.spacing.s8,
   },
+  backIcon: {
+    color: theme.text.primary,
+  },
 }));
 
 const CreateNewPassword = () => {
   const router = useRouter();
-  const { theme } = useUnistyles();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   return (
     <View style={styles.container}>
       <Pressable onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+        <Ionicons name="arrow-back" size={24} style={styles.backIcon} />
       </Pressable>
 
       <View style={styles.header}>
@@ -63,7 +65,6 @@ const CreateNewPassword = () => {
         <InputForm
           placeholder="New Password"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           value={newPassword}
           onChangeText={setNewPassword}
           secureTextEntry={true}
@@ -74,7 +75,6 @@ const CreateNewPassword = () => {
         <InputForm
           placeholder="Confirm New Password"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry={true}

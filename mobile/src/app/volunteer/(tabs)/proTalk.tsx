@@ -16,6 +16,16 @@ const ProTalk = () => {
           text="Open Peer to Peer"
           onPress={() => router.push('/volunteer/P2p-And/p2p-and')}
         />
+        <Button
+          text="Specialisation Dropdown Filter"
+          onPress={() =>
+            router.push('/volunteer/Specialisations/specialisationFilter')
+          }
+        />
+        <Button
+          text=" Volunteer Verify"
+          onPress={() => router.push('/start/volunteer/authScreens/verify')}
+        />
       </View>
     </View>
   );

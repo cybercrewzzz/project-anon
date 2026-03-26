@@ -1,0 +1,20 @@
+import { z } from 'zod';
+import { SpecialisationSchema, CategorySchema } from './common';
+
+// =============================================================================
+// ENDPOINT: GET /lookup/specialisations
+// MODULE:   backend/src/lookup/
+// PURPOSE:  Reference data — any authenticated user can call these
+// =============================================================================
+
+// ── GET /lookup/categories ────────────────────────────────────────────────────
+// Used by fetchCategories to validate responses from GET /lookup/categories
+
+export const CategoriesResponseSchema = z.array(CategorySchema);
+export type CategoriesResponse = z.infer<typeof CategoriesResponseSchema>;
+// ── GET /lookup/specialisations ───────────────────────────────────────────────
+
+export const SpecialisationsResponseSchema = z.array(SpecialisationSchema);
+export type SpecialisationsResponse = z.infer<
+  typeof SpecialisationsResponseSchema
+>;

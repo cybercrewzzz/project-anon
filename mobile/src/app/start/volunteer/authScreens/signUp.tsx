@@ -1,6 +1,6 @@
 import { View, Pressable, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import InputForm from '@/components/inputForm';
 import OAuthSignIn from '@/components/oAuthSignIn';
@@ -14,7 +14,6 @@ import { parseApiError } from '@/api/errors';
 
 const SignUp = () => {
   const router = useRouter();
-  const { theme } = useUnistyles();
   const signIn = useAuth(state => state.signIn);
   const [form, setForm] = useState({
     name: '',
@@ -64,14 +63,12 @@ const SignUp = () => {
         <InputForm
           placeholder="Name"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           onChangeText={updateField('name')}
           value={form.name}
         />
         <InputForm
           placeholder="Email"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           onChangeText={updateField('email')}
           value={form.email}
           inputMode="email"
@@ -81,7 +78,6 @@ const SignUp = () => {
         <InputForm
           placeholder="Password"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           onChangeText={updateField('password')}
           value={form.password}
           secureTextEntry={true}
@@ -89,7 +85,6 @@ const SignUp = () => {
         <InputForm
           placeholder="Confirm Password"
           placeholderColor="subtle2"
-          formColor={theme.surface.primary}
           onChangeText={updateField('confirmPassword')}
           value={form.confirmPassword}
           secureTextEntry={true}
