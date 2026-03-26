@@ -1,8 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { DeviceService } from './device.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { PlatformEnum } from './dto/register-device-token.dto';
+import { Platform } from '../generated/prisma/client';
 
 const createMockPrisma = () => ({
   deviceToken: {
@@ -35,8 +34,7 @@ describe('DeviceService', () => {
   // ── registerToken ─────────────────────────────────────────────────
 
   describe('registerToken', () => {
-    const accountId = 'account-id';
-    const dto = { fcmToken: 'token-abc', platform: PlatformEnum.ANDROID };
+    const dto = { fcmToken: 'token-abc', platform: Platform.android };
 
     it('creates a new device token when none exists and returns deviceId', async () => {
       db.deviceToken.findFirst.mockResolvedValue(null);

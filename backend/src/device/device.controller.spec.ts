@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DeviceController } from './device.controller';
 import { DeviceService } from './device.service';
-import { PlatformEnum } from './dto/register-device-token.dto';
+import { Platform } from '../generated/prisma/client';
 
 describe('DeviceController', () => {
   let controller: DeviceController;
@@ -27,8 +27,7 @@ describe('DeviceController', () => {
 
   describe('registerToken', () => {
     it('calls deviceService.registerToken with accountId and dto, returns result', async () => {
-      const accountId = 'user-id-123';
-      const dto = { fcmToken: 'my-fcm-token', platform: PlatformEnum.ANDROID };
+      const dto = { fcmToken: 'my-fcm-token', platform: Platform.android };
       const expected = { deviceId: 'device-id-1' };
       mockDeviceService.registerToken.mockResolvedValue(expected);
 
