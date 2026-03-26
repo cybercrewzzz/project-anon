@@ -15,6 +15,7 @@ import { parseApiError } from '@/api/errors';
 const SignUp = () => {
   const router = useRouter();
   const signIn = useAuth(state => state.signIn);
+  const signOut = useAuth(state => state.signOut);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -40,6 +41,7 @@ const SignUp = () => {
         router.push('/start/volunteer/authScreens/registerSuccessful' as any);
       } catch (err) {
         console.error('Sign-up onSuccess error:', err);
+        await signOut();
         Alert.alert(
           'Error',
           'Registration succeeded but sign-in failed. Please log in manually.',
