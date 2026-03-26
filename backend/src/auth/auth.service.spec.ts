@@ -108,6 +108,22 @@ describe('AuthService', () => {
         service.login({ email: 'test@test.com', password: 'pwd' }),
       ).rejects.toThrow('Account has been banned');
     });
+
+    it('should throw UnauthorizedException when password hash format is invalid', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: '1',
+        passwordHash: '$2b$10$invalidBcryptHashHere',
+        status: 'active',
+        accountRoles: [{ role: { name: 'user' } }],
+      });
+      (argon2.verify as jest.Mock).mockRejectedValueOnce(
+        new Error('Invalid hash format'),
+      );
+
+      await expect(
+        service.login({ email: 'test@test.com', password: 'pwd' }),
+      ).rejects.toThrow('Invalid credentials');
+    });
   });
 
   describe('logout', () => {
