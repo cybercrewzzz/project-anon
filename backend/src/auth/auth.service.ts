@@ -14,6 +14,7 @@ import { RedisService } from '../redis/redis.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { VerifyOtpDto } from './dto/verify-otp.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { RegisterVolunteerDto } from './dto/register-volunteer.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
@@ -287,6 +288,33 @@ export class AuthService {
     await this.redis.set(`pwd-reset-token:${dto.email}`, resetToken, 'EX', 15 * 60);
 
     return { resetToken };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const redisKey = `pwd-reset-token:${dto.email}`;
+    const storedToken = await this.redis.get(redisKey);
+
+    if (!storedToken || storedToken !== dto.resetToken) {
+      throw new UnauthorizedException('Invalid or expired reset token.');
+    }
+
+    // Token is valid. Hash the new password and update the DB.
+    const passwordHash = await argon2.hash(dto.newPassword, {
+      type: argon2.argon2id,
+    });
+
+    await this.prisma.account.update({
+      where: { email: dto.email },
+      data: { passwordHash },
+    });
+
+    // Remove the reset token so it can't be reused.
+    await this.redis.del(redisKey);
+
+    // Optionally revoke all existing sessions to force re-login.
+    // (Skipping for now to keep it simple, but recommended in prod).
+
+    return { message: 'Password has been successfully reset.' };
   }
 
   // ── Refresh ───────────────────────────────────────────────────────
