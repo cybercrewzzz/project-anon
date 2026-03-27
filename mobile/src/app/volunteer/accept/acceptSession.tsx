@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Pressable,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import { View, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,25 +42,39 @@ export default function AcceptSessionScreen() {
             // Already accepted by another volunteer, or this volunteer is busy
             Alert.alert(
               'Session Unavailable',
-              error.serverError === 'already_in_session'
-                ? 'You already have an active session. Please complete it first.'
-                : 'Another volunteer has already accepted this session.',
-              [{ text: 'OK', onPress: () => router.replace('/volunteer/(tabs)/home' as never) }],
+              error.serverError === 'already_in_session' ?
+                'You already have an active session. Please complete it first.'
+              : 'Another volunteer has already accepted this session.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () =>
+                    router.replace('/volunteer/(tabs)/home' as never),
+                },
+              ],
             );
             break;
           case 404:
             Alert.alert(
               'Session Expired',
               'This session is no longer available. It may have expired or been cancelled.',
-              [{ text: 'OK', onPress: () => router.replace('/volunteer/(tabs)/home' as never) }],
+              [
+                {
+                  text: 'OK',
+                  onPress: () =>
+                    router.replace('/volunteer/(tabs)/home' as never),
+                },
+              ],
             );
             break;
           case 403:
-            Alert.alert(
-              'Cannot Join',
-              'You cannot join this session.',
-              [{ text: 'OK', onPress: () => router.replace('/volunteer/(tabs)/home' as never) }],
-            );
+            Alert.alert('Cannot Join', 'You cannot join this session.', [
+              {
+                text: 'OK',
+                onPress: () =>
+                  router.replace('/volunteer/(tabs)/home' as never),
+              },
+            ]);
             break;
           default:
             Alert.alert('Error', error.message);
@@ -148,20 +157,15 @@ export default function AcceptSessionScreen() {
             onPress={handleAccept}
             disabled={acceptMutation.isPending}
           >
-            {acceptMutation.isPending ? (
+            {acceptMutation.isPending ?
               <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <>
+            : <>
                 <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                <AppText
-                  variant="body"
-                  emphasis="emphasized"
-                  color="secondary"
-                >
+                <AppText variant="body" emphasis="emphasized" color="secondary">
                   Accept Session
                 </AppText>
               </>
-            )}
+            }
           </Pressable>
         </View>
       </View>
