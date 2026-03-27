@@ -6,6 +6,7 @@ import {
   setTokens as persistTokens,
   clearTokens,
 } from '@/api/tokenStorage';
+import { getMe } from '@/api/account';
 
 type MobileRole = Extract<AccountRole, 'user' | 'volunteer'>;
 
@@ -28,6 +29,9 @@ interface AuthState {
 
   /** Update in-memory tokens (called by refresh interceptor) */
   setTokens: (accessToken: string, refreshToken: string) => void;
+
+  /** Update the authenticated account profile (called after profile fetch) */
+  setAccount: (account: Account) => void;
 
   /** Clear storage + reset in-memory state */
   signOut: () => Promise<void>;
@@ -72,6 +76,13 @@ export const useAuth = create<AuthState>()(set => ({
     set({ accessToken, refreshToken });
   },
 
+  setAccount: account => {
+    set({
+      account,
+      userRole: deriveRole(account.roles),
+    });
+  },
+
   signOut: async () => {
     await clearTokens();
     set({ ...initialState, isHydrated: true });
@@ -87,13 +98,30 @@ export const useAuth = create<AuthState>()(set => ({
       const refreshToken = await getRefreshToken();
 
       if (accessToken && refreshToken) {
+        // Set tokens first so API client can use them
         set({
           accessToken,
           refreshToken,
           isAuthenticated: true,
-          // Note: account and userRole remain null until a full login
-          // or profile fetch. Token presence is enough for the gatekeeper.
         });
+        
+        // Attempt to fetch profile to fully hydrate
+        try {
+          const profile = await getMe();
+          set({
+            account: {
+              accountId: profile.accountId,
+              email: profile.email,
+              nickname: profile.nickname,
+              name: profile.name,
+              roles: profile.roles as any,
+            },
+            userRole: deriveRole(profile.roles as any),
+          });
+        } catch {
+          // If profile fetch fails (e.g. network issue), we stay authenticated
+          // but without a profile loaded yet. Components can refetch.
+        }
       }
     } catch {
       await clearTokens().catch(() => {});
