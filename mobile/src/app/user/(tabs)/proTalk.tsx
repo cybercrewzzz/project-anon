@@ -48,14 +48,13 @@ const ProTalk = () => {
             )
           }
         />
-
         <Button
           title="End Call"
           onPress={() => router.push('/user/EndCall/endCall' as any)}
         />
         <Button
           title="Rate Session"
-          onPress={() => router.push('/user/rate/RateSession' as any)}
+          onPress={() => router.push('/user/rate/rateSession' as any)}
         />
       </View>
     </SafeAreaView>
