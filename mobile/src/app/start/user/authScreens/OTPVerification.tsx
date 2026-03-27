@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { TextInput, View } from 'react-native';
+import { TextInput, View, Alert, TouchableOpacity } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -7,7 +7,6 @@ import { FullWidthButton } from '@/components/FullWidthButton';
 import { useMutation } from '@tanstack/react-query';
 import { verifyOtp, forgotPassword } from '@/api/auth';
 import { parseApiError } from '@/api/errors';
-import { Alert, TouchableOpacity } from 'react-native';
 
 interface OTPInputProps {
   value: string;
@@ -56,13 +55,13 @@ const OTPVerification = () => {
 
   const { mutate: verify, isPending: isVerifying } = useMutation({
     mutationFn: () => verifyOtp(email, otp.join('')),
-    onSuccess: (data) => {
+    onSuccess: data => {
       router.push({
         pathname: '/start/user/authScreens/CreateNewPassword',
         params: { email, resetToken: data.resetToken },
       } as any);
     },
-    onError: (error) => {
+    onError: error => {
       Alert.alert('Verification Failed', parseApiError(error).message);
     },
   });
@@ -72,7 +71,7 @@ const OTPVerification = () => {
     onSuccess: () => {
       Alert.alert('Success', 'A new OTP has been sent to your email.');
     },
-    onError: (error) => {
+    onError: error => {
       Alert.alert('Error', parseApiError(error).message);
     },
   });
@@ -116,8 +115,8 @@ const OTPVerification = () => {
         </AppText>
 
         <AppText variant="body" style={styles.description}>
-          We have sent an OTP code to your email {email ? email : 'your address'}. Enter the OTP
-          code below to verify.
+          We have sent an OTP code to your email{' '}
+          {email ? email : 'your address'}. Enter the OTP code below to verify.
         </AppText>
       </View>
 
@@ -152,8 +151,15 @@ const OTPVerification = () => {
         <AppText variant="body" style={styles.verifyText}>
           Did not receive the email?
         </AppText>
-        <TouchableOpacity onPress={() => resend()} disabled={isResending || !email}>
-          <AppText variant="body" style={styles.verifyTextAction} color="primary">
+        <TouchableOpacity
+          onPress={() => resend()}
+          disabled={isResending || !email}
+        >
+          <AppText
+            variant="body"
+            style={styles.verifyTextAction}
+            color="primary"
+          >
             {isResending ? 'Resending...' : 'Resend OTP'}
           </AppText>
         </TouchableOpacity>

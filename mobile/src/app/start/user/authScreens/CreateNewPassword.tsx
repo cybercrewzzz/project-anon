@@ -46,7 +46,10 @@ const styles = StyleSheet.create((theme, rt) => ({
 
 const CreateNewPassword = () => {
   const router = useRouter();
-  const params = useLocalSearchParams<{ email?: string; resetToken?: string }>();
+  const params = useLocalSearchParams<{
+    email?: string;
+    resetToken?: string;
+  }>();
   const email = params.email || '';
   const resetToken = params.resetToken || '';
 
@@ -63,14 +66,17 @@ const CreateNewPassword = () => {
         },
       ]);
     },
-    onError: (error) => {
+    onError: error => {
       Alert.alert('Error', parseApiError(error).message);
     },
   });
 
   const handleReset = () => {
     if (newPassword.length < 6) {
-      Alert.alert('Validation Error', 'Password must be at least 6 characters long.');
+      Alert.alert(
+        'Validation Error',
+        'Password must be at least 6 characters long.',
+      );
       return;
     }
     if (newPassword !== confirmPassword) {

@@ -52,10 +52,15 @@ export async function logout(refreshToken: string): Promise<void> {
 /**
  * POST /auth/forgot-password — Send OTP to email.
  */
-export async function forgotPassword(email: string): Promise<{ message: string }> {
-  const { data } = await apiClient.post<{ message: string }>('/auth/forgot-password', {
-    email,
-  });
+export async function forgotPassword(
+  email: string,
+): Promise<{ message: string }> {
+  const { data } = await apiClient.post<{ message: string }>(
+    '/auth/forgot-password',
+    {
+      email,
+    },
+  );
   return data;
 }
 
@@ -66,10 +71,13 @@ export async function verifyOtp(
   email: string,
   otp: string,
 ): Promise<{ resetToken: string }> {
-  const { data } = await apiClient.post<{ resetToken: string }>('/auth/verify-otp', {
-    email,
-    otp,
-  });
+  const { data } = await apiClient.post<{ resetToken: string }>(
+    '/auth/verify-otp',
+    {
+      email,
+      otp,
+    },
+  );
   return data;
 }
 
@@ -81,6 +89,9 @@ export async function resetPassword(body: {
   resetToken: string;
   newPassword: string;
 }): Promise<{ message: string }> {
-  const { data } = await apiClient.post<{ message: string }>('/auth/reset-password', body);
+  const { data } = await apiClient.post<{ message: string }>(
+    '/auth/reset-password',
+    body,
+  );
   return data;
 }
