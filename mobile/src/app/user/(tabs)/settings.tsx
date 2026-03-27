@@ -3,6 +3,7 @@ import React from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/store/useAuth';
 import { logout } from '@/api/auth';
+import { tryRemovePushToken } from '@/utils/pushToken';
 
 const Settings = () => {
   const router = useRouter();
@@ -12,6 +13,9 @@ const Settings = () => {
   // TODO: Remove this temp button when permanent logout UI is built ;)
   const handleLogout = async () => {
     try {
+      // Best-effort push token removal before clearing state
+      await tryRemovePushToken();
+
       if (refreshToken) await logout(refreshToken);
     } catch {
       // Ignore API errors — still sign out locally
