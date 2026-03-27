@@ -31,7 +31,9 @@ export async function updateMe(dto: UpdateAccountDto): Promise<AccountProfile> {
 /**
  * PATCH /account/me/password — Change the authenticated user's password.
  */
-export async function changePassword(dto: ChangePasswordDto): Promise<{ message: string }> {
+export async function changePassword(
+  dto: ChangePasswordDto,
+): Promise<{ message: string }> {
   const { data } = await apiClient.patch<{ message: string }>(
     '/account/me/password',
     dto,
@@ -57,9 +59,14 @@ export async function registerDeviceToken(
 /**
  * DELETE /device/token — Remove a device FCM token (e.g. on logout).
  */
-export async function removeDeviceToken(fcmToken: string): Promise<{ message: string }> {
-  const { data } = await apiClient.delete<{ message: string }>('/device/token', {
-    data: { fcmToken },
-  });
+export async function removeDeviceToken(
+  fcmToken: string,
+): Promise<{ message: string }> {
+  const { data } = await apiClient.delete<{ message: string }>(
+    '/device/token',
+    {
+      data: { fcmToken },
+    },
+  );
   return data;
 }

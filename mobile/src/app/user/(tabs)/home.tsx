@@ -44,16 +44,16 @@ const Home = () => {
         locations={[0.38, 0.63, 0.8]}
       />
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        {isLoading && !account ? (
+        {isLoading && !account ?
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#000" />
+            <ActivityIndicator size="large" />
           </View>
-        ) : (
-          <>
+        : <>
             <View style={styles.header}>
               <View style={styles.greeting}>
                 <AppText variant="subhead" emphasis="emphasized">
-                  Good Morning, {account?.nickname || profile?.nickname || 'User'}!
+                  Good Morning,{' '}
+                  {account?.nickname || profile?.nickname || 'User'}!
                 </AppText>
                 <AppText variant="title1" emphasis="emphasized">
                   You&apos;re safe here
@@ -101,7 +101,7 @@ const Home = () => {
               />
             </View>
           </>
-        )}
+        }
       </ScrollView>
     </View>
   );

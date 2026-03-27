@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { AccountRoleSchema, LanguageSchema } from './common';
 
-export const AgeRangeSchema = z.enum(['range_16_20', 'range_21_26', 'range_27_plus']);
+export const AgeRangeSchema = z.enum([
+  'range_16_20',
+  'range_21_26',
+  'range_27_plus',
+]);
 export type AgeRange = z.infer<typeof AgeRangeSchema>;
 
 export const AccountProfileSchema = z.object({
@@ -36,4 +40,6 @@ export const RegisterDeviceTokenDtoSchema = z.object({
   fcmToken: z.string(),
   platform: z.enum(['ios', 'android', 'web']),
 });
-export type RegisterDeviceTokenDto = z.infer<typeof RegisterDeviceTokenDtoSchema>;
+export type RegisterDeviceTokenDto = z.infer<
+  typeof RegisterDeviceTokenDtoSchema
+>;
