@@ -1,43 +1,14 @@
 import { apiClient } from './client';
-import type { AgeRange, AccountRole } from './types';
+import type {
+  AccountProfile,
+  UpdateAccountDto,
+  ChangePasswordDto,
+  RegisterDeviceTokenDto,
+} from './schemas/account';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export interface Language {
-  languageId: string;
-  code: string;
-  name: string;
-}
-
-export interface AccountProfile {
-  accountId: string;
-  email: string;
-  name: string | null;
-  nickname: string;
-  ageRange: string;
-  gender: string;
-  status: string;
-  createdAt: string;
-  interfaceLanguage: Language | null;
-  languages: Language[];
-  roles: AccountRole[];
-}
-
-export interface UpdateAccountDto {
-  name?: string;
-  interfaceLanguageId?: string;
-  languageIds?: string[];
-}
-
-export interface ChangePasswordDto {
-  currentPassword: string;
-  newPassword: string;
-}
-
-export interface RegisterDeviceTokenDto {
-  fcmToken: string;
-  platform: 'ios' | 'android' | 'web';
-}
+// Removed duplicated Language definition as it's now imported from schemas/common
 
 // ─── Account ────────────────────────────────────────────────────────────────
 
