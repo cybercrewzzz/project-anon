@@ -31,10 +31,26 @@ const Settings = () => {
       }}
     >
       <Text>Settings</Text>
+
+      <Pressable
+        onPress={() => router.push('/user/changePassword' as any)}
+        style={{
+          marginTop: 40,
+          backgroundColor: '#3b82f6',
+          paddingVertical: 14,
+          paddingHorizontal: 32,
+          borderRadius: 12,
+        }}
+      >
+        <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+          🔑 Change Password
+        </Text>
+      </Pressable>
+
       <Pressable
         onPress={handleLogout}
         style={{
-          marginTop: 40,
+          marginTop: 20,
           backgroundColor: '#DC2626',
           paddingVertical: 14,
           paddingHorizontal: 32,
