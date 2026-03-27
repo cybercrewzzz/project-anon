@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, View, Alert, ActivityIndicator } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
@@ -11,6 +11,7 @@ import { changePassword } from '@/api/account';
 import { parseApiError } from '@/api/errors';
 
 const ChangePassword = () => {
+  const { theme } = useUnistyles();
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -18,7 +19,7 @@ const ChangePassword = () => {
 
   const mutation = useMutation({
     mutationFn: () => {
-      if (!currentPassword || !newPassword) {
+      if (!currentPassword || !newPassword || !confirmPassword) {
         throw new Error('All fields are required.');
       }
       if (newPassword !== confirmPassword) {
@@ -33,7 +34,7 @@ const ChangePassword = () => {
     },
     onError: error => {
       // The thrown matching error vs API error
-      const msg = error instanceof Error && error.message.includes('match') 
+      const msg = error instanceof Error && (error.message.includes('match') || error.message.includes('required'))
         ? error.message 
         : parseApiError(error).message;
       Alert.alert('Update Failed', msg);
@@ -63,6 +64,8 @@ const ChangePassword = () => {
           onChangeText={setCurrentPassword}
           secureTextEntry={true}
           autoCapitalize="none"
+          autoComplete="current-password"
+          textContentType="password"
         />
 
         <InputForm
@@ -92,7 +95,7 @@ const ChangePassword = () => {
           disabled={mutation.isPending}
         >
           {mutation.isPending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={theme.text.secondary} />
           ) : (
             <AppText variant="headline" color="secondary">
               Update Password
