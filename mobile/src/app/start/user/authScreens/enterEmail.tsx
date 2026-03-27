@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppText } from '@/components/AppText';
-import { View } from 'react-native';
+import { View, Alert } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
@@ -47,9 +47,20 @@ const EnterEmail = () => {
 
       <View style={styles.buttonContainer}>
         <FullWidthButton
-          onPress={() =>
-            router.push('/start/user/authScreens/OTPVerification' as any)
-          }
+          onPress={() => {
+            const trimmedEmail = email.trim();
+            if (!trimmedEmail) {
+              Alert.alert(
+                'Validation Error',
+                'Please enter your email address.',
+              );
+              return;
+            }
+            router.push({
+              pathname: '/start/user/authScreens/OTPVerification',
+              params: { email: trimmedEmail },
+            } as any);
+          }}
         >
           <AppText variant="headline" color="secondary">
             Continue

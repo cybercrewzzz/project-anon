@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { TextInput, View, Alert, TouchableOpacity } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
@@ -44,6 +44,16 @@ const OTPVerification = () => {
   const router = useRouter();
   const params = useLocalSearchParams<{ email?: string }>();
   const email = params.email || '';
+
+  useEffect(() => {
+    if (!email) {
+      Alert.alert(
+        'Error',
+        'Missing email address. Please restart the reset password process.',
+      );
+      router.replace('/start/user/authScreens/enterEmail');
+    }
+  }, [email]);
 
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = [
