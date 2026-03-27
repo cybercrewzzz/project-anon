@@ -28,7 +28,7 @@ const Home = () => {
         email: profile.email,
         nickname: profile.nickname,
         name: profile.name,
-        roles: profile.roles as any, // Cast to AccountRole[] since they match
+        roles: profile.roles,
       });
     }
   }, [profile, setAccount]);
@@ -121,6 +121,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     inset: 0,
   },
   contentContainer: {
+    flexGrow: 1,
     gap: theme.spacing.s4,
   },
   loadingContainer: {

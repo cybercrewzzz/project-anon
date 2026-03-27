@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { AgeRange, AccountRole } from './types';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -19,7 +20,7 @@ export interface AccountProfile {
   createdAt: string;
   interfaceLanguage: Language | null;
   languages: Language[];
-  roles: string[];
+  roles: AccountRole[];
 }
 
 export interface UpdateAccountDto {
