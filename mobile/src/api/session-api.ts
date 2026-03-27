@@ -44,7 +44,9 @@ export async function connectSession(
     // The backend throws 202 as an HttpException with the waiting payload.
     // Axios treats non-2xx as errors, but 202 is still success.
     // We need to handle this transparently.
-    const axiosError = error as { response?: { status?: number; data?: unknown } };
+    const axiosError = error as {
+      response?: { status?: number; data?: unknown };
+    };
     if (axiosError?.response?.status === 202) {
       return SessionConnectWaitingSchema.parse(axiosError.response.data);
     }
@@ -58,9 +60,7 @@ export async function connectSession(
 // Only volunteers call this. Multiple may race — only first wins (409 for rest).
 // =============================================================================
 
-export async function acceptSession(
-  sessionId: string,
-): Promise<SessionAccept> {
+export async function acceptSession(sessionId: string): Promise<SessionAccept> {
   try {
     const { data } = await apiClient.post(`/session/${sessionId}/accept`);
     return SessionAcceptSchema.parse(data);

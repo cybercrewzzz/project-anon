@@ -93,7 +93,9 @@ export default function RateSessionScreen() {
       // Invalidate history so it shows the updated rating
       queryClient.invalidateQueries({ queryKey: ['session', 'history'] });
       // Navigate away — go home or back
-      router.replace(showStarred ? '/user/(tabs)/home' : '/volunteer/(tabs)/home' as never);
+      router.replace(
+        showStarred ? '/user/(tabs)/home' : ('/volunteer/(tabs)/home' as never),
+      );
     },
     onError: (error: unknown) => {
       if (error instanceof ApiError) {
@@ -102,7 +104,11 @@ export default function RateSessionScreen() {
             'Already Rated',
             'You have already submitted a rating for this session.',
           );
-          router.replace(showStarred ? '/user/(tabs)/home' : '/volunteer/(tabs)/home' as never);
+          router.replace(
+            showStarred ? '/user/(tabs)/home' : (
+              ('/volunteer/(tabs)/home' as never)
+            ),
+          );
         } else if (error.statusCode === 400) {
           Alert.alert(
             'Session Not Completed',
@@ -126,7 +132,9 @@ export default function RateSessionScreen() {
   };
 
   const handleSkip = () => {
-    router.replace(showStarred ? '/user/(tabs)/home' : '/volunteer/(tabs)/home' as never);
+    router.replace(
+      showStarred ? '/user/(tabs)/home' : ('/volunteer/(tabs)/home' as never),
+    );
   };
 
   return (

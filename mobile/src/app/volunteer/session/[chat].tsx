@@ -174,7 +174,9 @@ export default function Chat() {
                 Rate Your Experience
               </AppText>
             </Pressable>
-            <Pressable onPress={() => router.replace('/volunteer/(tabs)/home' as never)}>
+            <Pressable
+              onPress={() => router.replace('/volunteer/(tabs)/home' as never)}
+            >
               <AppText variant="caption1" color="accent">
                 Skip
               </AppText>
