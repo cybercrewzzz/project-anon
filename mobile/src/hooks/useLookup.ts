@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchSpecialisations, fetchCategories } from '@/api/lookup-api';
 import { queryKeys } from '@/api/keys';
 
-
 // =============================================================================
 // ENDPOINT: GET /lookup/specialisations
 // SCREEN:   src/app/volunteer/Specialisations/specialisationFilter.tsx
