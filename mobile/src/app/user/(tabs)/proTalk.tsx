@@ -48,10 +48,13 @@ const ProTalk = () => {
             )
           }
         />
-
         <Button
           title="End Call"
           onPress={() => router.push('/user/EndCall/endCall' as any)}
+        />
+        <Button
+          title="Session History"
+          onPress={() => router.push('/user/session-history/sessionHistory' as any)}
         />
       </View>
     </SafeAreaView>
