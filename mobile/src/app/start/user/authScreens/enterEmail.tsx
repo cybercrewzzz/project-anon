@@ -21,7 +21,7 @@ const EnterEmail = () => {
         params: { email },
       } as any);
     },
-    onError: (error) => {
+    onError: error => {
       Alert.alert('Error', parseApiError(error).message);
     },
   });
@@ -70,10 +70,7 @@ const EnterEmail = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton
-          onPress={handleContinue}
-          disabled={isPending}
-        >
+        <FullWidthButton onPress={handleContinue} disabled={isPending}>
           <AppText variant="headline" color="secondary">
             {isPending ? 'Sending...' : 'Continue'}
           </AppText>

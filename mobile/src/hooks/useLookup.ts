@@ -3,18 +3,6 @@ import { fetchSpecialisations, fetchCategories } from '@/api/lookup-api';
 import { queryKeys } from '@/api/keys';
 
 // =============================================================================
-// TESTING MODE FLAG — Specialisations only
-// Driven by __DEV__ and EXPO_PUBLIC_USE_MOCK_LOOKUP
-// - In production builds (__DEV__ === false), real API is always used.
-// - In development, set EXPO_PUBLIC_USE_MOCK_LOOKUP='true' to use mock data for specialisations.
-// - Categories always use the real API (no mock fallback)
-// =============================================================================
-const USE_MOCK =
-  typeof __DEV__ !== 'undefined' &&
-  __DEV__ &&
-  process.env.EXPO_PUBLIC_USE_MOCK_LOOKUP === 'true';
-
-// =============================================================================
 // ENDPOINT: GET /lookup/specialisations
 // SCREEN:   src/app/volunteer/Specialisations/specialisationFilter.tsx
 // PURPOSE:  Loads all specialisations to display as selectable tags
