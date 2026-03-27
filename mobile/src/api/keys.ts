@@ -6,6 +6,12 @@
  *   queryClient.invalidateQueries({ queryKey: queryKeys.user.all })
  */
 export const queryKeys = {
+  // ── Account ──
+  account: {
+    all: ['account'] as const,
+    me: () => [...queryKeys.account.all, 'me'] as const,
+  },
+
   // ── User (seeker) ──
   user: {
     all: ['user'] as const,

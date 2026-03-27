@@ -8,6 +8,7 @@ import SideImageCard from '@/components/sideImageCard';
 import HomeTile from '@/components/homeTile';
 import { useQuery } from '@tanstack/react-query';
 import { getMe } from '@/api/account';
+import { queryKeys } from '@/api/keys';
 import { useAuth } from '@/store/useAuth';
 
 const Home = () => {
@@ -15,7 +16,7 @@ const Home = () => {
   const account = useAuth(state => state.account);
 
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['me'],
+    queryKey: queryKeys.account.me(),
     queryFn: getMe,
   });
 
