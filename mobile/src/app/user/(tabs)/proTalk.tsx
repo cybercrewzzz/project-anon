@@ -54,7 +54,9 @@ const ProTalk = () => {
         />
         <Button
           title="Session History"
-          onPress={() => router.push('/user/session-history/sessionHistory' as any)}
+          onPress={() =>
+            router.push('/user/session-history/sessionHistory' as any)
+          }
         />
       </View>
     </SafeAreaView>
