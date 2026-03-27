@@ -26,6 +26,10 @@ const ProTalk = () => {
           text=" Volunteer Verify"
           onPress={() => router.push('/start/volunteer/authScreens/verify')}
         />
+        <Button
+          text=" Volunteer Accept Session"
+          onPress={() => router.push('/volunteer/accept/acceptSession')}
+        />
       </View>
     </View>
   );
