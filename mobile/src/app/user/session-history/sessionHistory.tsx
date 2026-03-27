@@ -27,10 +27,7 @@ function formatDate(iso: string | null): string {
   });
 }
 
-function formatDuration(
-  startedAt: string,
-  endedAt: string | null,
-): string {
+function formatDuration(startedAt: string, endedAt: string | null): string {
   if (!endedAt) return '—';
   const diffMs = new Date(endedAt).getTime() - new Date(startedAt).getTime();
   const totalSeconds = Math.floor(diffMs / 1000);
@@ -51,7 +48,12 @@ function statusColor(status: string): string {
 }
 
 function StarRating({ rating }: { rating: number | null }) {
-  if (rating === null) return <AppText variant="caption2" color="accent">Not rated</AppText>;
+  if (rating === null)
+    return (
+      <AppText variant="caption2" color="accent">
+        Not rated
+      </AppText>
+    );
   return (
     <View style={{ flexDirection: 'row', gap: 2 }}>
       {[1, 2, 3, 4, 5].map(i => (
@@ -89,7 +91,10 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
               { backgroundColor: statusColor(item.status) },
             ]}
           />
-          <AppText variant="caption2" style={{ color: statusColor(item.status) }}>
+          <AppText
+            variant="caption2"
+            style={{ color: statusColor(item.status) }}
+          >
             {item.status}
           </AppText>
         </View>
@@ -116,7 +121,12 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
         </AppText>
         <StarRating rating={item.userRating ?? item.volunteerRating} />
         {item.starredByUser && (
-          <Ionicons name="bookmark" size={13} color="#6A00F4" style={{ marginLeft: 6 }} />
+          <Ionicons
+            name="bookmark"
+            size={13}
+            color="#6A00F4"
+            style={{ marginLeft: 6 }}
+          />
         )}
       </View>
 
@@ -309,17 +319,11 @@ export default function SessionHistoryScreen() {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.3}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
           ListFooterComponent={
             isFetchingNextPage ?
-              <ActivityIndicator
-                size="small"
-                style={{ marginVertical: 16 }}
-              />
+              <ActivityIndicator size="small" style={{ marginVertical: 16 }} />
             : null
           }
         />
