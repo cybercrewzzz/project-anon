@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { RedisService } from '../redis/redis.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 import { RegisterVolunteerDto } from './dto/register-volunteer.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
@@ -268,6 +269,24 @@ export class AuthService {
     console.log(`[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`);
 
     return { message: 'If an account exists, an OTP has been sent.' };
+  }
+
+  async verifyOtp(dto: VerifyOtpDto) {
+    const redisKey = `pwd-reset-otp:${dto.email}`;
+    const storedOtp = await this.redis.get(redisKey);
+
+    if (!storedOtp || storedOtp !== dto.otp) {
+      throw new UnauthorizedException('Invalid or expired OTP.');
+    }
+
+    // OTP is valid. Remove it to prevent reuse.
+    await this.redis.del(redisKey);
+
+    // Generate a temporary reset token valid for 15 minutes.
+    const resetToken = randomUUID();
+    await this.redis.set(`pwd-reset-token:${dto.email}`, resetToken, 'EX', 15 * 60);
+
+    return { resetToken };
   }
 
   // ── Refresh ───────────────────────────────────────────────────────
