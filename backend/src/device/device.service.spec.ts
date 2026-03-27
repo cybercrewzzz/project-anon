@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
 import { DeviceService } from './device.service';
 import { Platform } from '../generated/prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 const createMockPrisma = () => ({
   deviceToken: {
@@ -9,6 +9,7 @@ const createMockPrisma = () => ({
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    deleteMany: jest.fn(),
   },
 });
 
@@ -34,6 +35,7 @@ describe('DeviceService', () => {
   // ── registerToken ─────────────────────────────────────────────────
 
   describe('registerToken', () => {
+    const accountId = 'account-id';
     const dto = { fcmToken: 'token-abc', platform: Platform.android };
 
     it('creates a new device token when none exists and returns deviceId', async () => {
@@ -90,34 +92,25 @@ describe('DeviceService', () => {
     const fcmToken = 'token-to-remove';
 
     it('deletes the device token and returns success message', async () => {
-      const existing = {
-        deviceId: 'device-id-1',
-        accountId,
-        fcmToken,
-        platform: 'ios',
-        lastActiveAt: new Date(),
-      };
-      db.deviceToken.findFirst.mockResolvedValue(existing);
-      db.deviceToken.delete.mockResolvedValue(existing);
+      db.deviceToken.deleteMany.mockResolvedValue({ count: 1 });
 
       const result = await service.removeToken(accountId, fcmToken);
 
-      expect(db.deviceToken.findFirst).toHaveBeenCalledWith({
+      expect(db.deviceToken.deleteMany).toHaveBeenCalledWith({
         where: { accountId, fcmToken },
-      });
-      expect(db.deviceToken.delete).toHaveBeenCalledWith({
-        where: { deviceId: 'device-id-1' },
       });
       expect(result).toEqual({ message: 'Device token removed' });
     });
 
-    it('throws NotFoundException when device token not found', async () => {
-      db.deviceToken.findFirst.mockResolvedValue(null);
+    it('returns success message even if device token not found', async () => {
+      db.deviceToken.deleteMany.mockResolvedValue({ count: 0 });
 
-      await expect(service.removeToken(accountId, fcmToken)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(db.deviceToken.delete).not.toHaveBeenCalled();
+      const result = await service.removeToken(accountId, fcmToken);
+
+      expect(db.deviceToken.deleteMany).toHaveBeenCalledWith({
+        where: { accountId, fcmToken },
+      });
+      expect(result).toEqual({ message: 'Device token removed' });
     });
   });
 });

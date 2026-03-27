@@ -219,7 +219,6 @@ describe('AccountService', () => {
 
   describe('changePassword', () => {
     const accountId = 'account-id';
-    const realHash = argon2.hash('currentPass123');
 
     it('changes password when current password is correct', async () => {
       const hash = await argon2.hash('currentPass123', {
@@ -311,8 +310,5 @@ describe('AccountService', () => {
         }),
       ).rejects.toThrow(ForbiddenException);
     });
-
-    // silence the unused variable lint warning from the top-level await
-    void realHash;
   });
 });

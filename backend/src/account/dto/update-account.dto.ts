@@ -4,7 +4,7 @@
  * All fields are optional — only provided fields will be updated.
  */
 
-import { IsOptional, IsString, IsArray } from 'class-validator';
+import { IsOptional, IsString, IsArray, ArrayUnique } from 'class-validator';
 
 export class UpdateAccountDto {
   /**
@@ -27,6 +27,7 @@ export class UpdateAccountDto {
    */
   @IsOptional()
   @IsArray()
+  @ArrayUnique()
   @IsString({ each: true })
   languageIds?: string[];
 }

@@ -115,13 +115,15 @@ export class AccountService {
           }
         });
       } catch (e) {
-        if (
-          e instanceof Prisma.PrismaClientKnownRequestError &&
-          e.code === 'P2003'
-        ) {
-          throw new BadRequestException(
-            'One or more language IDs or interfaceLanguageId are invalid',
-          );
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          if (e.code === 'P2003') {
+            throw new BadRequestException(
+              'One or more language IDs or interfaceLanguageId are invalid',
+            );
+          }
+          if (e.code === 'P2002') {
+            throw new BadRequestException('languageIds must be unique');
+          }
         }
         throw e;
       }

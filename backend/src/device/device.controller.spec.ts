@@ -27,6 +27,7 @@ describe('DeviceController', () => {
 
   describe('registerToken', () => {
     it('calls deviceService.registerToken with accountId and dto, returns result', async () => {
+      const accountId = 'user-id-123';
       const dto = { fcmToken: 'my-fcm-token', platform: Platform.android };
       const expected = { deviceId: 'device-id-1' };
       mockDeviceService.registerToken.mockResolvedValue(expected);
