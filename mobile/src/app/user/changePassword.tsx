@@ -34,8 +34,13 @@ const ChangePassword = () => {
     },
     onError: error => {
       // The thrown matching error vs API error
-      const msg = error instanceof Error && (error.message.includes('match') || error.message.includes('required'))
-        ? error.message 
+      const msg =
+        (
+          error instanceof Error &&
+          (error.message.includes('match') ||
+            error.message.includes('required'))
+        ) ?
+          error.message
         : parseApiError(error).message;
       Alert.alert('Update Failed', msg);
     },
@@ -94,13 +99,12 @@ const ChangePassword = () => {
           onPress={() => mutation.mutate()}
           disabled={mutation.isPending}
         >
-          {mutation.isPending ? (
+          {mutation.isPending ?
             <ActivityIndicator color={theme.text.secondary} />
-          ) : (
-            <AppText variant="headline" color="secondary">
+          : <AppText variant="headline" color="secondary">
               Update Password
             </AppText>
-          )}
+          }
         </FullWidthButton>
       </View>
     </View>

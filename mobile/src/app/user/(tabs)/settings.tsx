@@ -44,7 +44,13 @@ const Settings = () => {
           borderRadius: 12,
         }}
       >
-        <Text style={{ color: theme.action.onPrimary, fontWeight: '700', fontSize: 16 }}>
+        <Text
+          style={{
+            color: theme.action.onPrimary,
+            fontWeight: '700',
+            fontSize: 16,
+          }}
+        >
           🔑 Change Password
         </Text>
       </Pressable>
