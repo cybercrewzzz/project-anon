@@ -74,10 +74,10 @@ const CreateNewPassword = () => {
   });
 
   const handleReset = () => {
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       Alert.alert(
         'Validation Error',
-        'Password must be at least 6 characters long.',
+        'Password must be at least 8 characters long.',
       );
       return;
     }
