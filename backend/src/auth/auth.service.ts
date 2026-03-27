@@ -266,7 +266,9 @@ export class AuthService {
 
     // 4. (Simulated) Send the OTP to the user's email
     // In a real application, inject an EmailService and send here.
-    console.log(`[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`);
+    console.log(
+      `[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`,
+    );
 
     return { message: 'If an account exists, an OTP has been sent.' };
   }
@@ -284,7 +286,12 @@ export class AuthService {
 
     // Generate a temporary reset token valid for 15 minutes.
     const resetToken = randomUUID();
-    await this.redis.set(`pwd-reset-token:${dto.email}`, resetToken, 'EX', 15 * 60);
+    await this.redis.set(
+      `pwd-reset-token:${dto.email}`,
+      resetToken,
+      'EX',
+      15 * 60,
+    );
 
     return { resetToken };
   }
