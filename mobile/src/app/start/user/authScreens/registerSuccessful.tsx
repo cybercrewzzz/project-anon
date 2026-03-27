@@ -4,12 +4,15 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SuccessAnimation } from '@/components/SuccessAnimation';
+import { tryRegisterPushToken } from '@/utils/pushToken';
 
 const RegisterSuccessful = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Stop loading after 5 seconds
+    // Best-effort: register device push token in the background
+    void tryRegisterPushToken();
+
     const timer = setTimeout(() => {
       router.replace('/start/user/specialnotice' as any);
     }, 5000);
