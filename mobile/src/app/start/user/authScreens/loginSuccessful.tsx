@@ -5,14 +5,17 @@ import { StyleSheet } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SuccessAnimation } from '@/components/SuccessAnimation';
 import { useAuth } from '@/store/useAuth';
+import { tryRegisterPushToken } from '@/utils/pushToken';
 
 const LoginSuccessful = () => {
   const router = useRouter();
   const userRole = useAuth(state => state.userRole);
 
   useEffect(() => {
+    // Best-effort: register device push token in the background
+    void tryRegisterPushToken();
+
     const timer = setTimeout(() => {
-      // Route based on the user's actual role from the auth response
       const target =
         userRole === 'volunteer' ?
           '/volunteer/(tabs)/home'
