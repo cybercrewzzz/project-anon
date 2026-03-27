@@ -299,7 +299,11 @@ const P2P_P2V_withCategory = () => {
               >
                 {isConnecting ?
                   <ActivityIndicator color="#fff" size="small" />
-                : <AppText variant="body" emphasis="emphasized" color="secondary">
+                : <AppText
+                    variant="body"
+                    emphasis="emphasized"
+                    color="secondary"
+                  >
                     Connect
                   </AppText>
                 }
@@ -314,9 +318,7 @@ const P2P_P2V_withCategory = () => {
         {/* ── Connection History ─────────────────────────── */}
         <View style={styles.connectionHistoryPressable}>
           <Pressable
-            onPress={() =>
-              router.push('/user/session-history/sessionHistory')
-            }
+            onPress={() => router.push('/user/session-history/sessionHistory')}
           >
             <HistoryBarGradient
               style={styles.connectionHistoryBar}
