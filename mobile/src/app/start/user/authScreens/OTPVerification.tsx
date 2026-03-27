@@ -2,8 +2,12 @@ import React, { useState, useRef } from 'react';
 import { TextInput, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { StyleSheet } from 'react-native-unistyles';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { FullWidthButton } from '@/components/FullWidthButton';
+import { useMutation } from '@tanstack/react-query';
+import { verifyOtp, forgotPassword } from '@/api/auth';
+import { parseApiError } from '@/api/errors';
+import { Alert, TouchableOpacity } from 'react-native';
 
 interface OTPInputProps {
   value: string;
@@ -39,6 +43,9 @@ const OTPInput = ({
 
 const OTPVerification = () => {
   const router = useRouter();
+  const params = useLocalSearchParams<{ email?: string }>();
+  const email = params.email || '';
+
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = [
     useRef<TextInput>(null),
@@ -46,6 +53,37 @@ const OTPVerification = () => {
     useRef<TextInput>(null),
     useRef<TextInput>(null),
   ];
+
+  const { mutate: verify, isPending: isVerifying } = useMutation({
+    mutationFn: () => verifyOtp(email, otp.join('')),
+    onSuccess: (data) => {
+      router.push({
+        pathname: '/start/user/authScreens/CreateNewPassword',
+        params: { email, resetToken: data.resetToken },
+      } as any);
+    },
+    onError: (error) => {
+      Alert.alert('Verification Failed', parseApiError(error).message);
+    },
+  });
+
+  const { mutate: resend, isPending: isResending } = useMutation({
+    mutationFn: () => forgotPassword(email),
+    onSuccess: () => {
+      Alert.alert('Success', 'A new OTP has been sent to your email.');
+    },
+    onError: (error) => {
+      Alert.alert('Error', parseApiError(error).message);
+    },
+  });
+
+  const handleVerify = () => {
+    if (otp.join('').length < 4) {
+      Alert.alert('Validation Error', 'Please enter the complete 4-digit OTP.');
+      return;
+    }
+    verify();
+  };
 
   const handleOtpChange = (text: string, index: number) => {
     const newOtp = [...otp];
@@ -78,7 +116,7 @@ const OTPVerification = () => {
         </AppText>
 
         <AppText variant="body" style={styles.description}>
-          We have sent a OTP code to your email exa***@gmail.com. Enter the OTP
+          We have sent an OTP code to your email {email ? email : 'your address'}. Enter the OTP
           code below to verify.
         </AppText>
       </View>
@@ -114,20 +152,20 @@ const OTPVerification = () => {
         <AppText variant="body" style={styles.verifyText}>
           Did not receive the email?
         </AppText>
-        <AppText variant="body" style={styles.verifyText}>
-          Resend OTP
-        </AppText>
+        <TouchableOpacity onPress={() => resend()} disabled={isResending || !email}>
+          <AppText variant="body" style={styles.verifyTextAction} color="primary">
+            {isResending ? 'Resending...' : 'Resend OTP'}
+          </AppText>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.buttonContainer}>
         <FullWidthButton
-          onPress={() =>
-            router.push('/start/user/authScreens/CreateNewPassword' as any)
-          }
+          onPress={handleVerify}
+          disabled={isVerifying || !email}
         >
           <AppText variant="headline" color="secondary">
-            {' '}
-            Create new Password{' '}
+            {isVerifying ? 'Verifying...' : 'Verify OTP'}
           </AppText>
         </FullWidthButton>
       </View>
@@ -188,5 +226,10 @@ const styles = StyleSheet.create((theme, rt) => ({
   verifyText: {
     marginTop: theme.spacing.s5,
     textAlign: 'center',
+  },
+  verifyTextAction: {
+    marginTop: theme.spacing.s2,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 }));
