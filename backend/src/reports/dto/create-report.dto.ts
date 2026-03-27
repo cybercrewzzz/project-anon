@@ -5,14 +5,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-
-export enum ReportCategory {
-  HARASSMENT = 'harassment',
-  SPAM = 'spam',
-  INAPPROPRIATE_CONTENT = 'inappropriate_content',
-  IMPERSONATION = 'impersonation',
-  OTHER = 'other',
-}
+import { ReportCategory } from '../../generated/prisma/client';
 
 export class CreateReportDto {
   @IsUUID()

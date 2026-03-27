@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReportStatus } from '../generated/prisma/client';
@@ -14,23 +15,32 @@ export class ReportsService {
   async createReport(accountId: string, dto: CreateReportDto) {
     const { sessionId, reportedId, category, description } = dto;
 
-    // Verify caller was a participant in the session
+    // Prevent reporting yourself
+    if (reportedId === accountId) {
+      throw new BadRequestException('You cannot report yourself.');
+    }
+
+    // Verify the session exists
     const session = await this.prisma.chatSession.findUnique({
       where: { sessionId },
     });
 
-    if (
-      !session ||
-      (session.seekerId !== accountId && session.listenerId !== accountId)
-    ) {
+    if (!session) {
+      throw new NotFoundException('Session not found.');
+    }
+
+    // Verify caller was a participant in the session
+    if (session.seekerId !== accountId && session.listenerId !== accountId) {
       throw new BadRequestException(
         'You were not a participant in this session.',
       );
     }
 
-    // Prevent reporting yourself
-    if (reportedId === accountId) {
-      throw new BadRequestException('You cannot report yourself.');
+    // Verify the reported user is the OTHER participant in the session
+    if (session.seekerId !== reportedId && session.listenerId !== reportedId) {
+      throw new BadRequestException(
+        'The reported user was not a participant in this session.',
+      );
     }
 
     // Check for duplicate report: same reporter + same session

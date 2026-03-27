@@ -10,6 +10,8 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { VolunteerModule } from './volunteer/volunteer.module';
 import { LookupModule } from './lookup/lookup.module';
+import { ReportsModule } from './reports/reports.module';
+import { BlocksModule } from './blocks/blocks.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { LookupModule } from './lookup/lookup.module';
     ChatModule,
     VolunteerModule,
     LookupModule,
+    ReportsModule,
+    BlocksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
