@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDeviceTokenDto } from './dto/register-device-token.dto';
-import { Platform } from '../generated/prisma/client';
 
 @Injectable()
 export class DeviceService {
