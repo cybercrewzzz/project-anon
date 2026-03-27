@@ -9,6 +9,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { resetPassword } from '@/api/auth';
 import { parseApiError } from '@/api/errors';
+import { useAuth } from '@/store/useAuth';
 
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
@@ -48,10 +49,10 @@ const CreateNewPassword = () => {
   const router = useRouter();
   const params = useLocalSearchParams<{
     email?: string;
-    resetToken?: string;
   }>();
   const email = params.email || '';
-  const resetToken = params.resetToken || '';
+  const resetToken = useAuth(state => state.resetToken) || '';
+  const setResetToken = useAuth(state => state.setResetToken);
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -59,6 +60,7 @@ const CreateNewPassword = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: () => resetPassword({ email, resetToken, newPassword }),
     onSuccess: () => {
+      setResetToken(null);
       Alert.alert('Success', 'Your password has been reset successfully.', [
         {
           text: 'OK',

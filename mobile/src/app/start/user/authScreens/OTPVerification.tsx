@@ -7,6 +7,7 @@ import { FullWidthButton } from '@/components/FullWidthButton';
 import { useMutation } from '@tanstack/react-query';
 import { verifyOtp, forgotPassword } from '@/api/auth';
 import { parseApiError } from '@/api/errors';
+import { useAuth } from '@/store/useAuth';
 
 interface OTPInputProps {
   value: string;
@@ -63,12 +64,15 @@ const OTPVerification = () => {
     useRef<TextInput>(null),
   ];
 
+  const setResetToken = useAuth(state => state.setResetToken);
+
   const { mutate: verify, isPending: isVerifying } = useMutation({
     mutationFn: () => verifyOtp(email, otp.join('')),
     onSuccess: data => {
+      setResetToken(data.resetToken);
       router.push({
         pathname: '/start/user/authScreens/CreateNewPassword',
-        params: { email, resetToken: data.resetToken },
+        params: { email },
       } as any);
     },
     onError: error => {
