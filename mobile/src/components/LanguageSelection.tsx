@@ -1,48 +1,68 @@
 import { AppText } from '@/components/AppText';
 import { SmallButton } from '@/components/SmallButton';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+import type { Language } from '@/api/account';
 
 interface LanguageSelectionProps {
-  onLanguageChange?: (language: string, talkLanguages: string[]) => void;
+  languages: Language[];
+  onLanguageChange?: (interfaceLanguageId: string, talkLanguageIds: string[]) => void;
 }
 
 /**
  * A comprehensive language selection component with app interface and talk language options.
- *
- * Includes two sections:
- * - App Interface Language: Single selection (English or Sinhala)
- * - Talk Languages: Multi-selection (Tamil, English, Sinhala)
- *
- * @component
- * @example
- * <LanguageSelection
- *   onLanguageChange={(language, talkLanguages) => {
- *     console.log('App Language:', language);
- *     console.log('Talk Languages:', talkLanguages);
- *   }}
- * />
- *
- * @param {function} [onLanguageChange] - Callback function called when any language selection changes
- * @param {string} onLanguageChange.language - Selected app interface language
- * @param {string[]} onLanguageChange.talkLanguages - Array of selected talk languages
  */
 export const LanguageSelection = ({
+  languages,
   onLanguageChange,
 }: LanguageSelectionProps) => {
-  const [language, setLanguage] = useState('english');
-  const [talkLanguages, setTalkLanguages] = useState(['english']);
+  const defaultEnglish = languages.find(l => l.name.toLowerCase() === 'english');
+  const initialLanguageId = defaultEnglish?.languageId || (languages[0]?.languageId ?? '');
 
-  const handleLanguageChange = (newLanguage: string) => {
-    setLanguage(newLanguage);
-    onLanguageChange?.(newLanguage, talkLanguages);
+  const [interfaceLanguageId, setInterfaceLanguageId] = useState<string>(initialLanguageId);
+  const [talkLanguageIds, setTalkLanguageIds] = useState<string[]>(
+    initialLanguageId ? [initialLanguageId] : [],
+  );
+
+  // Initialize defaults if languages load after mount
+  useEffect(() => {
+    if (!interfaceLanguageId && languages.length > 0) {
+      const eng = languages.find(l => l.name.toLowerCase() === 'english');
+      const fallbackId = eng?.languageId || languages[0].languageId;
+      setInterfaceLanguageId(fallbackId);
+      setTalkLanguageIds([fallbackId]);
+      onLanguageChange?.(fallbackId, [fallbackId]);
+    }
+  }, [languages, interfaceLanguageId, onLanguageChange]);
+
+  const handleLanguageChange = (id: string) => {
+    setInterfaceLanguageId(id);
+    onLanguageChange?.(id, talkLanguageIds);
   };
 
-  const handleTalkLanguagesChange = (newTalkLanguages: string[]) => {
-    setTalkLanguages(newTalkLanguages);
-    onLanguageChange?.(language, newTalkLanguages);
+  const handleTalkLanguagesChange = (id: string) => {
+    const isSelected = talkLanguageIds.includes(id);
+    const newTalkLanguages =
+      isSelected ?
+        talkLanguageIds.filter(lId => lId !== id)
+      : [...talkLanguageIds, id];
+    setTalkLanguageIds(newTalkLanguages);
+    onLanguageChange?.(interfaceLanguageId, newTalkLanguages);
   };
+
+  // Restrict interface language choices to English & Sinhala per UI requirements,
+  // or default to array slice if those are missing
+  const interfaceLanguages = languages.filter(l => 
+    ['english', 'sinhala'].includes(l.name.toLowerCase())
+  );
+  const interfaceChoices = interfaceLanguages.length > 0 ? interfaceLanguages : languages.slice(0, 2);
+
+  // Talk languages allows Tamil, English, Sinhala (or first 3 if missing)
+  const talkChoicesFiltered = languages.filter(l => 
+    ['tamil', 'english', 'sinhala'].includes(l.name.toLowerCase())
+  );
+  const talkChoices = talkChoicesFiltered.length > 0 ? talkChoicesFiltered : languages.slice(0, 3);
 
   return (
     <View style={styles.container}>
@@ -59,18 +79,15 @@ export const LanguageSelection = ({
           App Interface Language
         </AppText>
         <View style={styles.selectionButtons}>
-          <SmallButton
-            selected={language === 'english'}
-            onPress={() => handleLanguageChange('english')}
-          >
-            English
-          </SmallButton>
-          <SmallButton
-            selected={language === 'sinhala'}
-            onPress={() => handleLanguageChange('sinhala')}
-          >
-            Sinhala
-          </SmallButton>
+          {interfaceChoices.map(lang => (
+            <SmallButton
+              key={lang.languageId}
+              selected={interfaceLanguageId === lang.languageId}
+              onPress={() => handleLanguageChange(lang.languageId)}
+            >
+              {lang.name}
+            </SmallButton>
+          ))}
         </View>
       </View>
       <View style={styles.talkCard}>
@@ -78,21 +95,15 @@ export const LanguageSelection = ({
           How would you like to talk with others?
         </AppText>
         <View style={styles.selectionButtons}>
-          {['Tamil', 'English', 'Sinhala'].map(lang => {
-            const isSelected = talkLanguages.includes(lang.toLowerCase());
+          {talkChoices.map(lang => {
+            const isSelected = talkLanguageIds.includes(lang.languageId);
             return (
               <SmallButton
-                key={lang}
+                key={lang.languageId}
                 selected={isSelected}
-                onPress={() => {
-                  const newTalkLanguages =
-                    talkLanguages.includes(lang.toLowerCase()) ?
-                      talkLanguages.filter(l => l !== lang.toLowerCase())
-                    : [...talkLanguages, lang.toLowerCase()];
-                  handleTalkLanguagesChange(newTalkLanguages);
-                }}
+                onPress={() => handleTalkLanguagesChange(lang.languageId)}
               >
-                {lang}
+                {lang.name}
               </SmallButton>
             );
           })}
