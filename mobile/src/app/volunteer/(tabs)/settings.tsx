@@ -286,8 +286,33 @@ const SettingsScreen = () => {
     );
   }
 
-  // TypeScript narrowing — data is defined here, but guard satisfies the compiler
-  if (!profile) return null;
+  // ── Unexpected undefined state ──
+  if (!profile) {
+    return (
+      <View style={styles.centered}>
+        <AppText variant="body" color="primary">
+          Profile is currently unavailable. Please try again.
+        </AppText>
+        <Pressable
+          onPress={() => refetch()}
+          disabled={isFetching}
+          style={{
+            marginTop: 16,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            opacity: isFetching ? 0.5 : 1,
+          }}
+        >
+          {isFetching ?
+            <ActivityIndicator size="small" />
+          : <AppText variant="body" emphasis="emphasized" color="accent">
+              Retry
+            </AppText>
+          }
+        </Pressable>
+      </View>
+    );
+  }
 
   // ── Derived values from real data ──
   const level = profile.experience?.level ?? 1;
