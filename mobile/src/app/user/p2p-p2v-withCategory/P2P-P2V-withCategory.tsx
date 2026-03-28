@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
 import { AppText } from '@/components/AppText';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
@@ -120,7 +121,7 @@ const P2P_P2V_withCategory = () => {
       categoryId: selectedCategoryId,
       feelingLevel,
       customLabel: problemText.trim() || undefined,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: Crypto.randomUUID(),
     });
   };
 
