@@ -106,7 +106,9 @@ export interface SessionHistoryParams {
 export async function fetchSessionHistory(
   params: SessionHistoryParams = {},
 ): Promise<SessionHistory> {
-  throw new Error('fetchSessionHistory: schemas not yet available, merging from other branch soon');
+  throw new Error(
+    'fetchSessionHistory: schemas not yet available, merging from other branch soon',
+  );
 }
 
 // =============================================================================
@@ -116,5 +118,7 @@ export async function fetchSessionHistory(
 // =============================================================================
 
 export async function fetchSessionTickets(): Promise<SessionTickets> {
-  throw new Error('fetchSessionTickets: schemas not yet available, merging from other branch soon');
+  throw new Error(
+    'fetchSessionTickets: schemas not yet available, merging from other branch soon',
+  );
 }

@@ -103,7 +103,11 @@ export default function AcceptSessionScreen() {
       <View style={styles.card}>
         {/* Icon */}
         <View style={styles.iconCircle}>
-          <Ionicons name="headset-outline" size={40} color={theme.action.primary} />
+          <Ionicons
+            name="headset-outline"
+            size={40}
+            color={theme.action.primary}
+          />
         </View>
 
         <AppText variant="title2" emphasis="emphasized" textAlign="center">
@@ -118,7 +122,11 @@ export default function AcceptSessionScreen() {
         {/* Category badge */}
         {category && (
           <View style={styles.categoryBadge}>
-            <Ionicons name="pricetag-outline" size={14} color={theme.action.primary} />
+            <Ionicons
+              name="pricetag-outline"
+              size={14}
+              color={theme.action.primary}
+            />
             <AppText variant="caption1" emphasis="emphasized" color="accent">
               {category}
             </AppText>
@@ -161,7 +169,11 @@ export default function AcceptSessionScreen() {
             {acceptMutation.isPending ?
               <ActivityIndicator color={theme.action.onPrimary} size="small" />
             : <>
-                <Ionicons name="checkmark-circle" size={20} color={theme.action.onPrimary} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={20}
+                  color={theme.action.onPrimary}
+                />
                 <AppText variant="body" emphasis="emphasized" color="secondary">
                   Accept Session
                 </AppText>
