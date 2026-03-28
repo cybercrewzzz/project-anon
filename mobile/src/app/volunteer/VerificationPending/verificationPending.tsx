@@ -10,7 +10,9 @@ import { fetchVolunteerProfile } from '@/api/volunteer-api';
 
 type VerificationStatus = 'pending' | 'approved' | 'rejected';
 
-const isValidVerificationStatus = (value: unknown): value is VerificationStatus => {
+const isValidVerificationStatus = (
+  value: unknown,
+): value is VerificationStatus => {
   return value === 'pending' || value === 'approved' || value === 'rejected';
 };
 
@@ -25,8 +27,12 @@ export default function VerificationPending() {
   const accountName = useAuth(state => state.account?.name ?? '');
 
   const [verificationStatus, setVerificationStatus] =
-    useState<VerificationStatus>(getVerificationStatus(params.verificationStatus));
-  const [isInitialLoading, setIsInitialLoading] = useState(!params.verificationStatus);
+    useState<VerificationStatus>(
+      getVerificationStatus(params.verificationStatus),
+    );
+  const [isInitialLoading, setIsInitialLoading] = useState(
+    !params.verificationStatus,
+  );
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [autoCheckError, setAutoCheckError] = useState(false);
