@@ -322,7 +322,10 @@ const P2P_P2V_withCategory = () => {
             disabled={true}
             onPress={() => {
               // router.push('/user/session-history');
-              Alert.alert('Coming Soon', 'Session history feature coming soon!');
+              Alert.alert(
+                'Coming Soon',
+                'Session history feature coming soon!',
+              );
             }}
           >
             <HistoryBarGradient
