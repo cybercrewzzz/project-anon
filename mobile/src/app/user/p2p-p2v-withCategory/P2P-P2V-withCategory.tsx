@@ -50,7 +50,7 @@ const P2P_P2V_withCategory = () => {
   const { data: tickets, isLoading: ticketsLoading } = useQuery({
     queryKey: queryKeys.tickets,
     queryFn: fetchSessionTickets,
-    staleTime: 30_000, // refetch every 30 seconds
+    staleTime: 30_000, // cache data as fresh for every 30 seconds
   });
 
   // ── Categories from lookup ───────────────────────────────────────────────
