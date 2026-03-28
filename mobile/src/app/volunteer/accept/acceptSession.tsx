@@ -244,7 +244,7 @@ const styles = StyleSheet.create(theme => ({
     justifyContent: 'center',
     gap: theme.spacing.s2,
     borderRadius: theme.radius.md,
-    backgroundColor: '#6A00F4',
+    backgroundColor: theme.action.primary,
   },
   buttonDisabled: {
     opacity: 0.55,
