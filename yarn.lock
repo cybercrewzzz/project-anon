@@ -7389,6 +7389,7 @@ __metadata:
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.7.3"
     typescript-eslint: "npm:^8.20.0"
+    zod: "npm:^4.3.6"
   languageName: unknown
   linkType: soft
 
