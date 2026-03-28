@@ -109,7 +109,7 @@ const P2P_P2V_withCategory = () => {
       Alert.alert('How are you feeling?', 'Please select your feeling level.');
       return;
     }
-    if ((tickets?.remaining ?? 0) === 0) {
+    if (!ticketsLoading && tickets && tickets.remaining === 0) {
       Alert.alert(
         'No Tickets Left',
         'You have used all your sessions for today.',
