@@ -316,12 +316,17 @@ const P2P_P2V_withCategory = () => {
         </View>
 
         {/* ── Connection History ─────────────────────────── */}
+        {/* TODO: Re-enable when session history route is implemented */}
         <View style={styles.connectionHistoryPressable}>
           <Pressable
-            onPress={() => router.push('/user/session-history/sessionHistory')}
+            disabled={true}
+            onPress={() => {
+              // router.push('/user/session-history');
+              Alert.alert('Coming Soon', 'Session history feature coming soon!');
+            }}
           >
             <HistoryBarGradient
-              style={styles.connectionHistoryBar}
+              style={[styles.connectionHistoryBar, { opacity: 0.6 }]}
               start={{ x: 0, y: 0.5 }}
               end={{ x: 1, y: 0.5 }}
             >
