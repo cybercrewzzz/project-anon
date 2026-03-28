@@ -54,9 +54,9 @@ describe('BlocksService', () => {
     it('should throw NotFoundException when target account does not exist', async () => {
       mockPrisma.account.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.blockUser(blockerId, { blockedId }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.blockUser(blockerId, { blockedId })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ConflictException when already blocked', async () => {
@@ -68,9 +68,9 @@ describe('BlocksService', () => {
         blockedId,
       });
 
-      await expect(
-        service.blockUser(blockerId, { blockedId }),
-      ).rejects.toThrow(ConflictException);
+      await expect(service.blockUser(blockerId, { blockedId })).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should block a user successfully', async () => {
@@ -99,9 +99,9 @@ describe('BlocksService', () => {
     it('should throw NotFoundException when block does not exist', async () => {
       mockPrisma.blocklist.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.unblockUser(blockerId, blockedId),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.unblockUser(blockerId, blockedId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should unblock a user successfully', async () => {
