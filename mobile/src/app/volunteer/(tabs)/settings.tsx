@@ -259,7 +259,7 @@ const SettingsScreen = () => {
   }
 
   // ── Error state ──
-  if (isError || !profile) {
+  if (isError) {
     return (
       <View style={styles.centered}>
         <AppText variant="body" color="primary">
@@ -285,6 +285,9 @@ const SettingsScreen = () => {
       </View>
     );
   }
+
+  // TypeScript narrowing — data is defined here, but guard satisfies the compiler
+  if (!profile) return null;
 
   // ── Derived values from real data ──
   const level = profile.experience?.level ?? 1;
