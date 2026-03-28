@@ -212,7 +212,7 @@ const styles = StyleSheet.create(theme => ({
     paddingVertical: theme.spacing.s2,
     borderRadius: theme.radius.full,
     borderWidth: 1,
-    borderColor: '#6A00F425',
+    borderColor: theme.text.subtle2,
   },
   infoRow: {
     flexDirection: 'row',
