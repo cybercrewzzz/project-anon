@@ -1,9 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  View,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
+import { View, ActivityIndicator, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -159,7 +155,7 @@ export default function VerificationPending() {
       />
       <View style={styles.content}>
         <View style={styles.mainSection}>
-          {accountName ? (
+          {accountName ?
             <AppText
               variant="subhead"
               emphasis="emphasized"
@@ -168,7 +164,7 @@ export default function VerificationPending() {
             >
               Signed in as {accountName}
             </AppText>
-          ) : null}
+          : null}
 
           <ActivityIndicator size="large" style={styles.loader} />
 
@@ -187,8 +183,8 @@ export default function VerificationPending() {
             color="primary"
             style={styles.bodyText}
           >
-            Your volunteer application has been submitted.We will notify you once
-            an admin has reviewed it. This usually takes 1–2 business days.
+            Your volunteer application has been submitted.We will notify you
+            once an admin has reviewed it. This usually takes 1–2 business days.
           </AppText>
 
           {autoCheckError && (
@@ -211,17 +207,16 @@ export default function VerificationPending() {
                 opacity: isCheckingStatus ? 0.7 : 1,
               }}
             >
-              {isCheckingStatus ? (
+              {isCheckingStatus ?
                 <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <AppText
+              : <AppText
                   variant="headline"
                   emphasis="emphasized"
                   color="secondary"
                 >
                   Check Status
                 </AppText>
-              )}
+              }
             </FullWidthButton>
 
             {statusMessage && (
