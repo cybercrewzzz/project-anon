@@ -39,8 +39,10 @@ const OTPInput = ({
 
 const OTPVerification = () => {
   const router = useRouter();
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = [
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
     useRef<TextInput>(null),
     useRef<TextInput>(null),
     useRef<TextInput>(null),
@@ -53,7 +55,7 @@ const OTPVerification = () => {
     setOtp(newOtp);
 
     // Auto-focus next input
-    if (text && index < 3) {
+    if (text && index < 5) {
       inputRefs[index + 1].current?.focus();
     }
   };
@@ -107,6 +109,18 @@ const OTPVerification = () => {
           onChangeText={text => handleOtpChange(text, 3)}
           inputRef={inputRefs[3]}
           onKeyPress={e => handleKeyPress(e, 3)}
+        />
+        <OTPInput
+          value={otp[4]}
+          onChangeText={text => handleOtpChange(text, 4)}
+          inputRef={inputRefs[4]}
+          onKeyPress={e => handleKeyPress(e, 4)}
+        />
+        <OTPInput
+          value={otp[5]}
+          onChangeText={text => handleOtpChange(text, 5)}
+          inputRef={inputRefs[5]}
+          onKeyPress={e => handleKeyPress(e, 5)}
         />
       </View>
 
@@ -171,7 +185,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: rt.insets.top,
   },
   otpInputContainer: (isFocused: boolean) => ({
-    width: 70,
+    width: 52,
     height: 64,
     justifyContent: 'center',
     backgroundColor: theme.surface.primary,

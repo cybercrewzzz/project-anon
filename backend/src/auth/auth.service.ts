@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ForbiddenException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { RedisService } from '../redis/redis.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 import { RegisterVolunteerDto } from './dto/register-volunteer.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
@@ -23,6 +25,8 @@ import type { StringValue } from 'ms';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -256,18 +260,56 @@ export class AuthService {
       return { message: 'If an account exists, an OTP has been sent.' };
     }
 
-    // 2. Generate a 4-digit OTP
-    const otp = randomInt(1000, 10000).toString();
+    // 2. Generate a 6-digit OTP (100000 - 999999)
+    const otp = randomInt(100000, 1000000).toString();
 
-    // 3. Store OTP in Redis and set an expiration (e.g., 5 minutes)
-    const redisKey = `pwd-reset-otp:${account.email}`;
-    await this.redis.set(redisKey, otp, 'EX', 5 * 60);
+    // 3. Store a hash of the OTP in Redis and set an expiration (e.g., 5 minutes)
+    const redisKey = `pwd-reset-otp:${account.accountId}`;
+    const otpHash = this.hashToken(otp);
+    await this.redis.set(redisKey, otpHash, 'EX', 5 * 60);
 
     // 4. (Simulated) Send the OTP to the user's email
     // In a real application, inject an EmailService and send here.
-    console.log(`[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`);
+    this.logger.debug(
+      `[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`,
+    );
+    this.logger.log(`Password reset OTP sent to ${account.email}`);
 
     return { message: 'If an account exists, an OTP has been sent.' };
+  }
+
+  async verifyOtp(dto: VerifyOtpDto) {
+    // 1. Lookup account to get accountId
+    const account = await this.prisma.account.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!account) {
+      throw new UnauthorizedException('Invalid or expired OTP.');
+    }
+
+    // 2. Retrieve hashed OTP from Redis using accountId
+    const redisKey = `pwd-reset-otp:${account.accountId}`;
+    const storedOtpHash = await this.redis.get(redisKey);
+
+    // 3. Compare with incoming OTP (after hashing it)
+    if (!storedOtpHash || storedOtpHash !== this.hashToken(dto.otp)) {
+      throw new UnauthorizedException('Invalid or expired OTP.');
+    }
+
+    // OTP is valid. Remove it to prevent reuse.
+    await this.redis.del(redisKey);
+
+    // Generate a temporary reset token valid for 15 minutes.
+    const resetToken = randomUUID();
+    await this.redis.set(
+      `pwd-reset-token:${account.email}`,
+      resetToken,
+      'EX',
+      15 * 60,
+    );
+
+    return { resetToken };
   }
 
   // ── Refresh ───────────────────────────────────────────────────────

@@ -3,11 +3,13 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../redis/redis.service';
 import * as argon2 from 'argon2';
 
 jest.mock('argon2', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
   verify: jest.fn(),
+  argon2id: 2,
 }));
 
 describe('AuthService', () => {
@@ -30,7 +32,7 @@ describe('AuthService', () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
-    $transaction: jest.fn(),
+    $transaction: (cb: any) => cb(mockPrismaService),
   };
 
   const mockJwtService = {
@@ -42,6 +44,12 @@ describe('AuthService', () => {
     getOrThrow: jest.fn().mockReturnValue('test-secret'),
   };
 
+  const mockRedisService = {
+    set: jest.fn(),
+    get: jest.fn(),
+    del: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -49,6 +57,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: RedisService, useValue: mockRedisService },
       ],
     }).compile();
 
@@ -129,4 +138,63 @@ describe('AuthService', () => {
       expect(result).toEqual({ message: 'Logged out' });
     });
   });
+
+  describe('forgotPassword', () => {
+    it('should generate OTP and store hash in redis if account exists', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: 'acc-123',
+        email: 'test@test.com',
+      });
+      mockRedisService.set.mockResolvedValueOnce('OK');
+
+      const result = await service.forgotPassword({ email: 'test@test.com' });
+
+      expect(mockRedisService.set).toHaveBeenCalledWith(
+        'pwd-reset-otp:acc-123',
+        expect.any(String),
+        'EX',
+        300,
+      );
+      expect(result.message).toContain('OTP has been sent');
+    });
+  });
+
+  describe('verifyOtp', () => {
+    it('should throw UnauthorizedException if OTP is wrong', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: 'acc-123',
+        email: 'test@test.com',
+      });
+      mockRedisService.get.mockResolvedValueOnce('wrong-hash');
+
+      await expect(
+        service.verifyOtp({ email: 'test@test.com', otp: '123456' }),
+      ).rejects.toThrow('Invalid or expired OTP.');
+    });
+
+    it('should return reset token if OTP is correct', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: 'acc-123',
+        email: 'test@test.com',
+      });
+      // The service hashes the OTP. We need to mock get to return that hash.
+      const otp = '123456';
+      const otpHash = createHash('sha256').update(otp).digest('hex');
+      mockRedisService.get.mockResolvedValueOnce(otpHash);
+      mockRedisService.del.mockResolvedValueOnce(1);
+      mockRedisService.set.mockResolvedValueOnce('OK');
+
+      const result = await service.verifyOtp({ email: 'test@test.com', otp });
+
+      expect(mockRedisService.del).toHaveBeenCalledWith(
+        'pwd-reset-otp:acc-123',
+      );
+      expect(result).toHaveProperty('resetToken');
+    });
+  });
 });
+
+function createHash(arg0: string) {
+  const crypto = require('crypto');
+  return crypto.createHash(arg0);
+}
