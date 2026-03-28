@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { acceptSession } from '@/api/session-api';
 import { ApiError } from '@/api/errors';
+import { th } from 'zod/v4/locales';
 
 // =============================================================================
 // POST /session/:sessionId/accept
@@ -203,7 +204,7 @@ const styles = StyleSheet.create(theme => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#6A00F412',
+    backgroundColor: theme.surface.muted,
     paddingHorizontal: theme.spacing.s4,
     paddingVertical: theme.spacing.s2,
     borderRadius: theme.radius.full,
