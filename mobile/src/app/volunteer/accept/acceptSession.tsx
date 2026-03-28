@@ -188,11 +188,7 @@ const styles = StyleSheet.create(theme => ({
     width: '100%',
     gap: theme.spacing.s4,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 16,
+    ...theme.elevation.level4,
   },
   iconCircle: {
     width: 80,
