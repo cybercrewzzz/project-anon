@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, ActivityIndicator, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { AppText } from '@/components/AppText';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import { useAuth } from '@/store/useAuth';
@@ -12,12 +12,13 @@ type VerificationStatus = 'pending' | 'approved' | 'rejected';
 
 export default function VerificationPending() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ verificationStatus?: string }>();
   const signOut = useAuth(state => state.signOut);
   const accountName = useAuth(state => state.account?.name ?? '');
 
   const [verificationStatus, setVerificationStatus] =
-    useState<VerificationStatus>('pending');
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+    useState<VerificationStatus>((params.verificationStatus as VerificationStatus) || 'pending');
+  const [isInitialLoading, setIsInitialLoading] = useState(!params.verificationStatus);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [autoCheckError, setAutoCheckError] = useState(false);
@@ -26,6 +27,12 @@ export default function VerificationPending() {
 
   // ── Mount: automatic status check ──────────────────────────────────────────
   useEffect(() => {
+    // If verificationStatus was passed as param, skip the initial fetch
+    if (params.verificationStatus) {
+      setIsInitialLoading(false);
+      return;
+    }
+
     fetchVolunteerProfile()
       .then(profile => {
         const status = profile.verificationStatus as VerificationStatus;
@@ -46,7 +53,7 @@ export default function VerificationPending() {
     return () => {
       if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
     };
-  }, [router]);
+  }, [router, params.verificationStatus]);
 
   // ── Manual: Check Status button ─────────────────────────────────────────────
   const handleCheckStatus = async () => {
@@ -193,7 +200,7 @@ export default function VerificationPending() {
               textAlign="center"
               style={styles.autoCheckErrorText}
             >
-              Could not verify status. Tap `Check Status` to retry.
+              Could not verify status. Tap Check Status to retry.
             </AppText>
           )}
         </View>

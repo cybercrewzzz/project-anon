@@ -15,7 +15,6 @@ const VolunteerLayout = () => {
       <Stack.Screen name="getStarted" />
       <Stack.Screen name="session" />
       <Stack.Screen name="EditProfile" />
-      {/* <Stack.Screen name="verificationPending" /> */}
     </Stack>
   );
 };

@@ -19,14 +19,19 @@ function VolunteerGate() {
           router.replace('/volunteer/home' as any);
         } else {
           // pending or rejected → hold on the pending screen
-          router.replace(
-            '/volunteer/VerificationPending/verificationPending' as any,
-          );
+          router.replace({
+            pathname:
+              '/volunteer/VerificationPending/verificationPending' as any,
+            params: { verificationStatus: profile.verificationStatus },
+          });
         }
       })
       .catch(() => {
-        // Network error → safe fallback, never block the user
-        router.replace('/volunteer/home' as any);
+        // Network error → route to pending screen (don't bypass the gate)
+        // VerificationPending will handle the error and let user retry
+        router.replace({
+          pathname: '/volunteer/VerificationPending/verificationPending' as any,
+        });
       });
   }, [router]);
 
