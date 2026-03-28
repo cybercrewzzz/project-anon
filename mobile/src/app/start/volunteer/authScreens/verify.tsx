@@ -102,9 +102,7 @@ const Verify = () => {
             'Application Submitted',
             'Your verification is pending admin review.',
           );
-          router.replace(
-            '/start/volunteer/authScreens/VerificationSubmitSuccessful' as any,
-          );
+          router.replace('/volunteer/VerificationPending/verificationPending' as any);
         },
         onError: (err: any) => {
           const apiError = parseApiError(err);
