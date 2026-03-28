@@ -4,8 +4,6 @@ import {
   SessionConnectMatchSchema,
   SessionConnectWaitingSchema,
   SessionAcceptSchema,
-  SessionHistorySchema,
-  SessionTicketsSchema,
   type SessionConnectMatch,
   type SessionConnectWaiting,
   type SessionAccept,
@@ -108,14 +106,7 @@ export interface SessionHistoryParams {
 export async function fetchSessionHistory(
   params: SessionHistoryParams = {},
 ): Promise<SessionHistory> {
-  try {
-    const { data } = await apiClient.get('/session/history', {
-      params: { page: params.page ?? 1, limit: params.limit ?? 20 },
-    });
-    return SessionHistorySchema.parse(data);
-  } catch (error) {
-    throw parseApiError(error);
-  }
+  throw new Error('fetchSessionHistory: schemas not yet available, merging from other branch soon');
 }
 
 // =============================================================================
@@ -125,10 +116,5 @@ export async function fetchSessionHistory(
 // =============================================================================
 
 export async function fetchSessionTickets(): Promise<SessionTickets> {
-  try {
-    const { data } = await apiClient.get('/session/tickets');
-    return SessionTicketsSchema.parse(data);
-  } catch (error) {
-    throw parseApiError(error);
-  }
+  throw new Error('fetchSessionTickets: schemas not yet available, merging from other branch soon');
 }
