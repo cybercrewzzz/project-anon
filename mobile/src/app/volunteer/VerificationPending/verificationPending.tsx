@@ -10,6 +10,14 @@ import { fetchVolunteerProfile } from '@/api/volunteer-api';
 
 type VerificationStatus = 'pending' | 'approved' | 'rejected';
 
+const isValidVerificationStatus = (value: unknown): value is VerificationStatus => {
+  return value === 'pending' || value === 'approved' || value === 'rejected';
+};
+
+const getVerificationStatus = (value: unknown): VerificationStatus => {
+  return isValidVerificationStatus(value) ? value : 'pending';
+};
+
 export default function VerificationPending() {
   const router = useRouter();
   const params = useLocalSearchParams<{ verificationStatus?: string }>();
@@ -17,7 +25,7 @@ export default function VerificationPending() {
   const accountName = useAuth(state => state.account?.name ?? '');
 
   const [verificationStatus, setVerificationStatus] =
-    useState<VerificationStatus>((params.verificationStatus as VerificationStatus) || 'pending');
+    useState<VerificationStatus>(getVerificationStatus(params.verificationStatus));
   const [isInitialLoading, setIsInitialLoading] = useState(!params.verificationStatus);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -35,7 +43,7 @@ export default function VerificationPending() {
 
     fetchVolunteerProfile()
       .then(profile => {
-        const status = profile.verificationStatus as VerificationStatus;
+        const status = getVerificationStatus(profile.verificationStatus);
         if (status === 'approved') {
           router.replace('/volunteer/home' as any);
         } else {
@@ -62,7 +70,7 @@ export default function VerificationPending() {
 
     try {
       const profile = await fetchVolunteerProfile();
-      const status = profile.verificationStatus as VerificationStatus;
+      const status = getVerificationStatus(profile.verificationStatus);
 
       if (status === 'approved') {
         router.replace('/volunteer/home' as any);
@@ -76,6 +84,7 @@ export default function VerificationPending() {
         );
         setIsCheckingStatus(false);
         // auto-clear after 3 seconds
+        if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
         messageTimerRef.current = setTimeout(() => {
           setStatusMessage(null);
         }, 3000);
