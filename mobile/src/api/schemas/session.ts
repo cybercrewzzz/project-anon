@@ -80,3 +80,10 @@ export const SessionTicketsSchema = z.object({
   resetAt: z.string().optional(),
 });
 export type SessionTickets = z.infer<typeof SessionTicketsSchema>;
+
+// ── PATCH /session/:id/rate ──
+
+export const SessionRateResponseSchema = z.object({
+  message: z.string(),
+});
+export type SessionRateResponse = z.infer<typeof SessionRateResponseSchema>;

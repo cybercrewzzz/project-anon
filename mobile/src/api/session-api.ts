@@ -6,11 +6,13 @@ import {
   SessionAcceptSchema,
   SessionHistorySchema,
   SessionTicketsSchema,
+  SessionRateResponseSchema,
   type SessionConnectMatch,
   type SessionConnectWaiting,
   type SessionAccept,
   type SessionHistory,
   type SessionTickets,
+  type SessionRateResponse,
 } from './schemas';
 
 // =============================================================================
@@ -85,10 +87,10 @@ export interface RateSessionBody {
 export async function rateSession(
   sessionId: string,
   body: RateSessionBody,
-): Promise<{ message: string }> {
+): Promise<SessionRateResponse> {
   try {
     const { data } = await apiClient.patch(`/session/${sessionId}/rate`, body);
-    return data as { message: string };
+    return SessionRateResponseSchema.parse(data);
   } catch (error) {
     throw parseApiError(error);
   }
