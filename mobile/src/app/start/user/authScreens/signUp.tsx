@@ -25,6 +25,7 @@ const AGE_RANGES = Object.keys(AGE_RANGE_MAP);
 const SignUp = () => {
   const router = useRouter();
   const signIn = useAuth(state => state.signIn);
+  const signOut = useAuth(state => state.signOut);
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -50,6 +51,8 @@ const SignUp = () => {
         router.replace('/start/user/authScreens/registerSuccessful' as any);
       } catch (err) {
         console.error('Sign-up onSuccess error:', err);
+        // Clear any partially-persisted tokens to avoid inconsistent auth state
+        await signOut().catch(() => {});
         Alert.alert(
           'Error',
           'Registration succeeded but sign-in failed. Please log in manually.',
