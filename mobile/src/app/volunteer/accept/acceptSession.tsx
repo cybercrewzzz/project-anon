@@ -1,13 +1,12 @@
 import React from 'react';
 import { View, Pressable, ActivityIndicator, Alert } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { acceptSession } from '@/api/session-api';
 import { ApiError } from '@/api/errors';
-import { th } from 'zod/v4/locales';
 
 // =============================================================================
 // POST /session/:sessionId/accept
@@ -22,6 +21,7 @@ import { th } from 'zod/v4/locales';
 
 export default function AcceptSessionScreen() {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const { sessionId, category } = useLocalSearchParams<{
     sessionId: string;
     category?: string;
@@ -103,7 +103,7 @@ export default function AcceptSessionScreen() {
       <View style={styles.card}>
         {/* Icon */}
         <View style={styles.iconCircle}>
-          <Ionicons name="headset-outline" size={40} color="#6A00F4" />
+          <Ionicons name="headset-outline" size={40} color={theme.action.primary} />
         </View>
 
         <AppText variant="title2" emphasis="emphasized" textAlign="center">
@@ -118,7 +118,7 @@ export default function AcceptSessionScreen() {
         {/* Category badge */}
         {category && (
           <View style={styles.categoryBadge}>
-            <Ionicons name="pricetag-outline" size={14} color="#6A00F4" />
+            <Ionicons name="pricetag-outline" size={14} color={theme.action.primary} />
             <AppText variant="caption1" emphasis="emphasized" color="accent">
               {category}
             </AppText>
@@ -130,7 +130,7 @@ export default function AcceptSessionScreen() {
           <Ionicons
             name="information-circle-outline"
             size={16}
-            color="#9E9E9E"
+            color={theme.text.muted}
           />
           <AppText variant="caption2" color="accent" style={styles.infoText}>
             The session is anonymous and confidential. Only one volunteer can
@@ -159,9 +159,9 @@ export default function AcceptSessionScreen() {
             disabled={acceptMutation.isPending}
           >
             {acceptMutation.isPending ?
-              <ActivityIndicator color="#fff" size="small" />
+              <ActivityIndicator color={theme.action.onPrimary} size="small" />
             : <>
-                <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                <Ionicons name="checkmark-circle" size={20} color={theme.action.onPrimary} />
                 <AppText variant="body" emphasis="emphasized" color="secondary">
                   Accept Session
                 </AppText>
@@ -189,13 +189,13 @@ const styles = StyleSheet.create(theme => ({
     width: '100%',
     gap: theme.spacing.s4,
     alignItems: 'center',
-    ...theme.elevation.level4,
+    boxShadow: theme.elevation.level3,
   },
   iconCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#6A00F415',
+    backgroundColor: theme.surface.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing.s2,
