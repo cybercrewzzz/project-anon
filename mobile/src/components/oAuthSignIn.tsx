@@ -17,7 +17,13 @@ const HorizontalBar = () => {
   return <View style={styles.horizontalBar}></View>;
 };
 
-const Icon = ({ source, customSize }: { source: ImageSource; customSize?: number }) => {
+const Icon = ({
+  source,
+  customSize,
+}: {
+  source: ImageSource;
+  customSize?: number;
+}) => {
   const shakeTranslation = useSharedValue(0);
   const tooltipOpacity = useSharedValue(0);
 
@@ -44,33 +50,50 @@ const Icon = ({ source, customSize }: { source: ImageSource; customSize?: number
 
     shakeTranslation.value = withSequence(
       withTiming(-SHAKE_AMOUNT, { duration: SHAKE_DURATION / 2 }),
-      withRepeat(withTiming(SHAKE_AMOUNT, { duration: SHAKE_DURATION }), 3, true),
-      withTiming(0, { duration: SHAKE_DURATION / 2 })
+      withRepeat(
+        withTiming(SHAKE_AMOUNT, { duration: SHAKE_DURATION }),
+        3,
+        true,
+      ),
+      withTiming(0, { duration: SHAKE_DURATION / 2 }),
     );
 
     // Tooltip animation (fade in quickly, stay 1.5s, fade out smoothly)
     tooltipOpacity.value = withSequence(
       withTiming(1, { duration: 200 }),
-      withDelay(1500, withTiming(0, { duration: 300 }))
+      withDelay(1500, withTiming(0, { duration: 300 })),
     );
   };
 
   return (
     <View style={styles.iconWrapper}>
-      <Animated.View style={[styles.tooltipContainer, animatedTooltipStyle]} pointerEvents="none">
+      <Animated.View
+        style={[styles.tooltipContainer, animatedTooltipStyle]}
+        pointerEvents="none"
+      >
         <View style={styles.tooltip}>
-          <AppText variant="caption1" emphasis="emphasized" style={styles.tooltipText}>
+          <AppText
+            variant="caption1"
+            emphasis="emphasized"
+            style={styles.tooltipText}
+          >
             OAuth coming soon!
           </AppText>
         </View>
         <View style={styles.tooltipArrow} />
       </Animated.View>
 
-      <Pressable onPress={handlePress} style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}>
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+      >
         <Animated.View style={animatedIconStyle}>
           <Image
             source={source}
-            style={[styles.icon, customSize ? { width: customSize, height: customSize } : null]}
+            style={[
+              styles.icon,
+              customSize ? { width: customSize, height: customSize } : null,
+            ]}
             contentFit="contain"
           />
         </Animated.View>
@@ -95,7 +118,10 @@ const OAuthSignIn = () => {
       <View style={styles.iconContainer}>
         <Icon source={require('@/assets/icons/apple-logo.svg')} />
         <Icon source={require('@/assets/icons/google-logo.svg')} />
-        <Icon source={require('@/assets/icons/facebook-logo.svg')} customSize={46} />
+        <Icon
+          source={require('@/assets/icons/facebook-logo.svg')}
+          customSize={46}
+        />
       </View>
     </View>
   );
