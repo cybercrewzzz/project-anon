@@ -204,10 +204,17 @@ export class AuthService {
     }
 
     // Verify password
-    const passwordValid = await argon2.verify(
-      account.passwordHash,
-      dto.password,
-    );
+    let passwordValid = false;
+    if (account.passwordHash.startsWith('$argon2')) {
+      try {
+        passwordValid = await argon2.verify(account.passwordHash, dto.password);
+      } catch {
+        throw new InternalServerErrorException(
+          'Internal server error during authentication',
+        );
+      }
+    }
+
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -267,7 +274,9 @@ export class AuthService {
 
     // 4. (Simulated) Send the OTP to the user's email
     // In a real application, inject an EmailService and send here.
-    console.log(`[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`);
+    console.log(
+      `[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`,
+    );
 
     return { message: 'If an account exists, an OTP has been sent.' };
   }
@@ -285,7 +294,12 @@ export class AuthService {
 
     // Generate a temporary reset token valid for 15 minutes.
     const resetToken = randomUUID();
-    await this.redis.set(`pwd-reset-token:${dto.email}`, resetToken, 'EX', 15 * 60);
+    await this.redis.set(
+      `pwd-reset-token:${dto.email}`,
+      resetToken,
+      'EX',
+      15 * 60,
+    );
 
     return { resetToken };
   }
@@ -316,6 +330,7 @@ export class AuthService {
 
     return { message: 'Password has been successfully reset.' };
   }
+
 
   // ── Refresh ───────────────────────────────────────────────────────
 

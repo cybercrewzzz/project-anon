@@ -1,14 +1,39 @@
 import React, { useState } from 'react';
 import { AppText } from '@/components/AppText';
-import { View } from 'react-native';
+import { View, Alert } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { forgotPassword } from '@/api/auth';
+import { parseApiError } from '@/api/errors';
 
 const EnterEmail = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (emailToSend: string) => forgotPassword(emailToSend),
+    onSuccess: (_, emailToSend) => {
+      router.push({
+        pathname: '/start/user/authScreens/OTPVerification',
+        params: { email: emailToSend },
+      } as any);
+    },
+    onError: error => {
+      Alert.alert('Error', parseApiError(error).message);
+    },
+  });
+
+  const handleContinue = () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      Alert.alert('Validation Error', 'Please enter your email address.');
+      return;
+    }
+    mutate(trimmedEmail);
+  };
 
   return (
     <View style={styles.container}>
@@ -41,18 +66,15 @@ const EnterEmail = () => {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            editable={!isPending}
           />
         </View>
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton
-          onPress={() =>
-            router.push('/start/user/authScreens/OTPVerification' as any)
-          }
-        >
+        <FullWidthButton onPress={handleContinue} disabled={isPending}>
           <AppText variant="headline" color="secondary">
-            Continue
+            {isPending ? 'Sending...' : 'Continue'}
           </AppText>
         </FullWidthButton>
       </View>
