@@ -4,7 +4,8 @@ import { z } from 'zod';
 
 export const ReportCategorySchema = z.enum([
   'harassment',
-  'inappropriate',
+  'inappropriate_content',
+  'impersonation',
   'spam',
   'other',
 ]);
@@ -16,7 +17,7 @@ export const SubmitReportBodySchema = z.object({
   sessionId: z.uuid(),
   reportedId: z.uuid(),
   category: ReportCategorySchema,
-  description: z.string().min(1),
+  description: z.string().trim().min(1).max(500),
 });
 export type SubmitReportBody = z.infer<typeof SubmitReportBodySchema>;
 
