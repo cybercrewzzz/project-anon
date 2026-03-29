@@ -783,9 +783,8 @@ export class SessionService {
       // HOW: Look up the seeker's socket ID from Redis, then emit
       // `session:matched` to that socket via the WebSocket gateway.
       //
-      // The WebSocket gateway is Thusirui's code (Task 6). We call it via
-      // a shared service or event emitter so we don't import the whole ChatModule.
-      // For now we log it — wire up the actual emit when Task 6 is merged.
+      // Look up the seeker's socket ID from Redis, then emit
+      // `session:matched` to that socket via ChatServerService.
       const seekerSocketId = await this.redis.get(`account:${seekerId}:socket`);
 
       if (seekerSocketId) {

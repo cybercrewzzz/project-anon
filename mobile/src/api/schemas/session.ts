@@ -57,7 +57,6 @@ export type SessionHistoryItem = z.infer<typeof SessionHistoryItemSchema>;
 
 export const SessionHistorySchema = z.object({
   data: z.array(SessionDetailSchema),
-  sessions: z.array(SessionHistoryItemSchema),
   total: z.number(),
   page: z.number(),
   limit: z.number(),
