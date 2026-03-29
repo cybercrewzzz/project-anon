@@ -52,6 +52,12 @@ const ProTalk = () => {
           title="End Call"
           onPress={() => router.push('/user/EndCall/endCall' as any)}
         />
+        <Button
+          title="Session History"
+          onPress={() =>
+            router.push('/user/session-history/sessionHistory' as any)
+          }
+        />
         {__DEV__ && (
           <Button
             title="Rate Session"
