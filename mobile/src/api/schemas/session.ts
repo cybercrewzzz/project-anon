@@ -41,13 +41,33 @@ export type SessionAccept = z.infer<typeof SessionAcceptSchema>;
 
 export const SessionDetailSchema = z.object({
   sessionId: z.uuid(),
-  category: z.string(),
+  category: z.string().nullable(),
   startedAt: z.string(),
   endedAt: z.string().nullable(),
   status: z.string(),
   closedReason: z.string().nullable(),
   userRating: z.number().nullable(),
   volunteerRating: z.number().nullable(),
-  starredByUser: z.boolean(),
+  starredByUser: z.boolean().nullable(),
 });
 export type SessionDetail = z.infer<typeof SessionDetailSchema>;
+
+// ── GET /session/history ──
+
+export const SessionHistorySchema = z.object({
+  data: z.array(SessionDetailSchema),
+  total: z.number(),
+  page: z.number(),
+  limit: z.number(),
+});
+export type SessionHistory = z.infer<typeof SessionHistorySchema>;
+
+// ── GET /session/tickets ──
+
+export const SessionTicketsSchema = z.object({
+  daily: z.number(),
+  consumed: z.number(),
+  reserved: z.number(),
+  remaining: z.number(),
+});
+export type SessionTickets = z.infer<typeof SessionTicketsSchema>;
