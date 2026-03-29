@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, View, Alert } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '@/components/AppText';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { updatePassword } from '@/api/account';
+import { parseApiError } from '@/api/errors';
 
 const styles = StyleSheet.create((theme, rt) => ({
   container: {
@@ -43,8 +46,36 @@ const styles = StyleSheet.create((theme, rt) => ({
 
 const CreateNewPassword = () => {
   const router = useRouter();
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const { mutate: updatePwd, isPending } = useMutation({
+    mutationFn: updatePassword,
+    onSuccess: () => {
+      router.push('/start/volunteer/authScreens/ResetPassword' as any);
+    },
+    onError: error => {
+      const apiError = parseApiError(error);
+      Alert.alert('Error', apiError.message);
+    },
+  });
+
+  const handleContinue = () => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'New passwords do not match');
+      return;
+    }
+    if (!currentPassword || !newPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    updatePwd({
+      currentPassword,
+      newPassword,
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -62,6 +93,16 @@ const CreateNewPassword = () => {
       </View>
 
       <View style={styles.form}>
+        <InputForm
+          placeholder="Current Password"
+          placeholderColor="subtle2"
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
+          secureTextEntry={true}
+          autoCapitalize="none"
+          autoComplete="current-password"
+        />
+
         <InputForm
           placeholder="New Password"
           placeholderColor="subtle2"
@@ -84,13 +125,9 @@ const CreateNewPassword = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton
-          onPress={() =>
-            router.push('/start/volunteer/authScreens/ResetPassword' as any)
-          }
-        >
+        <FullWidthButton onPress={handleContinue} disabled={isPending}>
           <AppText variant="headline" color="secondary">
-            Continue
+            {isPending ? 'Updating...' : 'Continue'}
           </AppText>
         </FullWidthButton>
       </View>
