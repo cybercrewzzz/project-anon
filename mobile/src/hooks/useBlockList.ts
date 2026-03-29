@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/api/keys';
 import { blockUser, unblockUser, getBlockList } from '@/api/block';
-import { parseApiError } from '@/api/errors';
-import { Alert } from 'react-native';
 
 /**
  * Fetch the current user's block list.
@@ -20,7 +18,7 @@ export function useBlockList() {
  * Mutation hook to block a user.
  *
  * Invalidates the blocks cache on success.
- * Shows an alert on error.
+ * Throws normalized ApiError to be handled by the caller.
  */
 export function useBlockUser() {
   const queryClient = useQueryClient();
@@ -30,10 +28,6 @@ export function useBlockUser() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.blocks });
     },
-    onError: error => {
-      const apiError = parseApiError(error);
-      Alert.alert('Block failed', apiError.message);
-    },
   });
 }
 
@@ -41,7 +35,7 @@ export function useBlockUser() {
  * Mutation hook to unblock a user.
  *
  * Invalidates the blocks cache on success.
- * Shows an alert on error.
+ * Throws normalized ApiError to be handled by the caller.
  */
 export function useUnblockUser() {
   const queryClient = useQueryClient();
@@ -50,10 +44,6 @@ export function useUnblockUser() {
     mutationFn: (blockedId: string) => unblockUser(blockedId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.blocks });
-    },
-    onError: error => {
-      const apiError = parseApiError(error);
-      Alert.alert('Unblock failed', apiError.message);
     },
   });
 }
