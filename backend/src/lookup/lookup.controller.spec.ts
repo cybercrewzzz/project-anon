@@ -10,6 +10,7 @@ describe('LookupController', () => {
     const mockService: Partial<jest.Mocked<LookupService>> = {
       getSpecialisations: jest.fn(),
       getCategories: jest.fn(),
+      getLanguages: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -88,6 +89,40 @@ describe('LookupController', () => {
       service.getCategories.mockResolvedValue([]);
 
       const result = await controller.getCategories();
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  // ── Languages ─────────────────────────────────────────────────────
+
+  describe('getLanguages', () => {
+    const mockLanguages = [
+      {
+        languageId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+        code: 'en',
+        name: 'English',
+      },
+      {
+        languageId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+        code: 'si',
+        name: 'Sinhala',
+      },
+    ];
+
+    it('delegates to service and returns its result', async () => {
+      service.getLanguages.mockResolvedValue(mockLanguages);
+
+      const result = await controller.getLanguages();
+
+      expect(service.getLanguages).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockLanguages);
+    });
+
+    it('returns an empty array when no languages exist', async () => {
+      service.getLanguages.mockResolvedValue([]);
+
+      const result = await controller.getLanguages();
 
       expect(result).toEqual([]);
     });
