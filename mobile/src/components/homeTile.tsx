@@ -15,7 +15,8 @@ const HomeTile = ({ title, description, icon, onPress }: HomeTileProps) => {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.tile, pressed && { opacity: 0.9 }]}
+      disabled={!onPress}
+      style={({ pressed }) => [styles.tile, pressed && !!onPress && { opacity: 0.9 }]}
     >
       <AppText variant="subhead" emphasis="emphasized" textAlign="center">
         {title}
