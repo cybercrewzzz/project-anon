@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
+import * as argon2 from 'argon2';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -26,6 +27,17 @@ function seedUuid(name: string): string {
 }
 
 async function main() {
+  // Generate a real argon2id hash for all seeded accounts
+  // Test password: Password123!
+  const testPasswordHash = await argon2.hash('Password123!', {
+    type: argon2.argon2id,
+  });
+
+  // Dev-testing accounts for mobile auth flow testing
+  // Password: Admin@123
+  const devPasswordHash = await argon2.hash('Admin@123', {
+    type: argon2.argon2id,
+  });
   // ─── Languages ──────────────────────────────────────────────────────────────
   const english = await prisma.language.upsert({
     where: { code: 'en' },
@@ -64,10 +76,10 @@ async function main() {
     create: { name: 'volunteer', description: 'Volunteer listener' },
   });
 
-  const seekerRole = await prisma.role.upsert({
-    where: { name: 'seeker' },
+  const userRole = await prisma.role.upsert({
+    where: { name: 'user' },
     update: {},
-    create: { name: 'seeker', description: 'Help seeker' },
+    create: { name: 'user', description: 'Help seeker' },
   });
 
   // ─── Permissions ────────────────────────────────────────────────────────────
@@ -114,7 +126,7 @@ async function main() {
     'view_analytics',
   ];
   const volunteerPermissions = ['join_session'];
-  const seekerPermissions = ['create_problem'];
+  const userPermissions = ['create_problem'];
 
   for (const pName of adminPermissions) {
     await prisma.rolePermission.upsert({
@@ -148,17 +160,17 @@ async function main() {
     });
   }
 
-  for (const pName of seekerPermissions) {
+  for (const pName of userPermissions) {
     await prisma.rolePermission.upsert({
       where: {
         roleId_permissionId: {
-          roleId: seekerRole.roleId,
+          roleId: userRole.roleId,
           permissionId: permByName[pName].permissionId,
         },
       },
       update: {},
       create: {
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
         permissionId: permByName[pName].permissionId,
       },
     });
@@ -243,11 +255,9 @@ async function main() {
     update: {},
     create: {
       email: 'admin@example.com',
-      passwordHash: '$2b$10$placeholder_admin_hash',
+      passwordHash: testPasswordHash,
       name: 'Admin User',
       nickname: 'admin',
-      dateOfBirth: new Date('1990-01-15'),
-      gender: 'prefer_not_to_say',
       interfaceLanguageId: english.languageId,
       status: 'active',
     },
@@ -258,11 +268,9 @@ async function main() {
     update: {},
     create: {
       email: 'volunteer1@example.com',
-      passwordHash: '$2b$10$placeholder_volunteer1_hash',
+      passwordHash: testPasswordHash,
       name: 'Alice Volunteer',
       nickname: 'alice_v',
-      dateOfBirth: new Date('1998-05-20'),
-      gender: 'female',
       interfaceLanguageId: english.languageId,
       status: 'active',
     },
@@ -273,11 +281,9 @@ async function main() {
     update: {},
     create: {
       email: 'volunteer2@example.com',
-      passwordHash: '$2b$10$placeholder_volunteer2_hash',
+      passwordHash: testPasswordHash,
       name: 'Bob Volunteer',
       nickname: 'bob_v',
-      dateOfBirth: new Date('1997-08-10'),
-      gender: 'male',
       interfaceLanguageId: thai.languageId,
       status: 'active',
     },
@@ -288,11 +294,10 @@ async function main() {
     update: {},
     create: {
       email: 'seeker1@example.com',
-      passwordHash: '$2b$10$placeholder_seeker1_hash',
+      passwordHash: testPasswordHash,
       name: 'Charlie Seeker',
       nickname: 'charlie_s',
-      dateOfBirth: new Date('2000-03-25'),
-      gender: 'male',
+      ageRange: 'range_21_26',
       interfaceLanguageId: english.languageId,
       status: 'active',
     },
@@ -303,12 +308,113 @@ async function main() {
     update: {},
     create: {
       email: 'seeker2@example.com',
-      passwordHash: '$2b$10$placeholder_seeker2_hash',
+      passwordHash: testPasswordHash,
       name: 'Dana Seeker',
       nickname: 'dana_s',
-      dateOfBirth: new Date('2001-11-05'),
+      ageRange: 'range_16_20',
+      interfaceLanguageId: thai.languageId,
+      status: 'active',
+    },
+  });
+
+  // Additional seekers for richer seed data
+  const seeker3 = await prisma.account.upsert({
+    where: { email: 'seeker3@example.com' },
+    update: {},
+    create: {
+      email: 'seeker3@example.com',
+      passwordHash: testPasswordHash,
+      name: 'Eve Seeker',
+      nickname: 'eve_s',
+      ageRange: 'range_21_26',
+      gender: 'female',
+      interfaceLanguageId: english.languageId,
+      status: 'active',
+    },
+  });
+
+  const seeker4 = await prisma.account.upsert({
+    where: { email: 'seeker4@example.com' },
+    update: {},
+    create: {
+      email: 'seeker4@example.com',
+      passwordHash: testPasswordHash,
+      name: 'Frank Seeker',
+      nickname: 'frank_s',
+      ageRange: 'range_27_plus',
+      gender: 'male',
+      interfaceLanguageId: english.languageId,
+      status: 'suspended',
+    },
+  });
+
+  const seeker5 = await prisma.account.upsert({
+    where: { email: 'seeker5@example.com' },
+    update: {},
+    create: {
+      email: 'seeker5@example.com',
+      passwordHash: testPasswordHash,
+      name: 'Grace Seeker',
+      nickname: 'grace_s',
+      ageRange: 'range_16_20',
       gender: 'female',
       interfaceLanguageId: thai.languageId,
+      status: 'banned',
+    },
+  });
+
+  // Additional volunteer accounts (pending verification)
+  const volunteer3 = await prisma.account.upsert({
+    where: { email: 'volunteer3@example.com' },
+    update: {},
+    create: {
+      email: 'volunteer3@example.com',
+      passwordHash: testPasswordHash,
+      name: 'Carol Volunteer',
+      nickname: 'carol_v',
+      interfaceLanguageId: english.languageId,
+      status: 'active',
+    },
+  });
+
+  const volunteer4 = await prisma.account.upsert({
+    where: { email: 'volunteer4@example.com' },
+    update: {},
+    create: {
+      email: 'volunteer4@example.com',
+      passwordHash: testPasswordHash,
+      name: 'Dave Volunteer',
+      nickname: 'dave_v',
+      interfaceLanguageId: japanese.languageId,
+      status: 'active',
+    },
+  });
+
+  // ─── Dev-Testing Accounts (for mobile auth flow testing) ──────────────────
+  // Password: Admin@123
+  const devVolunteer = await prisma.account.upsert({
+    where: { email: 'admin.v@anora-app.com' },
+    update: {},
+    create: {
+      email: 'admin.v@anora-app.com',
+      passwordHash: devPasswordHash,
+      name: 'Dev Volunteer',
+      nickname: 'dev_volunteer',
+      interfaceLanguageId: english.languageId,
+      status: 'active',
+    },
+  });
+
+  const devUser = await prisma.account.upsert({
+    where: { email: 'admin.u@anora-app.com' },
+    update: {},
+    create: {
+      email: 'admin.u@anora-app.com',
+      passwordHash: devPasswordHash,
+      name: 'Dev User',
+      nickname: 'dev_user',
+      ageRange: 'range_21_26',
+      interfaceLanguageId: english.languageId,
       status: 'active',
     },
   });
@@ -362,13 +468,13 @@ async function main() {
     where: {
       accountId_roleId: {
         accountId: seeker1.accountId,
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
       },
     },
     update: {},
     create: {
       accountId: seeker1.accountId,
-      roleId: seekerRole.roleId,
+      roleId: userRole.roleId,
     },
   });
 
@@ -376,13 +482,115 @@ async function main() {
     where: {
       accountId_roleId: {
         accountId: seeker2.accountId,
-        roleId: seekerRole.roleId,
+        roleId: userRole.roleId,
       },
     },
     update: {},
     create: {
       accountId: seeker2.accountId,
-      roleId: seekerRole.roleId,
+      roleId: userRole.roleId,
+    },
+  });
+
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: seeker3.accountId,
+        roleId: userRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: seeker3.accountId,
+      roleId: userRole.roleId,
+    },
+  });
+
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: seeker4.accountId,
+        roleId: userRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: seeker4.accountId,
+      roleId: userRole.roleId,
+    },
+  });
+
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: seeker5.accountId,
+        roleId: userRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: seeker5.accountId,
+      roleId: userRole.roleId,
+    },
+  });
+
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: volunteer3.accountId,
+        roleId: volunteerRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: volunteer3.accountId,
+      roleId: volunteerRole.roleId,
+      assignedBy: adminAccount.accountId,
+    },
+  });
+
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: volunteer4.accountId,
+        roleId: volunteerRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: volunteer4.accountId,
+      roleId: volunteerRole.roleId,
+      assignedBy: adminAccount.accountId,
+    },
+  });
+
+  // Dev-testing account roles
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: devVolunteer.accountId,
+        roleId: volunteerRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: devVolunteer.accountId,
+      roleId: volunteerRole.roleId,
+      assignedBy: adminAccount.accountId,
+    },
+  });
+
+  await prisma.accountRole.upsert({
+    where: {
+      accountId_roleId: {
+        accountId: devUser.accountId,
+        roleId: userRole.roleId,
+      },
+    },
+    update: {},
+    create: {
+      accountId: devUser.accountId,
+      roleId: userRole.roleId,
     },
   });
 
@@ -394,9 +602,15 @@ async function main() {
     { accountId: volunteer1.accountId, languageId: japanese.languageId },
     { accountId: volunteer2.accountId, languageId: thai.languageId },
     { accountId: volunteer2.accountId, languageId: english.languageId },
+    { accountId: volunteer3.accountId, languageId: english.languageId },
+    { accountId: volunteer4.accountId, languageId: japanese.languageId },
+    { accountId: volunteer4.accountId, languageId: english.languageId },
     { accountId: seeker1.accountId, languageId: english.languageId },
     { accountId: seeker2.accountId, languageId: thai.languageId },
     { accountId: seeker2.accountId, languageId: chinese.languageId },
+    { accountId: seeker3.accountId, languageId: english.languageId },
+    { accountId: seeker4.accountId, languageId: english.languageId },
+    { accountId: seeker5.accountId, languageId: thai.languageId },
   ];
 
   for (const pair of languagePairs) {
@@ -440,6 +654,38 @@ async function main() {
       about:
         'Experienced in active listening and stress management techniques.',
       verificationStatus: 'approved',
+      isAvailable: false,
+    },
+  });
+
+  await prisma.volunteerProfile.upsert({
+    where: { accountId: volunteer3.accountId },
+    update: {},
+    create: {
+      accountId: volunteer3.accountId,
+      instituteEmail: 'carol@college.edu',
+      instituteName: 'City College',
+      studentId: 'STU-2025-010',
+      grade: 'Sophomore',
+      about:
+        'Interested in helping peers through difficult times. Background in psychology.',
+      verificationStatus: 'pending',
+      isAvailable: false,
+    },
+  });
+
+  await prisma.volunteerProfile.upsert({
+    where: { accountId: volunteer4.accountId },
+    update: {},
+    create: {
+      accountId: volunteer4.accountId,
+      instituteEmail: 'dave@techuni.edu',
+      instituteName: 'Tokyo Tech University',
+      studentId: 'STU-2025-033',
+      grade: 'Senior',
+      about:
+        'Experienced peer counselor with 2 years of volunteer work at campus wellness center.',
+      verificationStatus: 'pending',
       isAvailable: false,
     },
   });
@@ -531,6 +777,29 @@ async function main() {
     },
   });
 
+  // Pending verifications for the applications page
+  await prisma.volunteerVerification.upsert({
+    where: { requestId: seedUuid('verification-volunteer3') },
+    update: {},
+    create: {
+      requestId: seedUuid('verification-volunteer3'),
+      volunteerId: volunteer3.accountId,
+      documentUrl: 'https://storage.example.com/docs/carol_student_id.jpg',
+      status: 'pending',
+    },
+  });
+
+  await prisma.volunteerVerification.upsert({
+    where: { requestId: seedUuid('verification-volunteer4') },
+    update: {},
+    create: {
+      requestId: seedUuid('verification-volunteer4'),
+      volunteerId: volunteer4.accountId,
+      documentUrl: 'https://storage.example.com/docs/dave_student_id.pdf',
+      status: 'pending',
+    },
+  });
+
   // ─── User Problems ─────────────────────────────────────────────────────────
   const problem1 = await prisma.userProblem.upsert({
     where: { problemId: seedUuid('problem-seeker1-anxiety') },
@@ -569,6 +838,55 @@ async function main() {
     },
   });
 
+  // Additional problems for new seekers
+  const problem3 = await prisma.userProblem.upsert({
+    where: { problemId: seedUuid('problem-seeker3-depression') },
+    update: {},
+    create: {
+      problemId: seedUuid('problem-seeker3-depression'),
+      accountId: seeker3.accountId,
+      categoryId: categories[1].categoryId, // Depression
+      feelingLevel: 8,
+      status: 'matched',
+    },
+  });
+
+  const problem4 = await prisma.userProblem.upsert({
+    where: { problemId: seedUuid('problem-seeker3-relationships') },
+    update: {},
+    create: {
+      problemId: seedUuid('problem-seeker3-relationships'),
+      accountId: seeker3.accountId,
+      categoryId: categories[2].categoryId, // Relationships
+      feelingLevel: 6,
+      status: 'matched',
+    },
+  });
+
+  const problem5 = await prisma.userProblem.upsert({
+    where: { problemId: seedUuid('problem-seeker4-family') },
+    update: {},
+    create: {
+      problemId: seedUuid('problem-seeker4-family'),
+      accountId: seeker4.accountId,
+      categoryId: categories[6].categoryId, // Family Issues
+      feelingLevel: 9,
+      status: 'matched',
+    },
+  });
+
+  const problem6 = await prisma.userProblem.upsert({
+    where: { problemId: seedUuid('problem-seeker5-selfesteem') },
+    update: {},
+    create: {
+      problemId: seedUuid('problem-seeker5-selfesteem'),
+      accountId: seeker5.accountId,
+      categoryId: categories[5].categoryId, // Self-esteem
+      feelingLevel: 7,
+      status: 'matched',
+    },
+  });
+
   // ─── Chat Sessions ─────────────────────────────────────────────────────────
   const session1 = await prisma.chatSession.upsert({
     where: { sessionId: seedUuid('session-seeker1-volunteer1') },
@@ -598,6 +916,80 @@ async function main() {
     },
   });
 
+  // Additional sessions
+  const session3 = await prisma.chatSession.upsert({
+    where: { sessionId: seedUuid('session-seeker3-volunteer1') },
+    update: {},
+    create: {
+      sessionId: seedUuid('session-seeker3-volunteer1'),
+      seekerId: seeker3.accountId,
+      listenerId: volunteer1.accountId,
+      problemId: problem3.problemId,
+      status: 'completed',
+      endedAt: new Date(Date.now() - 86400_000), // 1 day ago
+      userRating: 4,
+      volunteerRating: 5,
+      starredByUser: false,
+    },
+  });
+
+  const session4 = await prisma.chatSession.upsert({
+    where: { sessionId: seedUuid('session-seeker3-volunteer2-rel') },
+    update: {},
+    create: {
+      sessionId: seedUuid('session-seeker3-volunteer2-rel'),
+      seekerId: seeker3.accountId,
+      listenerId: volunteer2.accountId,
+      problemId: problem4.problemId,
+      status: 'completed',
+      endedAt: new Date(Date.now() - 7200_000), // 2 hours ago
+      userRating: 3,
+      volunteerRating: 4,
+    },
+  });
+
+  const session5 = await prisma.chatSession.upsert({
+    where: { sessionId: seedUuid('session-seeker4-volunteer1-family') },
+    update: {},
+    create: {
+      sessionId: seedUuid('session-seeker4-volunteer1-family'),
+      seekerId: seeker4.accountId,
+      listenerId: volunteer1.accountId,
+      problemId: problem5.problemId,
+      status: 'cancelled_admin',
+      endedAt: new Date(Date.now() - 43200_000), // 12 hours ago
+      closedReason: 'Inappropriate behavior reported',
+    },
+  });
+
+  const session6 = await prisma.chatSession.upsert({
+    where: { sessionId: seedUuid('session-seeker5-volunteer2-selfesteem') },
+    update: {},
+    create: {
+      sessionId: seedUuid('session-seeker5-volunteer2-selfesteem'),
+      seekerId: seeker5.accountId,
+      listenerId: volunteer2.accountId,
+      problemId: problem6.problemId,
+      status: 'completed',
+      endedAt: new Date(Date.now() - 172800_000), // 2 days ago
+      userRating: 2,
+      volunteerRating: 3,
+    },
+  });
+
+  // A session that started today (for "sessions today" stat)
+  await prisma.chatSession.upsert({
+    where: { sessionId: seedUuid('session-seeker1-volunteer2-today') },
+    update: {},
+    create: {
+      sessionId: seedUuid('session-seeker1-volunteer2-today'),
+      seekerId: seeker1.accountId,
+      listenerId: volunteer2.accountId,
+      problemId: problem1.problemId,
+      status: 'active',
+    },
+  });
+
   // ─── Reports ────────────────────────────────────────────────────────────────
   const report = await prisma.report.upsert({
     where: { reportId: seedUuid('report-session1') },
@@ -611,6 +1003,83 @@ async function main() {
       description: 'Test report for seed data - not a real report.',
       status: 'resolved',
       resolvedAt: new Date(),
+    },
+  });
+
+  // Pending reports
+  await prisma.report.upsert({
+    where: { reportId: seedUuid('report-session3-harassment') },
+    update: {},
+    create: {
+      reportId: seedUuid('report-session3-harassment'),
+      sessionId: session3.sessionId,
+      reporterId: seeker3.accountId,
+      reportedId: volunteer1.accountId,
+      category: 'harassment',
+      description:
+        'The volunteer made several inappropriate comments during the session and ignored my boundaries.',
+      status: 'pending',
+    },
+  });
+
+  await prisma.report.upsert({
+    where: { reportId: seedUuid('report-session4-spam') },
+    update: {},
+    create: {
+      reportId: seedUuid('report-session4-spam'),
+      sessionId: session4.sessionId,
+      reporterId: seeker3.accountId,
+      reportedId: volunteer2.accountId,
+      category: 'spam',
+      description:
+        'Volunteer kept sending promotional links to external websites instead of providing support.',
+      status: 'pending',
+    },
+  });
+
+  await prisma.report.upsert({
+    where: { reportId: seedUuid('report-session5-inappropriate') },
+    update: {},
+    create: {
+      reportId: seedUuid('report-session5-inappropriate'),
+      sessionId: session5.sessionId,
+      reporterId: seeker4.accountId,
+      reportedId: volunteer1.accountId,
+      category: 'inappropriate_content',
+      description:
+        'Volunteer shared inappropriate content during the counseling session.',
+      status: 'reviewing',
+    },
+  });
+
+  await prisma.report.upsert({
+    where: { reportId: seedUuid('report-session6-impersonation') },
+    update: {},
+    create: {
+      reportId: seedUuid('report-session6-impersonation'),
+      sessionId: session6.sessionId,
+      reporterId: volunteer2.accountId,
+      reportedId: seeker5.accountId,
+      category: 'impersonation',
+      description:
+        'User was pretending to be a licensed therapist and giving medical advice.',
+      status: 'pending',
+    },
+  });
+
+  // Dismissed report
+  await prisma.report.upsert({
+    where: { reportId: seedUuid('report-session1-dismissed') },
+    update: {},
+    create: {
+      reportId: seedUuid('report-session1-dismissed'),
+      sessionId: session1.sessionId,
+      reporterId: volunteer1.accountId,
+      reportedId: seeker1.accountId,
+      category: 'other',
+      description: 'Seeker was slightly rude but nothing actionable.',
+      status: 'dismissed',
+      resolvedAt: new Date(Date.now() - 86400_000),
     },
   });
 

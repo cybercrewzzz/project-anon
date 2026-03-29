@@ -1,9 +1,20 @@
-import { View, ScrollView } from 'react-native';
-import React from 'react';
+import {
+  View,
+  ScrollView,
+  Pressable,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import { AppText, AppTextProps } from '@/components/AppText';
 import { Image, ImageSource } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/store/useAuth';
+import { logout } from '@/api/auth';
+import { useVolunteerProfile } from '@/hooks/useVolunteerProfile';
+
+// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 interface XpCardProps {
   text: string;
@@ -16,196 +27,8 @@ interface MenuItemProps {
   text: string;
   color?: AppTextProps['color'];
   rightIcon?: ImageSource;
+  onPress?: () => void;
 }
-
-const XpCard = ({ text, value, icon }: XpCardProps) => {
-  return (
-    <View style={styles.card}>
-      <View>
-        <AppText variant="subhead" emphasis="emphasized" color="secondary">
-          {text}
-        </AppText>
-      </View>
-
-      <View style={styles.cardValue}>
-        <Image
-          source={icon}
-          style={{ width: 24, height: 24 }}
-          contentFit="contain"
-        />
-        <AppText variant="title3" emphasis="emphasized" color="secondary">
-          {value}
-        </AppText>
-      </View>
-    </View>
-  );
-};
-
-const MenuItem = ({
-  leftIcon,
-  text,
-  color = 'primary',
-  rightIcon,
-}: MenuItemProps) => {
-  return (
-    <View style={styles.menuItem}>
-      <View style={styles.menuItemText}>
-        <Image source={leftIcon} style={{ width: 24, height: 24 }} />
-        <AppText variant="body" emphasis="emphasized" color={color}>
-          {text}
-        </AppText>
-      </View>
-      <View style={styles.menuItemicon}>
-        <Image source={rightIcon} style={{ width: 18, height: 18 }} />
-      </View>
-    </View>
-  );
-};
-
-const Home = () => {
-  return (
-    <View style={styles.screen}>
-      <LinearGradient
-        colors={['#F6E0FF', '#F9FBFF', '#D2ECFE']}
-        style={styles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        locations={[0.38, 0.63, 0.8]}
-      />
-
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <View style={styles.profileCard}>
-          <View style={styles.profileImage}>
-            <Image
-              source={require('@/assets/icons/GamifiedUserAvatarOPT.svg')}
-              style={{ width: 80, height: 80 }}
-              contentFit="contain"
-            />
-          </View>
-          <View style={styles.profileDetails}>
-            <AppText variant="headline" emphasis="emphasized" color="accent">
-              John Doe
-            </AppText>
-            <AppText variant="footnote" emphasis="emphasized" color="primary">
-              Institute Of Mental Health
-            </AppText>
-            <View style={styles.levelText}>
-              <AppText variant="caption1">Level: </AppText>
-              <AppText variant="footnote" emphasis="emphasized">
-                Basic
-              </AppText>
-            </View>
-          </View>
-        </View>
-        <View style={styles.xpSection}>
-          <LinearGradient
-            colors={['#1D47DC', '#0E7FBC']}
-            style={styles.xpBarContainer}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            locations={[0, 0.5]}
-          >
-            <View style={styles.xpText}>
-              <AppText variant="footnote" emphasis="regular" color="secondary">
-                Level 1
-              </AppText>
-              <View style={styles.xpAmount}>
-                <AppText
-                  variant="footnote"
-                  emphasis="emphasized"
-                  color="secondary"
-                >
-                  XP:
-                </AppText>
-                <AppText
-                  variant="footnote"
-                  emphasis="regular"
-                  color="secondary"
-                >
-                  150/300
-                </AppText>
-              </View>
-            </View>
-            <View style={styles.xpBar}>
-              <View style={styles.xpBarFill}></View>
-            </View>
-          </LinearGradient>
-          <View style={styles.xpCardsContainer}>
-            <XpCard
-              text="Daily login"
-              value={3}
-              icon={require('@/assets/images/fireIconOPT.webp')}
-            />
-            <XpCard
-              text="Daily login"
-              value={3}
-              icon={require('@/assets/images/fireIconOPT.webp')}
-            />
-            <XpCard
-              text="Daily login"
-              value={3}
-              icon={require('@/assets/images/fireIconOPT.webp')}
-            />
-          </View>
-        </View>
-        <View style={styles.Certificate}>
-          <View style={styles.CertificateText}>
-            <AppText variant="title3" emphasis="emphasized">
-              Get Your
-            </AppText>
-            <AppText variant="title3" emphasis="emphasized">
-              Certificate !
-            </AppText>
-          </View>
-          <Image
-            source={require('@/assets/icons/certificateOPT.svg')}
-            style={styles.CertificateImage}
-            contentFit="contain"
-          />
-        </View>
-        <View style={styles.menuSection}>
-          <MenuItem
-            leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
-            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-          />
-          <MenuItem
-            leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
-            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-          />
-          <MenuItem
-            leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
-            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-          />
-          <MenuItem
-            leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
-            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-          />
-          <MenuItem
-            leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
-            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-          />
-          <MenuItem
-            leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
-            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-          />
-          <MenuItem
-            leftIcon={require('@/assets/icons/languageOPT.svg')}
-            text="Select Language"
-            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
-          />
-        </View>
-      </ScrollView>
-    </View>
-  );
-};
-
-export default Home;
 
 const styles = StyleSheet.create((theme, rt) => ({
   screen: {
@@ -214,6 +37,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: rt.insets.bottom,
     paddingLeft: rt.insets.left + theme.spacing.s5,
     paddingRight: rt.insets.right + theme.spacing.s5,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   contentContainer: {
     gap: theme.spacing.s4,
@@ -286,7 +114,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   xpBarFill: {
     height: '100%',
-    width: '50%',
     backgroundColor: '#36D367',
     borderRadius: theme.radius.full,
   },
@@ -327,3 +154,316 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   menuItemicon: {},
 }));
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+const XpCard = ({ text, value, icon }: XpCardProps) => {
+  return (
+    <View style={styles.card}>
+      <View>
+        <AppText variant="subhead" emphasis="emphasized" color="secondary">
+          {text}
+        </AppText>
+      </View>
+      <View style={styles.cardValue}>
+        <Image
+          source={icon}
+          style={{ width: 24, height: 24 }}
+          contentFit="contain"
+        />
+        <AppText variant="title3" emphasis="emphasized" color="secondary">
+          {value}
+        </AppText>
+      </View>
+    </View>
+  );
+};
+
+// ── PATCH /volunteer/profile: MenuItem is now a Pressable when onPress given ──
+// Items without onPress stay non-interactive (disabled)
+const MenuItem = ({
+  leftIcon,
+  text,
+  color = 'primary',
+  rightIcon,
+  onPress,
+}: MenuItemProps) => {
+  return (
+    <Pressable style={styles.menuItem} onPress={onPress} disabled={!onPress}>
+      <View style={styles.menuItemText}>
+        <Image source={leftIcon} style={{ width: 24, height: 24 }} />
+        <AppText variant="body" emphasis="emphasized" color={color}>
+          {text}
+        </AppText>
+      </View>
+      <View style={styles.menuItemicon}>
+        <Image source={rightIcon} style={{ width: 18, height: 18 }} />
+      </View>
+    </Pressable>
+  );
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Map numeric level to a display label matching the Figma design */
+function getLevelLabel(level: number): string {
+  if (level <= 1) return 'Basic';
+  if (level <= 3) return 'Intermediate';
+  if (level <= 6) return 'Advanced';
+  return 'Expert';
+}
+
+/** XP needed to reach the next level (simple linear scale: 300 × level) */
+function getXpCap(level: number): number {
+  return Math.max(1, level) * 300;
+}
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
+const SettingsScreen = () => {
+  const router = useRouter();
+  const refreshToken = useAuth(state => state.refreshToken);
+  const signOut = useAuth(state => state.signOut);
+  const showDevUI = process.env.EXPO_PUBLIC_SHOW_DEV_UI === 'true';
+
+  // Dev-only temporary logout handler; gated behind EXPO_PUBLIC_SHOW_DEV_UI
+  const handleLogout = async () => {
+    if (!showDevUI) {
+      return;
+    }
+    try {
+      if (refreshToken) await logout(refreshToken);
+    } catch {
+      // Ignore API errors — still sign out locally
+    } finally {
+      await signOut();
+      router.replace('/start/welcome' as any);
+    }
+  };
+
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useVolunteerProfile();
+
+  // ── Loading state ──
+  if (isLoading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // ── Error state ──
+  if (isError || !profile) {
+    return (
+      <View style={styles.centered}>
+        <AppText variant="body" color="primary">
+          Could not load profile. Check your connection.
+        </AppText>
+        <Pressable
+          onPress={() => refetch()}
+          disabled={isFetching}
+          style={{
+            marginTop: 16,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            opacity: isFetching ? 0.5 : 1,
+          }}
+        >
+          {isFetching ?
+            <ActivityIndicator size="small" />
+          : <AppText variant="body" emphasis="emphasized" color="accent">
+              Retry
+            </AppText>
+          }
+        </Pressable>
+      </View>
+    );
+  }
+
+  // ── Derived values from real data ──
+  const level = profile.experience?.level ?? 1;
+  const points = profile.experience?.points ?? 0;
+  const xpCap = getXpCap(level);
+  const xpPercent = Math.min(points / xpCap, 1);
+  const levelLabel = getLevelLabel(level);
+
+  return (
+    <View style={styles.screen}>
+      <LinearGradient
+        colors={['#F6E0FF', '#F9FBFF', '#D2ECFE']}
+        style={styles.background}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        locations={[0.38, 0.63, 0.8]}
+      />
+
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        {/* ── Profile card ── */}
+        <View style={styles.profileCard}>
+          <View style={styles.profileImage}>
+            <Image
+              source={require('@/assets/icons/GamifiedUserAvatarOPT.svg')}
+              style={{ width: 80, height: 80 }}
+              contentFit="contain"
+            />
+          </View>
+          <View style={styles.profileDetails}>
+            <AppText variant="headline" emphasis="emphasized" color="accent">
+              {profile.name}
+            </AppText>
+            {profile.instituteName && (
+              <AppText variant="footnote" emphasis="emphasized" color="primary">
+                {profile.instituteName}
+              </AppText>
+            )}
+            <View style={styles.levelText}>
+              <AppText variant="caption1">Level: </AppText>
+              <AppText variant="footnote" emphasis="emphasized">
+                {levelLabel}
+              </AppText>
+            </View>
+          </View>
+        </View>
+
+        {/* ── XP section ── */}
+        <View style={styles.xpSection}>
+          <LinearGradient
+            colors={['#1D47DC', '#0E7FBC']}
+            style={styles.xpBarContainer}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            locations={[0, 0.5]}
+          >
+            <View style={styles.xpText}>
+              <AppText variant="footnote" emphasis="regular" color="secondary">
+                Level {level}
+              </AppText>
+              <View style={styles.xpAmount}>
+                <AppText
+                  variant="footnote"
+                  emphasis="emphasized"
+                  color="secondary"
+                >
+                  XP:{' '}
+                </AppText>
+                <AppText
+                  variant="footnote"
+                  emphasis="regular"
+                  color="secondary"
+                >
+                  {points}/{xpCap}
+                </AppText>
+              </View>
+            </View>
+            <View style={styles.xpBar}>
+              <View
+                style={[styles.xpBarFill, { width: `${xpPercent * 100}%` }]}
+              />
+            </View>
+          </LinearGradient>
+
+          <View style={styles.xpCardsContainer}>
+            <XpCard
+              text="Daily login"
+              value={0}
+              icon={require('@/assets/images/fireIconOPT.webp')}
+            />
+            <XpCard
+              text="Current Points"
+              value={points}
+              icon={require('@/assets/images/fireIconOPT.webp')}
+            />
+            <XpCard
+              text="Remaining XP"
+              value={Math.max(0, xpCap - points)}
+              icon={require('@/assets/images/fireIconOPT.webp')}
+            />
+          </View>
+        </View>
+
+        {/* ── Certificate banner ── */}
+        <View style={styles.Certificate}>
+          <View style={styles.CertificateText}>
+            <AppText variant="title3" emphasis="emphasized">
+              Get Your
+            </AppText>
+            <AppText variant="title3" emphasis="emphasized">
+              Certificate!
+            </AppText>
+          </View>
+          <Image
+            source={require('@/assets/icons/certificateOPT.svg')}
+            style={styles.CertificateImage}
+            contentFit="contain"
+          />
+        </View>
+
+        {/* ── Menu section ── */}
+        <View style={styles.menuSection}>
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Select Language"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          {/* ── PATCH /volunteer/profile ──────────────────────────────────────
+              Navigates to EditProfile screen where volunteer updates
+              their about text and specialisations
+          ──────────────────────────────────────────────────────────────────── */}
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Edit Profile"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+            onPress={() =>
+              router.push('/volunteer/EditProfile/editVolunteerProfile')
+            }
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="History"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="About"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Help & FAQs"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+          <MenuItem
+            leftIcon={require('@/assets/icons/languageOPT.svg')}
+            text="Log out"
+            rightIcon={require('@/assets/icons/chevronRightOPT.svg')}
+          />
+        </View>
+
+        {/* TODO: Remove this temp button when permanent logout UI is built */}
+        <Pressable
+          onPress={handleLogout}
+          style={{
+            backgroundColor: '#DC2626',
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            marginTop: 8,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+            🚪 Logout (Dev)
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </View>
+  );
+};
+
+export default SettingsScreen;

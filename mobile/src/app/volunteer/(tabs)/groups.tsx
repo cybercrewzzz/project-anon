@@ -9,18 +9,18 @@ const Groups = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Button
-          text="Verify"
-          onPress={() => router.navigate('/volunteer/getStarted/verify')}
-        />
-        <Button
-          text="Sign Up"
-          onPress={() => router.navigate('/volunteer/getStarted/signUp')}
-        />
-        <Button
-          text="Select Language"
+          text="Chat Session"
           onPress={() =>
-            router.navigate('/volunteer/getStarted/selectLanguage')
+            router.navigate({
+              pathname: '/user/session/[chat]',
+              params: { chat: '1' },
+            })
           }
+        />
+        <Button
+          text="Test Volunteer Auth Flow"
+          onPress={() => router.navigate('/start/volunteer/welcome' as any)}
+          style={{ backgroundColor: '#FFD700', marginTop: 20 }}
         />
       </View>
     </SafeAreaView>

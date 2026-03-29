@@ -10,12 +10,17 @@ const Groups = () => {
   return (
     <View style={styles.screen}>
       <Button
-        text="Get Started"
-        onPress={() => router.navigate('/user/StartedScreens/selectLanguage')}
+        text="Get Started (Don't Press This)"
+        onPress={() => router.push('/start/welcome' as any)}
       />
       <Button
-        text="Sign In"
-        onPress={() => router.navigate('/user/authScreens/signIn')}
+        text="Chat Session"
+        onPress={() =>
+          router.navigate({
+            pathname: '/user/session/[chat]',
+            params: { chat: '1' },
+          })
+        }
       />
     </View>
   );

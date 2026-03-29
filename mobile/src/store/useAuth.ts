@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Account } from '@/api/types';
+import type { Account, AccountRole } from '@/api/types';
 import {
   getAccessToken,
   getRefreshToken,
@@ -7,12 +7,17 @@ import {
   clearTokens,
 } from '@/api/tokenStorage';
 
+type MobileRole = Extract<AccountRole, 'user' | 'volunteer'>;
+
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   account: Account | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
+
+  /** Derived role from account.roles — 'volunteer' if roles include it, else 'user' */
+  userRole: MobileRole | null;
 
   /** Persist tokens + set in-memory state after login/register */
   signIn: (
@@ -34,12 +39,20 @@ interface AuthState {
   hydrate: () => Promise<void>;
 }
 
+/** Derive the primary role from the account's roles array */
+function deriveRole(roles: AccountRole[] | null | undefined): MobileRole {
+  if (!roles || !Array.isArray(roles)) return 'user';
+  if (roles.includes('volunteer')) return 'volunteer';
+  return 'user';
+}
+
 const initialState = {
   accessToken: null,
   refreshToken: null,
   account: null,
   isAuthenticated: false,
   isHydrated: false,
+  userRole: null,
 };
 
 export const useAuth = create<AuthState>()(set => ({
@@ -47,7 +60,13 @@ export const useAuth = create<AuthState>()(set => ({
 
   signIn: async (accessToken, refreshToken, account) => {
     await persistTokens(accessToken, refreshToken);
-    set({ accessToken, refreshToken, account, isAuthenticated: true });
+    set({
+      accessToken,
+      refreshToken,
+      account,
+      isAuthenticated: true,
+      userRole: deriveRole(account.roles),
+    });
   },
 
   setTokens: (accessToken, refreshToken) => {
@@ -73,6 +92,8 @@ export const useAuth = create<AuthState>()(set => ({
           accessToken,
           refreshToken,
           isAuthenticated: true,
+          // Note: account and userRole remain null until a full login
+          // or profile fetch. Token presence is enough for the gatekeeper.
         });
       }
     } catch {

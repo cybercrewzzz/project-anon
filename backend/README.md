@@ -1,6 +1,8 @@
-### [Database Schema Guide](DB_SCHEMA.md)
+### [Database Schema Guide](README_DB_SCHEMA.md)
 
-### [Api Endpoints Guide](API_ENDPOINTS.md)
+### [Api Endpoints Guide](README_API_ENDPOINTS.md)
+
+### [Backend Scripts Guide](README_SCRIPTS.md)
 
 ---
 
