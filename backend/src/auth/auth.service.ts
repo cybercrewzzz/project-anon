@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -21,7 +22,7 @@ import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
 import { LogoutDto } from './dto/logout.dto.js';
 import { generateUniqueNickname } from '../common/utils/nickname-generator.js';
-import { AgeRange } from '../generated/prisma/client.js';
+import { AgeRange, Prisma } from '../generated/prisma/client.js';
 import type { StringValue } from 'ms';
 
 @Injectable()
@@ -307,8 +308,9 @@ export class AuthService {
 
     if (!storedOtp || storedOtp !== dto.otp) {
       // Increment and set/extend attempts counter with 15-minute TTL
-      const currentAttempts =
-        (await this.redis.incr(attemptsKey)) as unknown as number;
+      const currentAttempts = (await this.redis.incr(
+        attemptsKey,
+      )) as unknown as number;
       if (currentAttempts === 1) {
         await this.redis.expire(attemptsKey, 15 * 60);
       }
@@ -321,12 +323,7 @@ export class AuthService {
     // Generate a temporary reset token valid for 15 minutes.
     const resetToken = randomUUID();
     const tokenHash = this.hashToken(resetToken);
-    await this.redis.set(
-      `pwd-reset-token:${email}`,
-      tokenHash,
-      'EX',
-      15 * 60,
-    );
+    await this.redis.set(`pwd-reset-token:${email}`, tokenHash, 'EX', 15 * 60);
 
     return { resetToken };
   }
@@ -336,7 +333,10 @@ export class AuthService {
     const redisKey = `pwd-reset-token:${email}`;
     const storedTokenHash = await this.redis.get(redisKey);
 
-    if (!storedTokenHash || storedTokenHash !== this.hashToken(dto.resetToken)) {
+    if (
+      !storedTokenHash ||
+      storedTokenHash !== this.hashToken(dto.resetToken)
+    ) {
       throw new UnauthorizedException('Invalid or expired reset token.');
     }
 
@@ -345,20 +345,29 @@ export class AuthService {
       type: argon2.argon2id,
     });
 
-    await this.prisma.account.update({
-      where: { email },
-      data: { passwordHash },
-    });
-
-    // Remove the reset token so it can't be reused.
-    await this.redis.del(redisKey);
+    try {
+      await this.prisma.account.update({
+        where: { email },
+        data: { passwordHash },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('Account not found.');
+      }
+      throw error;
+    } finally {
+      // Always remove the reset token once used (or if the account is gone).
+      await this.redis.del(redisKey);
+    }
 
     // Optionally revoke all existing sessions to force re-login.
     // (Skipping for now to keep it simple, but recommended in prod).
 
     return { message: 'Password has been successfully reset.' };
   }
-
 
   // ── Refresh ───────────────────────────────────────────────────────
 

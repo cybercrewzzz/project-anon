@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -5,7 +8,11 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
 import * as argon2 from 'argon2';
-import { UnauthorizedException, ForbiddenException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 
 jest.mock('argon2', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
@@ -74,7 +81,9 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should throw ConflictException if email is taken', async () => {
-      mockPrismaService.account.findUnique.mockResolvedValueOnce({ accountId: '1' });
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: '1',
+      });
       await expect(
         service.register({
           email: 'test@test.com',
@@ -86,8 +95,13 @@ describe('AuthService', () => {
 
     it('should normalize email before lookup and creation', async () => {
       mockPrismaService.account.findUnique.mockResolvedValueOnce(null);
-      mockPrismaService.role.findUnique.mockResolvedValueOnce({ roleId: 'role-1' });
-      mockPrismaService.account.create.mockResolvedValueOnce({ accountId: 'acc-1', email: 'test@test.com' });
+      mockPrismaService.role.findUnique.mockResolvedValueOnce({
+        roleId: 'role-1',
+      });
+      mockPrismaService.account.create.mockResolvedValueOnce({
+        accountId: 'acc-1',
+        email: 'test@test.com',
+      });
 
       await service.register({
         email: '  TEST@test.com  ',
@@ -101,7 +115,7 @@ describe('AuthService', () => {
       expect(mockPrismaService.account.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ email: 'test@test.com' }),
-        })
+        }),
       );
     });
   });
@@ -134,7 +148,9 @@ describe('AuthService', () => {
       });
       mockRedisService.set.mockResolvedValueOnce('OK');
 
-      const result = await service.forgotPassword({ email: '  TEST@test.com  ' });
+      const result = await service.forgotPassword({
+        email: '  TEST@test.com  ',
+      });
 
       expect(mockPrismaService.account.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@test.com' },
@@ -163,10 +179,17 @@ describe('AuthService', () => {
       mockRedisService.del.mockResolvedValue(1);
       mockRedisService.set.mockResolvedValue('OK');
 
-      const result = await service.verifyOtp({ email: '  TEST@test.com  ', otp: '123456' });
+      const result = await service.verifyOtp({
+        email: '  TEST@test.com  ',
+        otp: '123456',
+      });
 
-      expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-otp:test@test.com');
-      expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-attempts:test@test.com');
+      expect(mockRedisService.del).toHaveBeenCalledWith(
+        'pwd-reset-otp:test@test.com',
+      );
+      expect(mockRedisService.del).toHaveBeenCalledWith(
+        'pwd-reset-attempts:test@test.com',
+      );
       expect(mockRedisService.set).toHaveBeenCalledWith(
         'pwd-reset-token:test@test.com',
         expect.stringMatching(/^[a-f0-9]{64}$/),
@@ -196,7 +219,9 @@ describe('AuthService', () => {
         where: { email: 'test@test.com' },
         data: { passwordHash: 'hashed_password' },
       });
-      expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-token:test@test.com');
+      expect(mockRedisService.del).toHaveBeenCalledWith(
+        'pwd-reset-token:test@test.com',
+      );
       expect(result.message).toContain('successfully reset');
     });
 
@@ -218,7 +243,9 @@ describe('AuthService', () => {
         }),
       ).rejects.toThrow(NotFoundException);
 
-      expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-token:test@test.com');
+      expect(mockRedisService.del).toHaveBeenCalledWith(
+        'pwd-reset-token:test@test.com',
+      );
     });
   });
 });
