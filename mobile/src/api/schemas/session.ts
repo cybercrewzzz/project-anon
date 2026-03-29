@@ -27,7 +27,7 @@ export type SessionConnectWaiting = z.infer<typeof SessionConnectWaitingSchema>;
 export const SessionAcceptSchema = z.object({
   sessionId: z.uuid(),
   seekerId: z.uuid(),
-  category: z.string(),
+  category: z.string().nullable(),
   wsRoom: z.string(),
   turnCredentials: z.object({
     urls: z.array(z.string()),
@@ -41,7 +41,7 @@ export type SessionAccept = z.infer<typeof SessionAcceptSchema>;
 
 export const SessionDetailSchema = z.object({
   sessionId: z.uuid(),
-  category: z.string(),
+  category: z.string().nullable(),
   startedAt: z.string(),
   endedAt: z.string().nullable(),
   status: z.string(),
