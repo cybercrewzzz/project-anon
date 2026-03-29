@@ -38,5 +38,5 @@ export const queryKeys = {
   tickets: ['tickets', 'remaining'] as const,
 
   // ── Block list ──
-  blocks: ['blocks'] as const,
+  blocks: (role: 'user' | 'volunteer') => ['blocks', role] as const,
 } as const;
