@@ -162,9 +162,22 @@ export default function Chat() {
               Your chat session has ended. Everything shared here remains
               private and confidential.
             </AppText>
-            <Pressable onPress={() => router.back()} style={styles.closeButton}>
-              <AppText variant="body" color="secondary">
-                Close
+            <Pressable
+              onPress={() =>
+                router.replace({
+                  pathname: '/user/rate/rateSession',
+                  params: { sessionId: chatId, isSeeker: 'true' },
+                })
+              }
+              style={styles.rateButton}
+            >
+              <AppText variant="body" color="secondary" emphasis="emphasized">
+                Rate Your Experience
+              </AppText>
+            </Pressable>
+            <Pressable onPress={() => router.replace('/user/(tabs)/home')}>
+              <AppText variant="caption1" color="accent">
+                Skip
               </AppText>
             </Pressable>
           </View>
@@ -236,6 +249,13 @@ const styles = StyleSheet.create((theme, rt) => ({
     opacity: 0.7,
   },
   closeButton: {
+    marginTop: theme.spacing.s4,
+    paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s6,
+    backgroundColor: theme.action.secondary,
+    borderRadius: theme.radius.full,
+  },
+  rateButton: {
     marginTop: theme.spacing.s4,
     paddingVertical: theme.spacing.s3,
     paddingHorizontal: theme.spacing.s6,
