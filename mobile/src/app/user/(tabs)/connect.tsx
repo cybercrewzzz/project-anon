@@ -582,7 +582,225 @@ export default function ConnectScreen() {
       </Modal>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          POPUPS 2-4 — added in Steps 4-6
+          POPUP 2: Tag Selection Bottom Sheet
+         ══════════════════════════════════════════════════════════════════════ */}
+      <Modal
+        visible={showTagPopup}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowTagPopup(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowTagPopup(false)}
+        >
+          <Pressable
+            style={styles.tagSheet}
+            onPress={e => e.stopPropagation()}
+          >
+            <AppText
+              variant="title3"
+              emphasis="emphasized"
+              textAlign="center"
+              style={styles.sheetTitle}
+            >
+              Select Your Issue
+            </AppText>
+
+            {/* Category name display */}
+            <View style={styles.tagInputRow}>
+              <Image
+                source={require('@/assets/icons/plusIconOPT.svg')}
+                style={styles.tagInputIcon}
+              />
+              <AppText variant="body" style={styles.tagInputText}>
+                {selectedCategory?.name ?? 'Other'}
+              </AppText>
+            </View>
+
+            {/* Feeling tags card */}
+            <View style={styles.tagFilterCard}>
+              <AppText
+                variant="title3"
+                emphasis="emphasized"
+                style={styles.tagFilterTitle}
+              >
+                What best describes this feeling?
+              </AppText>
+
+              {categoriesLoading ? (
+                <ActivityIndicator size="small" />
+              ) : categoriesError ? (
+                <View style={styles.categoryErrorContainer}>
+                  <AppText variant="body" textAlign="center">
+                    Could not load categories.
+                  </AppText>
+                  <Pressable
+                    style={styles.retryButton}
+                    onPress={() => refetchCategories()}
+                  >
+                    <AppText variant="body" emphasis="emphasized" color="secondary">
+                      Retry
+                    </AppText>
+                  </Pressable>
+                </View>
+              ) : (
+                <View style={styles.tagPopupRow}>
+                  {(categories ?? []).map(category => {
+                    const selected = selectedTagIds.includes(
+                      category.categoryId,
+                    );
+                    return (
+                      <Pressable
+                        key={category.categoryId}
+                        style={[
+                          styles.tagPill,
+                          selected && styles.tagPillActive,
+                        ]}
+                        onPress={() => toggleTag(category.categoryId)}
+                      >
+                        <AppText
+                          variant="caption1"
+                          emphasis="emphasized"
+                          style={
+                            selected
+                              ? styles.tagTextSelected
+                              : styles.tagTextDefault
+                          }
+                        >
+                          {category.name}
+                        </AppText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+
+            {/* OK Button */}
+            <Pressable
+              style={[
+                styles.okButton,
+                selectedTagIds.length === 0 && { opacity: 0.5 },
+              ]}
+              onPress={() => setShowTagPopup(false)}
+            >
+              <AppText variant="title2" emphasis="emphasized" color="secondary">
+                OK
+              </AppText>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          POPUP 3: "Other" Problem Bottom Sheet
+         ══════════════════════════════════════════════════════════════════════ */}
+      <Modal
+        visible={showOtherPopup}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowOtherPopup(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowOtherPopup(false)}
+        >
+          <Pressable
+            style={styles.otherSheet}
+            onPress={e => e.stopPropagation()}
+          >
+            <AppText
+              variant="title3"
+              emphasis="emphasized"
+              textAlign="center"
+              style={styles.sheetTitle}
+            >
+              Select Your Issue
+            </AppText>
+
+            {/* Multiline problem text input */}
+            <View style={styles.otherInputRow}>
+              <Image
+                source={require('@/assets/icons/plusIconOPT.svg')}
+                style={styles.tagInputIcon}
+              />
+              <TextInput
+                style={styles.otherTextInput}
+                value={problemText}
+                onChangeText={setProblemText}
+                placeholder="Tell us about your issues"
+                placeholderTextColor="#B8B8B8"
+                multiline
+                numberOfLines={5}
+                textAlignVertical="top"
+              />
+            </View>
+
+            {/* Feeling tags card */}
+            <View style={styles.tagFilterCard}>
+              <AppText
+                variant="title3"
+                emphasis="emphasized"
+                style={styles.tagFilterTitle}
+              >
+                What best describes this feeling?
+              </AppText>
+
+              {categoriesLoading ? (
+                <ActivityIndicator size="small" />
+              ) : (
+                <View style={styles.tagPopupRow}>
+                  {(categories ?? []).map(category => {
+                    const selected = selectedTagIds.includes(
+                      category.categoryId,
+                    );
+                    return (
+                      <Pressable
+                        key={category.categoryId}
+                        style={[
+                          styles.tagPill,
+                          selected && styles.tagPillActive,
+                        ]}
+                        onPress={() => toggleTag(category.categoryId)}
+                      >
+                        <AppText
+                          variant="caption1"
+                          emphasis="emphasized"
+                          style={
+                            selected
+                              ? styles.tagTextSelected
+                              : styles.tagTextDefault
+                          }
+                        >
+                          {category.name}
+                        </AppText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+
+            {/* OK Button */}
+            <Pressable
+              style={styles.okButton}
+              onPress={() => {
+                // Set category to "other" marker
+                setSelectedCategoryId('other');
+                setShowOtherPopup(false);
+              }}
+            >
+              <AppText variant="title2" emphasis="emphasized" color="secondary">
+                OK
+              </AppText>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          POPUP 4: Connecting — added in Step 6
          ══════════════════════════════════════════════════════════════════════ */}
     </View>
   );
@@ -912,5 +1130,109 @@ const styles = StyleSheet.create((theme, rt) => ({
     width: 28,
     height: 28,
     tintColor: theme.text.primary,
+  },
+
+  // ── Tag Selection Sheet ──
+  tagSheet: {
+    height: '74%',
+    backgroundColor: theme.surface.muted,
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    paddingTop: theme.spacing.s5,
+    paddingHorizontal: theme.spacing.s4,
+    paddingBottom: rt.insets.bottom + theme.spacing.s4,
+  },
+  tagInputRow: {
+    backgroundColor: theme.surface.primary,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+    gap: theme.spacing.s2,
+    marginBottom: theme.spacing.s4,
+  },
+  tagInputIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#374151',
+  },
+  tagInputText: {
+    color: theme.text.primary,
+    flex: 1,
+  },
+  tagFilterCard: {
+    backgroundColor: theme.surface.primary,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.s4,
+    gap: theme.spacing.s3,
+  },
+  tagFilterTitle: {
+    marginBottom: theme.spacing.s1,
+  },
+  tagPopupRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    rowGap: theme.spacing.s2,
+    columnGap: theme.spacing.s2,
+  },
+  tagPill: {
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.surface.primary,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    paddingVertical: theme.spacing.s1,
+    paddingHorizontal: theme.spacing.s3,
+    minHeight: 30,
+    justifyContent: 'center',
+  },
+  tagPillActive: {
+    backgroundColor: theme.action.secondary,
+    borderColor: theme.action.secondary,
+  },
+  tagTextDefault: {
+    color: theme.text.accent,
+  },
+  okButton: {
+    marginTop: 'auto',
+    alignSelf: 'center',
+    minWidth: 120,
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.action.secondary,
+    paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // ── "Other" Problem Sheet ──
+  otherSheet: {
+    height: '78%',
+    backgroundColor: theme.surface.muted,
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    paddingTop: theme.spacing.s5,
+    paddingHorizontal: theme.spacing.s4,
+    paddingBottom: rt.insets.bottom + theme.spacing.s4,
+  },
+  otherInputRow: {
+    backgroundColor: theme.surface.primary,
+    borderRadius: theme.radius.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+    gap: theme.spacing.s2,
+    marginBottom: theme.spacing.s4,
+    minHeight: 144,
+  },
+  otherTextInput: {
+    flex: 1,
+    color: theme.text.primary,
+    minHeight: 120,
+    lineHeight: 22,
+    textAlignVertical: 'top',
   },
 }));
