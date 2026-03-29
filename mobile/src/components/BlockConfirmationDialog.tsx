@@ -43,10 +43,14 @@ export default function BlockConfirmationDialog({
       visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={isPending ? undefined : onClose}
     >
       {/* Overlay */}
-      <Pressable style={styles.overlay} onPress={onClose} />
+      <Pressable
+        style={styles.overlay}
+        onPress={isPending ? undefined : onClose}
+        accessible={false}
+      />
 
       {/* Bottom sheet */}
       <View style={styles.sheet}>
@@ -84,7 +88,7 @@ export default function BlockConfirmationDialog({
         {/* Button row */}
         <View style={styles.buttonRow}>
           <Pressable
-            style={styles.cancelButton}
+            style={[styles.cancelButton, isPending && styles.buttonDisabled]}
             onPress={onClose}
             disabled={isPending}
           >
@@ -123,8 +127,8 @@ const styles = StyleSheet.create(theme => ({
     paddingTop: theme.spacing.s3,
     paddingBottom: theme.spacing.s7,
     paddingHorizontal: theme.spacing.s5,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    borderTopLeftRadius: theme.radius.xlSoft,
+    borderTopRightRadius: theme.radius.xlSoft,
     alignItems: 'center',
     gap: theme.spacing.s4,
   },
