@@ -450,7 +450,139 @@ export default function ConnectScreen() {
       </ScrollView>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          POPUPS — added in Steps 2-6
+          POPUP 1: Category Selection Bottom Sheet
+         ══════════════════════════════════════════════════════════════════════ */}
+      <Modal
+        visible={showCategoryPopup}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowCategoryPopup(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowCategoryPopup(false)}
+        >
+          <Pressable
+            style={styles.categorySheet}
+            onPress={e => e.stopPropagation()}
+          >
+            <AppText
+              variant="title3"
+              emphasis="emphasized"
+              textAlign="center"
+              style={styles.sheetTitle}
+            >
+              Select Your Issue
+            </AppText>
+
+            {/* Search Bar */}
+            <View style={styles.searchBox}>
+              <TextInput
+                style={styles.searchInput}
+                value={categorySearch}
+                onChangeText={setCategorySearch}
+                placeholder="Search or Select Source"
+                placeholderTextColor="#B8B8B8"
+                returnKeyType="search"
+              />
+              <Image
+                source={require('@/assets/icons/chevron-downOPT.svg')}
+                style={styles.searchIcon}
+              />
+            </View>
+
+            {/* Category List */}
+            <ScrollView
+              style={styles.categoryList}
+              contentContainerStyle={styles.categoryListContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {categoriesLoading ? (
+                <ActivityIndicator
+                  size="large"
+                  style={{ marginTop: 40 }}
+                />
+              ) : categoriesError ? (
+                <View style={styles.categoryErrorContainer}>
+                  <AppText
+                    variant="body"
+                    emphasis="emphasized"
+                    textAlign="center"
+                  >
+                    Could not load categories.
+                  </AppText>
+                  <Pressable
+                    style={styles.retryButton}
+                    onPress={() => refetchCategories()}
+                  >
+                    <AppText
+                      variant="body"
+                      emphasis="emphasized"
+                      color="secondary"
+                    >
+                      Retry
+                    </AppText>
+                  </Pressable>
+                </View>
+              ) : (
+                <>
+                  {(categories ?? [])
+                    .filter(cat =>
+                      categorySearch.trim() === ''
+                        ? true
+                        : cat.name
+                            .toLowerCase()
+                            .includes(categorySearch.toLowerCase()),
+                    )
+                    .map(cat => (
+                      <Pressable
+                        key={cat.categoryId}
+                        style={styles.categoryCard}
+                        onPress={() => handleSelectCategory(cat)}
+                      >
+                        <AppText variant="headline" emphasis="emphasized">
+                          {cat.name}
+                        </AppText>
+                        {cat.description && (
+                          <AppText
+                            variant="caption1"
+                            style={styles.categoryDescription}
+                          >
+                            {cat.description}
+                          </AppText>
+                        )}
+                      </Pressable>
+                    ))}
+
+                  {/* "Other: Tell Your Problem" option */}
+                  <Pressable
+                    style={styles.otherCard}
+                    onPress={handleSelectOther}
+                  >
+                    <Image
+                      source={require('@/assets/icons/plusIconOPT.svg')}
+                      style={styles.otherPlusIcon}
+                    />
+                    <AppText variant="headline" emphasis="emphasized">
+                      <AppText
+                        variant="headline"
+                        color="accent"
+                        emphasis="emphasized"
+                      >
+                        Other :
+                      </AppText>{' '}
+                      Tell Your Problem
+                    </AppText>
+                  </Pressable>
+                </>
+              )}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          POPUPS 2-4 — added in Steps 4-6
          ══════════════════════════════════════════════════════════════════════ */}
     </View>
   );
@@ -696,5 +828,89 @@ const styles = StyleSheet.create((theme, rt) => ({
     width: 14,
     height: 14,
     tintColor: theme.background.accent,
+  },
+
+  // ── Modal / Popup Shared ──
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+  },
+
+  // ── Category Selection Sheet ──
+  categorySheet: {
+    height: '80%',
+    backgroundColor: theme.surface.muted,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingTop: theme.spacing.s4,
+  },
+  sheetTitle: {
+    marginBottom: theme.spacing.s3,
+  },
+  searchBox: {
+    marginHorizontal: theme.spacing.s4,
+    marginBottom: theme.spacing.s3,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.surface.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+  },
+  searchInput: {
+    flex: 1,
+    color: theme.text.primary,
+    fontSize: 16,
+  },
+  searchIcon: {
+    width: 16,
+    height: 14,
+    tintColor: theme.text.muted,
+  },
+  categoryList: {
+    flex: 1,
+  },
+  categoryListContent: {
+    paddingHorizontal: theme.spacing.s4,
+    paddingBottom: rt.insets.bottom + theme.spacing.s2,
+    gap: theme.spacing.s4,
+  },
+  categoryCard: {
+    backgroundColor: theme.surface.primary,
+    borderRadius: theme.radius.xl,
+    padding: theme.spacing.s3,
+    gap: theme.spacing.s2,
+  },
+  categoryDescription: {
+    color: theme.text.muted,
+  },
+  categoryErrorContainer: {
+    alignItems: 'center',
+    padding: theme.spacing.s4,
+    gap: theme.spacing.s4,
+  },
+  retryButton: {
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.action.secondary,
+    paddingVertical: theme.spacing.s2,
+    paddingHorizontal: theme.spacing.s4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  otherCard: {
+    backgroundColor: theme.surface.primary,
+    borderRadius: theme.radius.xl,
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s1,
+  },
+  otherPlusIcon: {
+    width: 28,
+    height: 28,
+    tintColor: theme.text.primary,
   },
 }));
