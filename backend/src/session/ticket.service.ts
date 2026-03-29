@@ -133,21 +133,6 @@ export class TicketService {
     };
   }
 
-  private async writeState(
-    accountId: string,
-    state: { daily: number; consumed: number; reserved: number },
-  ): Promise<void> {
-    const key = this.getTicketKey(accountId);
-
-    await this.redis.hset(key, {
-      daily: state.daily.toString(),
-      consumed: state.consumed.toString(),
-      reserved: state.reserved.toString(),
-    });
-
-    await this.redis.expire(key, TicketService.TTL_SECONDS);
-  }
-
   private getTicketKey(accountId: string): string {
     const date = new Date().toISOString().slice(0, 10);
     return `ticket:${accountId}:${date}`;

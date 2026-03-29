@@ -65,9 +65,8 @@ export function useVolunteerProfile() {
 //   STEP A — Successful update:
 //     → Set SIMULATE_PROFILE_ERROR = false (default)
 //     → Fill in about text and select specialisations on the edit screen
-//     → Tap save — check terminal for logged payload:
-//          === PATCH /volunteer/profile MOCK PAYLOAD ===
-//          { "about": "...", "specialisationIds": ["spec-1", ...] }
+//     → Tap save — verify the edit screen navigates back and the profile
+//          data refreshes (the query cache is invalidated on success)
 //
 //   STEP B — Error state:
 //     → Set SIMULATE_PROFILE_ERROR = true
@@ -83,9 +82,6 @@ export function useUpdateVolunteerProfile() {
     mutationFn:
       USE_MOCK_PROFILE ?
         async (body: UpdateVolunteerProfileBody) => {
-          console.log('=== PATCH /volunteer/profile MOCK PAYLOAD ===');
-          console.log(JSON.stringify(body, null, 2));
-
           // Simulates network delay — lets you see saving state on button
           await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -127,13 +123,6 @@ export function useApplyAsVolunteer() {
     mutationFn:
       USE_MOCK_APPLY ?
         async (body: ApplyVolunteerBody) => {
-          // Logs the full payload so you can verify every field is
-          // correctly mapped from the form before hitting the real backend
-          if (__DEV__ !== false) {
-            console.log('=== POST /volunteer/apply MOCK PAYLOAD ===');
-            console.log(JSON.stringify(body, null, 2));
-          }
-
           // Simulates network delay — lets you see "Submitting..." on button
           await new Promise(resolve => setTimeout(resolve, 1200));
 
