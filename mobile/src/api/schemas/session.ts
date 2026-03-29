@@ -27,7 +27,7 @@ export type SessionConnectWaiting = z.infer<typeof SessionConnectWaitingSchema>;
 export const SessionAcceptSchema = z.object({
   sessionId: z.uuid(),
   seekerId: z.uuid(),
-  category: z.string(),
+  category: z.string().nullable(),
   wsRoom: z.string(),
   turnCredentials: z.object({
     urls: z.array(z.string()),
@@ -55,14 +55,15 @@ export type SessionDetail = z.infer<typeof SessionDetailSchema>;
 // ── GET /session/history ──
 
 export const SessionHistoryItemSchema = z.object({
-  sessionId: z.uuid(),
-  category: z.string(),
+  sessionId: z.string(),
+  category: z.string().nullable(),
   startedAt: z.string(),
   endedAt: z.string().nullable(),
   status: z.string(),
   yourRating: z.number().nullable(),
   starred: z.boolean().optional(),
 });
+export type SessionHistoryItem = z.infer<typeof SessionHistoryItemSchema>;
 
 export const SessionHistorySchema = z.object({
   data: z.array(SessionDetailSchema),
