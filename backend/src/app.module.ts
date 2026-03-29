@@ -11,6 +11,10 @@ import { ChatModule } from './chat/chat.module';
 import { VolunteerModule } from './volunteer/volunteer.module';
 import { LookupModule } from './lookup/lookup.module';
 import { SessionModule } from './session/session.module';
+import { ReportsModule } from './reports/reports.module';
+import { BlocksModule } from './blocks/blocks.module';
+import { AccountModule } from './account/account.module';
+import { DeviceModule } from './device/device.module';
 
 @Module({
   imports: [
@@ -33,6 +37,10 @@ import { SessionModule } from './session/session.module';
     VolunteerModule,
     LookupModule,
     SessionModule,
+    ReportsModule,
+    BlocksModule,
+    AccountModule,
+    DeviceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -17,10 +17,13 @@ export const VolunteerProfileSchema = z.object({
       name: z.string(),
     }),
   ),
-  experience: z.object({
-    points: z.number(),
-    level: z.number(),
-  }),
+  experience: z
+    .object({
+      points: z.number(),
+      level: z.number(),
+    })
+    .nullable()
+    .optional(),
 });
 export type VolunteerProfile = z.infer<typeof VolunteerProfileSchema>;
 
