@@ -116,6 +116,51 @@ describe('AuthService', () => {
         service.login({ email: 'test@test.com', password: 'pwd' }),
       ).rejects.toThrow('Account has been banned');
     });
+
+    it('should throw UnauthorizedException when password hash format is invalid', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: '1',
+        passwordHash: '$2b$10$invalidBcryptHashHere',
+        status: 'active',
+        accountRoles: [{ role: { name: 'user' } }],
+      });
+
+      await expect(
+        service.login({ email: 'test@test.com', password: 'pwd' }),
+      ).rejects.toThrow('Invalid credentials');
+    });
+
+    it('should throw InternalServerErrorException when argon2.verify rejects', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: '1',
+        passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$dummy$dummy',
+        status: 'active',
+        accountRoles: [{ role: { name: 'user' } }],
+      });
+      (argon2.verify as jest.Mock).mockRejectedValueOnce(
+        new Error('Async error'),
+      );
+
+      await expect(
+        service.login({ email: 'test@test.com', password: 'pwd' }),
+      ).rejects.toThrow('Internal server error during authentication');
+    });
+
+    it('should throw InternalServerErrorException when argon2.verify synchronously throws', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: '1',
+        passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$dummy$dummy',
+        status: 'active',
+        accountRoles: [{ role: { name: 'user' } }],
+      });
+      (argon2.verify as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Sync error');
+      });
+
+      await expect(
+        service.login({ email: 'test@test.com', password: 'pwd' }),
+      ).rejects.toThrow('Internal server error during authentication');
+    });
   });
 
   describe('logout', () => {

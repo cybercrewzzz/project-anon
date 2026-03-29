@@ -203,10 +203,17 @@ export class AuthService {
     }
 
     // Verify password
-    const passwordValid = await argon2.verify(
-      account.passwordHash,
-      dto.password,
-    );
+    let passwordValid = false;
+    if (account.passwordHash.startsWith('$argon2')) {
+      try {
+        passwordValid = await argon2.verify(account.passwordHash, dto.password);
+      } catch {
+        throw new InternalServerErrorException(
+          'Internal server error during authentication',
+        );
+      }
+    }
+
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
