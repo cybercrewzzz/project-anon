@@ -407,6 +407,7 @@ model Report {
   @@index([reporterId])
   @@index([reportedId])
   @@index([status])
+  @@unique([sessionId, reporterId])
   @@map("report")
 }
 
