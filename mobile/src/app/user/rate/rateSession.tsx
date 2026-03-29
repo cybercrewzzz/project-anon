@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Pressable,
@@ -79,19 +79,32 @@ const RATING_LABELS: Record<number, string> = {
 export default function RateSessionScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { sessionId, isSeeker } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     sessionId: string;
     isSeeker?: string;
   }>();
 
+  // Normalize parameters to unwrap potential arrays from useLocalSearchParams
+  const sessionId = Array.isArray(params.sessionId) ? params.sessionId[0] : params.sessionId;
+  const isSeeker = Array.isArray(params.isSeeker) ? params.isSeeker[0] : params.isSeeker;
+
   const showStarred = isSeeker === 'true';
+
+  useEffect(() => {
+    if (!sessionId) {
+      Alert.alert('Session Missing', 'Cannot rate an unknown session.');
+      router.replace(
+        showStarred ? '/user/(tabs)/home' : ('/volunteer/(tabs)/home' as never),
+      );
+    }
+  }, [sessionId, router, showStarred]);
 
   const [rating, setRating] = useState<number>(0);
   const [starred, setStarred] = useState(false);
 
   const rateMutation = useMutation({
-    mutationFn: () =>
-      rateSession(sessionId!, {
+    mutationFn: (id: string) =>
+      rateSession(id, {
         rating,
         starred: showStarred ? starred : undefined,
       }),
@@ -130,11 +143,12 @@ export default function RateSessionScreen() {
   });
 
   const handleSubmit = () => {
+    if (!sessionId) return;
     if (rating === 0) {
       Alert.alert('Rate the Session', 'Please select a star rating first.');
       return;
     }
-    rateMutation.mutate();
+    rateMutation.mutate(sessionId);
   };
 
   const handleSkip = () => {
