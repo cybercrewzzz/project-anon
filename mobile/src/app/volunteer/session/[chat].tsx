@@ -164,7 +164,7 @@ export default function Chat() {
             <Pressable
               onPress={() =>
                 router.replace({
-                  pathname: '/user/rate/rateSession' as never,
+                  pathname: '/volunteer/rate/rateSession' as never,
                   params: { sessionId: chatId, isSeeker: 'false' },
                 })
               }
