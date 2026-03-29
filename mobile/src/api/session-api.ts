@@ -43,9 +43,9 @@ export async function connectSession(
     if (matchResult.success) return matchResult.data;
     return SessionConnectWaitingSchema.parse(data);
   } catch (error) {
-    // The backend throws 202 as an HttpException with the waiting payload.
-    // Axios treats non-2xx as errors, but 202 is still success.
-    // We need to handle this transparently.
+    // The backend returns HTTP 202 with the waiting payload.
+    // Our apiClient (Axios instance) is configured to reject 202 responses,
+    // so they arrive here as errors even though 202 is a success status.
     const axiosError = error as {
       response?: { status?: number; data?: unknown };
     };
