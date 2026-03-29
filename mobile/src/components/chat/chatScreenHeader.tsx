@@ -8,8 +8,8 @@ interface ChatScreenHeaderProps {
   name: string;
   roleTag: string;
   rating: string;
-  /** Optional callback — when provided, shows a "!" icon to block the user */
-  onBlockPress?: () => void;
+  /** Optional callback — when provided, shows a red flag icon to report the user */
+  onReportPress?: () => void;
 }
 
 export default function ChatScreenHeader({
@@ -17,7 +17,7 @@ export default function ChatScreenHeader({
   profilePicture,
   roleTag,
   rating,
-  onBlockPress,
+  onReportPress,
 }: ChatScreenHeaderProps) {
   return (
     <View style={styles.header}>
@@ -33,20 +33,6 @@ export default function ChatScreenHeader({
             source={require('@/assets/icons/saveVolunteer.svg')}
             style={styles.saveVolunteer}
           />
-          {/* Block icon — only rendered when callback is provided */}
-          {onBlockPress && (
-            <Pressable
-              onPress={onBlockPress}
-              hitSlop={8}
-              style={styles.blockButton}
-            >
-              <Image
-                source={require('@/assets/icons/blockUser.svg')}
-                style={styles.blockIcon}
-                contentFit="contain"
-              />
-            </Pressable>
-          )}
         </View>
         <View style={styles.tagContainer}>
           <View style={styles.roleTag}>
@@ -66,7 +52,23 @@ export default function ChatScreenHeader({
           </View>
         </View>
       </View>
-      <View>
+      <View style={styles.actionsContainer}>
+        {/* Report icon — only rendered when callback is provided */}
+        {onReportPress && (
+          <Pressable
+            onPress={onReportPress}
+            hitSlop={8}
+            style={styles.reportButton}
+            accessibilityRole="button"
+            accessibilityLabel="Report user"
+          >
+            <Image
+              source={require('@/assets/icons/reportFlag.svg')}
+              style={styles.reportIcon}
+              contentFit="contain"
+            />
+          </Pressable>
+        )}
         <Image
           source={require('@/assets/icons/call.svg')}
           style={styles.call}
@@ -109,13 +111,18 @@ const styles = StyleSheet.create(theme => ({
     width: 18,
     height: 18,
   },
-  blockButton: {
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s3,
+  },
+  reportButton: {
     padding: theme.spacing.s1,
   },
-  blockIcon: {
+  reportIcon: {
     width: 18,
     height: 18,
-    tintColor: theme.state.warning,
+    tintColor: theme.state.error,
   },
   tagContainer: {
     flexDirection: 'row',
