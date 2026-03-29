@@ -99,6 +99,7 @@ describe('SessionService', () => {
       smembers: jest.fn(),
       expire: jest.fn(),
       multi: jest.fn().mockReturnValue({
+        hdel: jest.fn().mockReturnThis(),
         hset: jest.fn().mockReturnThis(),
         expire: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([
