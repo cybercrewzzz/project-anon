@@ -5,10 +5,12 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
 import * as argon2 from 'argon2';
+import { createHash } from 'crypto';
 
 jest.mock('argon2', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
   verify: jest.fn(),
+  argon2id: 2,
 }));
 
 describe('AuthService', () => {
@@ -31,7 +33,7 @@ describe('AuthService', () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
-    $transaction: jest.fn(),
+    $transaction: (cb: (prisma: any) => unknown) => cb(mockPrismaService),
   };
 
   const mockJwtService = {
@@ -77,7 +79,7 @@ describe('AuthService', () => {
         service.register({
           email: 'test@test.com',
           password: 'pwd',
-          ageRange: 'range_21_26' as any,
+          ageRange: 'range_21_26' as never,
         }),
       ).rejects.toThrow('Email already registered');
     });
@@ -89,7 +91,7 @@ describe('AuthService', () => {
         service.register({
           email: 'test@test.com',
           password: 'pwd',
-          ageRange: 'range_21_26' as any,
+          ageRange: 'range_21_26' as never,
         }),
       ).rejects.toThrow('User role not found in database. Run seed first.');
     });
@@ -180,6 +182,60 @@ describe('AuthService', () => {
         data: { isRevoked: true },
       });
       expect(result).toEqual({ message: 'Logged out' });
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('should generate OTP and store hash in redis if account exists', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: 'acc-123',
+        email: 'test@test.com',
+      });
+      mockRedisService.set.mockResolvedValueOnce('OK');
+
+      const result = await service.forgotPassword({ email: 'test@test.com' });
+
+      expect(mockRedisService.set).toHaveBeenCalledWith(
+        'pwd-reset-otp:acc-123',
+        expect.any(String),
+        'EX',
+        300,
+      );
+      expect(result.message).toContain('OTP has been sent');
+    });
+  });
+
+  describe('verifyOtp', () => {
+    it('should throw UnauthorizedException if OTP is wrong', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: 'acc-123',
+        email: 'test@test.com',
+      });
+      mockRedisService.get.mockResolvedValueOnce('wrong-hash');
+
+      await expect(
+        service.verifyOtp({ email: 'test@test.com', otp: '123456' }),
+      ).rejects.toThrow('Invalid or expired OTP.');
+    });
+
+    it('should return reset token if OTP is correct', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: 'acc-123',
+        email: 'test@test.com',
+      });
+      // The service hashes the OTP. We need to mock get to return that hash.
+      const otp = '123456';
+      const otpHash = createHash('sha256').update(otp).digest('hex');
+      mockRedisService.get.mockResolvedValueOnce(otpHash);
+      mockRedisService.del.mockResolvedValueOnce(1);
+      mockRedisService.set.mockResolvedValueOnce('OK');
+
+      const result = await service.verifyOtp({ email: 'test@test.com', otp });
+
+      expect(mockRedisService.del).toHaveBeenCalledWith(
+        'pwd-reset-otp:acc-123',
+      );
+      expect(result).toHaveProperty('resetToken');
     });
   });
 });
