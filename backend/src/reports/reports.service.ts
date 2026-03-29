@@ -86,33 +86,31 @@ export class ReportsService {
       });
     }
 
-    // ── Duplicate report check ─────────────────────────────────────────
-    const existingReport = await this.prisma.report.findFirst({
-      where: {
-        sessionId,
-        reporterId,
-      },
-    });
-
-    if (existingReport) {
-      throw new ConflictException({
-        statusCode: 409,
-        error: 'already_reported',
-        message: 'You have already reported this session.',
-      });
-    }
-
     // ── Create the report ──────────────────────────────────────────────
-    const report = await this.prisma.report.create({
-      data: {
-        sessionId,
-        reporterId,
-        reportedId,
-        category: category as ReportCategory,
-        description: description ?? null,
-        status: ReportStatus.pending,
-      },
-    });
+    // Using try/catch to handle Prisma P2002 unique constraint violations,
+    // which prevents race conditions during concurrent requests.
+    let report;
+    try {
+      report = await this.prisma.report.create({
+        data: {
+          sessionId,
+          reporterId,
+          reportedId,
+          category: category as ReportCategory,
+          description: description ?? null,
+          status: ReportStatus.pending,
+        },
+      });
+    } catch (error) {
+      if ((error as any)?.code === 'P2002') {
+        throw new ConflictException({
+          statusCode: 409,
+          error: 'already_reported',
+          message: 'You have already reported this session.',
+        });
+      }
+      throw error;
+    }
 
     this.logger.log(
       `Report ${report.reportId} created: reporter=${reporterId} reported=${reportedId} session=${sessionId} category=${category}`,

@@ -61,31 +61,26 @@ export class BlocksService {
       });
     }
 
-    // ── Check if already blocked ───────────────────────────────────────
-    const existingBlock = await this.prisma.blocklist.findUnique({
-      where: {
-        blockerId_blockedId: {
+    // ── Create the block ───────────────────────────────────────────────
+    // Using try/catch to handle Prisma P2002 unique constraint violations,
+    // which prevents race conditions during concurrent requests.
+    try {
+      await this.prisma.blocklist.create({
+        data: {
           blockerId,
           blockedId,
         },
-      },
-    });
-
-    if (existingBlock) {
-      throw new ConflictException({
-        statusCode: 409,
-        error: 'already_blocked',
-        message: 'You have already blocked this user.',
       });
+    } catch (error) {
+      if ((error as any)?.code === 'P2002') {
+        throw new ConflictException({
+          statusCode: 409,
+          error: 'already_blocked',
+          message: 'You have already blocked this user.',
+        });
+      }
+      throw error;
     }
-
-    // ── Create the block ───────────────────────────────────────────────
-    await this.prisma.blocklist.create({
-      data: {
-        blockerId,
-        blockedId,
-      },
-    });
 
     this.logger.log(`User ${blockerId} blocked user ${blockedId}`);
 
