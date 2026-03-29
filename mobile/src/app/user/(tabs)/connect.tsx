@@ -329,9 +329,9 @@ export default function ConnectScreen() {
   // ── Tag helpers ───────────────────────────────────────────────────────────
   const toggleTag = (categoryId: string) => {
     setSelectedTagIds(prev =>
-      prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId],
+      prev.includes(categoryId) ?
+        prev.filter(id => id !== categoryId)
+      : [...prev, categoryId],
     );
   };
 
@@ -447,13 +447,13 @@ export default function ConnectScreen() {
               emphasis="emphasized"
               style={styles.categoryDropdownText}
             >
-              {categoriesLoading
-                ? 'Loading…'
-                : selectedCategory
-                  ? selectedCategory.name
-                  : selectedCategoryId === 'other'
-                    ? 'Other'
-                    : 'Select a Category'}
+              {categoriesLoading ?
+                'Loading…'
+              : selectedCategory ?
+                selectedCategory.name
+              : selectedCategoryId === 'other' ?
+                'Other'
+              : 'Select a Category'}
             </AppText>
             <Image
               source={require('@/assets/icons/chevron-downOPT.svg')}
@@ -573,13 +573,12 @@ export default function ConnectScreen() {
               start={{ x: 0, y: 0.5 }}
               end={{ x: 1, y: 0.5 }}
             >
-              {connectMutation.isPending ? (
+              {connectMutation.isPending ?
                 <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <AppText variant="body" emphasis="emphasized" color="secondary">
+              : <AppText variant="body" emphasis="emphasized" color="secondary">
                   Connect
                 </AppText>
-              )}
+              }
             </ConnectButtonGradient>
           </Pressable>
 
@@ -668,12 +667,9 @@ export default function ConnectScreen() {
               contentContainerStyle={styles.categoryListContent}
               showsVerticalScrollIndicator={false}
             >
-              {categoriesLoading ? (
-                <ActivityIndicator
-                  size="large"
-                  style={{ marginTop: 40 }}
-                />
-              ) : categoriesError ? (
+              {categoriesLoading ?
+                <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+              : categoriesError ?
                 <View style={styles.categoryErrorContainer}>
                   <AppText
                     variant="body"
@@ -695,15 +691,14 @@ export default function ConnectScreen() {
                     </AppText>
                   </Pressable>
                 </View>
-              ) : (
-                <>
+              : <>
                   {(categories ?? [])
                     .filter(cat =>
-                      categorySearch.trim() === ''
-                        ? true
-                        : cat.name
-                            .toLowerCase()
-                            .includes(categorySearch.toLowerCase()),
+                      categorySearch.trim() === '' ?
+                        true
+                      : cat.name
+                          .toLowerCase()
+                          .includes(categorySearch.toLowerCase()),
                     )
                     .map(cat => (
                       <Pressable
@@ -746,7 +741,7 @@ export default function ConnectScreen() {
                     </AppText>
                   </Pressable>
                 </>
-              )}
+              }
             </ScrollView>
           </Pressable>
         </Pressable>
@@ -765,10 +760,7 @@ export default function ConnectScreen() {
           style={styles.modalOverlay}
           onPress={() => setShowTagPopup(false)}
         >
-          <Pressable
-            style={styles.tagSheet}
-            onPress={e => e.stopPropagation()}
-          >
+          <Pressable style={styles.tagSheet} onPress={e => e.stopPropagation()}>
             <AppText
               variant="title3"
               emphasis="emphasized"
@@ -799,9 +791,9 @@ export default function ConnectScreen() {
                 What best describes this feeling?
               </AppText>
 
-              {categoriesLoading ? (
+              {categoriesLoading ?
                 <ActivityIndicator size="small" />
-              ) : categoriesError ? (
+              : categoriesError ?
                 <View style={styles.categoryErrorContainer}>
                   <AppText variant="body" textAlign="center">
                     Could not load categories.
@@ -810,13 +802,16 @@ export default function ConnectScreen() {
                     style={styles.retryButton}
                     onPress={() => refetchCategories()}
                   >
-                    <AppText variant="body" emphasis="emphasized" color="secondary">
+                    <AppText
+                      variant="body"
+                      emphasis="emphasized"
+                      color="secondary"
+                    >
                       Retry
                     </AppText>
                   </Pressable>
                 </View>
-              ) : (
-                <View style={styles.tagPopupRow}>
+              : <View style={styles.tagPopupRow}>
                   {(categories ?? []).map(category => {
                     const selected = selectedTagIds.includes(
                       category.categoryId,
@@ -834,9 +829,9 @@ export default function ConnectScreen() {
                           variant="caption1"
                           emphasis="emphasized"
                           style={
-                            selected
-                              ? styles.tagTextSelected
-                              : styles.tagTextDefault
+                            selected ?
+                              styles.tagTextSelected
+                            : styles.tagTextDefault
                           }
                         >
                           {category.name}
@@ -845,7 +840,7 @@ export default function ConnectScreen() {
                     );
                   })}
                 </View>
-              )}
+              }
             </View>
 
             {/* OK Button */}
@@ -918,10 +913,9 @@ export default function ConnectScreen() {
                 What best describes this feeling?
               </AppText>
 
-              {categoriesLoading ? (
+              {categoriesLoading ?
                 <ActivityIndicator size="small" />
-              ) : (
-                <View style={styles.tagPopupRow}>
+              : <View style={styles.tagPopupRow}>
                   {(categories ?? []).map(category => {
                     const selected = selectedTagIds.includes(
                       category.categoryId,
@@ -939,9 +933,9 @@ export default function ConnectScreen() {
                           variant="caption1"
                           emphasis="emphasized"
                           style={
-                            selected
-                              ? styles.tagTextSelected
-                              : styles.tagTextDefault
+                            selected ?
+                              styles.tagTextSelected
+                            : styles.tagTextDefault
                           }
                         >
                           {category.name}
@@ -950,7 +944,7 @@ export default function ConnectScreen() {
                     );
                   })}
                 </View>
-              )}
+              }
             </View>
 
             {/* OK Button */}
@@ -984,8 +978,9 @@ export default function ConnectScreen() {
           // Fire actual connect after animation
           if (selectedCategoryId && feelingLevel) {
             connectMutation.mutate({
-              categoryId: selectedCategoryId === 'other'
-                ? (categories?.[0]?.categoryId ?? '')
+              categoryId:
+                selectedCategoryId === 'other' ?
+                  (categories?.[0]?.categoryId ?? '')
                 : selectedCategoryId,
               feelingLevel,
               customLabel: problemText.trim() || undefined,

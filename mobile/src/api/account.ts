@@ -80,9 +80,8 @@ export interface UserPointsResponse {
 }
 
 export async function fetchUserPoints(): Promise<UserPointsResponse> {
-  const { data } = await apiClient.get<UserPointsResponse>(
-    '/account/me/points',
-  );
+  const { data } =
+    await apiClient.get<UserPointsResponse>('/account/me/points');
   return data;
 }
 
