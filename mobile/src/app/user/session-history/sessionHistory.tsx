@@ -161,11 +161,7 @@ const cardStyles = StyleSheet.create(theme => ({
     marginHorizontal: theme.spacing.s4,
     marginBottom: theme.spacing.s3,
     gap: theme.spacing.s2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    boxShadow: theme.elevation.level2,
   },
   topRow: {
     flexDirection: 'row',
