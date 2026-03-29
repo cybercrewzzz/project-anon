@@ -288,7 +288,7 @@ const styles = StyleSheet.create(theme => ({
     paddingVertical: theme.spacing.s3,
     alignItems: 'center',
     borderRadius: theme.radius.md,
-    backgroundColor: '#6A00F4',
+    backgroundColor: theme.action.primary,
   },
   submitButtonDisabled: {
     opacity: 0.45,
