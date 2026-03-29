@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchSessionHistory } from '@/api/session-api';
+import { queryKeys } from '@/api/keys';
 import type { SessionHistoryItem } from '@/api/schemas';
 
 const PAGE_LIMIT = 15;
@@ -252,7 +253,7 @@ export default function SessionHistoryScreen() {
     isFetchingNextPage,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ['session', 'history'],
+    queryKey: queryKeys.user.sessions({ limit: PAGE_LIMIT }),
     queryFn: ({ pageParam = 1 }) =>
       fetchSessionHistory({ page: pageParam as number, limit: PAGE_LIMIT }),
     getNextPageParam: lastPage => {
