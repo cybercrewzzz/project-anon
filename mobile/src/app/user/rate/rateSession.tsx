@@ -52,7 +52,13 @@ function StarButton({
   };
 
   return (
-    <AnimatedPressable style={animStyle} onPress={handlePress}>
+    <AnimatedPressable
+      style={animStyle}
+      onPress={handlePress}
+      accessibilityLabel={`Rate ${index} stars`}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+    >
       <Ionicons
         name={selected ? 'star' : 'star-outline'}
         size={44}
