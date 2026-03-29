@@ -55,7 +55,7 @@ export type SessionDetail = z.infer<typeof SessionDetailSchema>;
 // ── GET /session/history ──
 
 export const SessionHistoryItemSchema = z.object({
-  sessionId: z.uuid(),
+  sessionId: z.string(),
   category: z.string().nullable(),
   startedAt: z.string(),
   endedAt: z.string().nullable(),
