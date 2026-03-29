@@ -107,13 +107,12 @@ export function BlockedUsersList({ role }: BlockedUsersListProps) {
           disabled={isFetching}
           style={styles.retryButton}
         >
-          {isFetching ? (
+          {isFetching ?
             <ActivityIndicator size="small" />
-          ) : (
-            <AppText variant="body" emphasis="emphasized" color="accent">
+          : <AppText variant="body" emphasis="emphasized" color="accent">
               Retry
             </AppText>
-          )}
+          }
         </Pressable>
       </View>
     );
@@ -146,19 +145,18 @@ export function BlockedUsersList({ role }: BlockedUsersListProps) {
       </View>
 
       {/* List */}
-      {entries.length === 0 ? (
+      {entries.length === 0 ?
         <View style={styles.emptyContainer}>
           <AppText style={styles.emptyEmoji}>🎉</AppText>
           <AppText variant="title3" emphasis="emphasized" textAlign="center">
             No blocked users
           </AppText>
           <AppText variant="body" color="gray" textAlign="center">
-            You haven't blocked anyone yet. If you ever need to, you can do
-            it during a chat session.
+            You haven't blocked anyone yet. If you ever need to, you can do it
+            during a chat session.
           </AppText>
         </View>
-      ) : (
-        <FlatList
+      : <FlatList
           data={entries}
           keyExtractor={item => item.blockedId}
           contentContainerStyle={styles.listContent}
@@ -173,7 +171,11 @@ export function BlockedUsersList({ role }: BlockedUsersListProps) {
 
               {/* Info */}
               <View style={styles.rowInfo}>
-                <AppText variant="subhead" emphasis="emphasized" numberOfLines={1}>
+                <AppText
+                  variant="subhead"
+                  emphasis="emphasized"
+                  numberOfLines={1}
+                >
                   User {item.blockedId.slice(0, 8)}…
                 </AppText>
                 <AppText variant="caption1" color="gray">
@@ -198,7 +200,7 @@ export function BlockedUsersList({ role }: BlockedUsersListProps) {
           )}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
-      )}
+      }
 
       {/* Unblock confirmation modal */}
       <Modal
@@ -213,11 +215,7 @@ export function BlockedUsersList({ role }: BlockedUsersListProps) {
         />
         <View style={styles.modalSheet}>
           <View style={styles.modalHandle} />
-          <AppText
-            variant="title3"
-            emphasis="emphasized"
-            textAlign="center"
-          >
+          <AppText variant="title3" emphasis="emphasized" textAlign="center">
             Unblock this user?
           </AppText>
           <AppText variant="body" color="gray" textAlign="center">
