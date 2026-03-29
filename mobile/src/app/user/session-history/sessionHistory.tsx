@@ -123,7 +123,11 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
 
       <View style={cardStyles.midRow}>
         <View style={cardStyles.metaItem}>
-          <Ionicons name="calendar-outline" size={13} color={theme.text.muted} />
+          <Ionicons
+            name="calendar-outline"
+            size={13}
+            color={theme.text.muted}
+          />
           <AppText variant="caption2" color="accent">
             {formatDate(item.startedAt)}
           </AppText>
@@ -215,7 +219,11 @@ function EmptyState() {
   const { theme } = useUnistyles();
   return (
     <View style={emptyStyles.container}>
-      <Ionicons name="chatbubbles-outline" size={64} color={theme.text.subtle2} />
+      <Ionicons
+        name="chatbubbles-outline"
+        size={64}
+        color={theme.text.subtle2}
+      />
       <AppText variant="title3" textAlign="center" emphasis="emphasized">
         No Sessions Yet
       </AppText>
@@ -309,7 +317,11 @@ export default function SessionHistoryScreen() {
 
       {isError && !isLoading && (
         <View style={styles.centered}>
-          <Ionicons name="cloud-offline-outline" size={48} color={theme.state.error} />
+          <Ionicons
+            name="cloud-offline-outline"
+            size={48}
+            color={theme.state.error}
+          />
           <AppText variant="body" textAlign="center" color="accent">
             Failed to load session history.
           </AppText>
