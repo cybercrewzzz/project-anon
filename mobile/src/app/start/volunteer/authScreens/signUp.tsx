@@ -15,6 +15,7 @@ import { parseApiError } from '@/api/errors';
 const SignUp = () => {
   const router = useRouter();
   const signIn = useAuth(state => state.signIn);
+  const signOut = useAuth(state => state.signOut);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -35,8 +36,22 @@ const SignUp = () => {
         password: form.password,
       }),
     onSuccess: async data => {
-      await signIn(data.accessToken, data.refreshToken, data.account);
-      router.push('/start/volunteer/authScreens/registerSuccessful' as any);
+      try {
+        await signIn(data.accessToken, data.refreshToken, data.account);
+        router.push('/start/volunteer/authScreens/registerSuccessful' as any);
+      } catch (err) {
+        console.error('Sign-up onSuccess error:', err);
+        try {
+          await signOut();
+        } catch (signOutErr) {
+          console.error('Sign-out after sign-up failure error:', signOutErr);
+        }
+        Alert.alert(
+          'Error',
+          'Registration succeeded but sign-in failed. Please log in manually.',
+        );
+        router.replace('/start/volunteer/authScreens/signIn' as any);
+      }
     },
     onError: error => {
       const apiError = parseApiError(error);
