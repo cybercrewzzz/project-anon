@@ -54,8 +54,19 @@ export type SessionDetail = z.infer<typeof SessionDetailSchema>;
 
 // ── GET /session/history ──
 
+export const SessionHistoryItemSchema = z.object({
+  sessionId: z.uuid(),
+  category: z.string(),
+  startedAt: z.string(),
+  endedAt: z.string().nullable(),
+  status: z.string(),
+  yourRating: z.number().nullable(),
+  starred: z.boolean().optional(),
+});
+
 export const SessionHistorySchema = z.object({
   data: z.array(SessionDetailSchema),
+  sessions: z.array(SessionHistoryItemSchema),
   total: z.number(),
   page: z.number(),
   limit: z.number(),
@@ -69,5 +80,14 @@ export const SessionTicketsSchema = z.object({
   consumed: z.number(),
   reserved: z.number(),
   remaining: z.number(),
+  total: z.number(),
+  resetAt: z.string().optional(),
 });
 export type SessionTickets = z.infer<typeof SessionTicketsSchema>;
+
+// ── PATCH /session/:id/rate ──
+
+export const SessionRateResponseSchema = z.object({
+  message: z.string(),
+});
+export type SessionRateResponse = z.infer<typeof SessionRateResponseSchema>;
