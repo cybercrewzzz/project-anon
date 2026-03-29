@@ -54,7 +54,15 @@ const ProTalk = () => {
         />
         <Button
           title="Rate Session"
-          onPress={() => router.push('/user/rate/rateSession' as any)}
+          onPress={() =>
+            router.push({
+              pathname: '/user/rate/rateSession',
+              params: {
+                sessionId: '550e8400-e29b-41d4-a716-446655440000',
+                isSeeker: 'true',
+              },
+            })
+          }
         />
       </View>
     </SafeAreaView>
