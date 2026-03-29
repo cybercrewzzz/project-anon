@@ -200,14 +200,19 @@ export class AuthService {
 
     // Verify password
     let passwordValid = false;
-    try {
-      passwordValid = await argon2.verify(
-        account.passwordHash,
-        dto.password,
-      );
-    } catch {
-      // Hash is in an unrecognised format (e.g. legacy bcrypt) — treat as invalid
+    if (account.passwordHash.startsWith('$argon2')) {
+      try {
+        passwordValid = await argon2.verify(
+          account.passwordHash,
+          dto.password,
+        );
+      } catch (error) {
+        throw new InternalServerErrorException(
+          'Internal server error during authentication',
+        );
+      }
     }
+
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
