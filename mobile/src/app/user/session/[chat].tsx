@@ -97,14 +97,14 @@ export default function Chat() {
           renderItem={({ item }) => {
             const isSender = item.senderId === userId;
             return isSender ?
-              <OutgoingMessage
-                content={item.content}
-                timestamp={item.timestamp}
-              />
+                <OutgoingMessage
+                  content={item.content}
+                  timestamp={item.timestamp}
+                />
               : <IncomingMessage
-                content={item.content}
-                timestamp={item.timestamp}
-              />;
+                  content={item.content}
+                  timestamp={item.timestamp}
+                />;
           }}
           keyExtractor={item => item?.id ?? 'unknown'}
           contentContainerStyle={styles.contentContainer}
@@ -123,7 +123,7 @@ export default function Chat() {
             placeholder={
               isEncryptionReady ?
                 'Type your message...'
-                : 'Establishing secure connection...'
+              : 'Establishing secure connection...'
             }
             contentContainerStyle={styles.inputForm}
             value={messageContent}

@@ -85,8 +85,10 @@ export default function RateSessionScreen() {
   }>();
 
   // Normalize parameters to unwrap potential arrays from useLocalSearchParams
-  const sessionId = Array.isArray(params.sessionId) ? params.sessionId[0] : params.sessionId;
-  const isSeeker = Array.isArray(params.isSeeker) ? params.isSeeker[0] : params.isSeeker;
+  const sessionId =
+    Array.isArray(params.sessionId) ? params.sessionId[0] : params.sessionId;
+  const isSeeker =
+    Array.isArray(params.isSeeker) ? params.isSeeker[0] : params.isSeeker;
 
   const showStarred = isSeeker === 'true';
 
