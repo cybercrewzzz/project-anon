@@ -59,6 +59,9 @@ export default function ChatScreenHeader({
           onPress={onReportPress}
           hitSlop={8}
           style={styles.reportButton}
+          accessibilityRole="button"
+          accessibilityLabel="Report chat participant"
+          accessibilityHint="Opens a dialog to report this user"
         >
           <Image
             source={require('@/assets/icons/flagReport.svg')}
