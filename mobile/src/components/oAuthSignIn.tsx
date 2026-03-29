@@ -26,9 +26,9 @@ const OAuthSignIn = () => {
         <HorizontalBar />
       </View>
       <View style={styles.iconContainer}>
-        <Icon source={require('@/assets/images/apple.webp')} />
-        <Icon source={require('@/assets/images/google.webp')} />
-        <Icon source={require('@/assets/images/facebook.webp')} />
+        <Icon source={require('@/assets/icons/apple-logo.svg')} />
+        <Icon source={require('@/assets/icons/google-logo.svg')} />
+        <Icon source={require('@/assets/icons/facebook-logo.svg')} />
       </View>
     </View>
   );
