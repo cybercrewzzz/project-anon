@@ -1,5 +1,5 @@
 import { Image, ImageSource } from 'expo-image';
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '../AppText';
 
@@ -8,6 +8,8 @@ interface ChatScreenHeaderProps {
   name: string;
   roleTag: string;
   rating: string;
+  /** Optional callback — when provided, shows a "!" icon to block the user */
+  onBlockPress?: () => void;
 }
 
 export default function ChatScreenHeader({
@@ -15,6 +17,7 @@ export default function ChatScreenHeader({
   profilePicture,
   roleTag,
   rating,
+  onBlockPress,
 }: ChatScreenHeaderProps) {
   return (
     <View style={styles.header}>
@@ -30,6 +33,20 @@ export default function ChatScreenHeader({
             source={require('@/assets/icons/saveVolunteer.svg')}
             style={styles.saveVolunteer}
           />
+          {/* Block icon — only rendered when callback is provided */}
+          {onBlockPress && (
+            <Pressable
+              onPress={onBlockPress}
+              hitSlop={8}
+              style={styles.blockButton}
+            >
+              <Image
+                source={require('@/assets/icons/blockUser.svg')}
+                style={styles.blockIcon}
+                contentFit="contain"
+              />
+            </Pressable>
+          )}
         </View>
         <View style={styles.tagContainer}>
           <View style={styles.roleTag}>
@@ -91,6 +108,14 @@ const styles = StyleSheet.create(theme => ({
   saveVolunteer: {
     width: 18,
     height: 18,
+  },
+  blockButton: {
+    padding: theme.spacing.s1,
+  },
+  blockIcon: {
+    width: 18,
+    height: 18,
+    tintColor: theme.state.warning,
   },
   tagContainer: {
     flexDirection: 'row',
