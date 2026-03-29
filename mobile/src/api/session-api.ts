@@ -43,7 +43,6 @@ export async function connectSession(
     if (matchResult.success) return matchResult.data;
     return SessionConnectWaitingSchema.parse(data);
   } catch (error) {
-
     throw parseApiError(error);
   }
 }
