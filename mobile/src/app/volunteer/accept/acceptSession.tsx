@@ -28,8 +28,10 @@ export default function AcceptSessionScreen() {
   }>();
 
   // Normalize parameters to unwrap potential arrays from useLocalSearchParams
-  const sessionId = Array.isArray(params.sessionId) ? params.sessionId[0] : params.sessionId;
-  const category = Array.isArray(params.category) ? params.category[0] : params.category;
+  const sessionId =
+    Array.isArray(params.sessionId) ? params.sessionId[0] : params.sessionId;
+  const category =
+    Array.isArray(params.category) ? params.category[0] : params.category;
 
   const acceptMutation = useMutation({
     mutationFn: (id: string) => acceptSession(id),
@@ -49,7 +51,7 @@ export default function AcceptSessionScreen() {
               'Session Unavailable',
               error.serverError === 'already_in_session' ?
                 'You already have an active session. Please complete it first.'
-                : 'Another volunteer has already accepted this session.',
+              : 'Another volunteer has already accepted this session.',
               [
                 {
                   text: 'OK',
@@ -172,7 +174,7 @@ export default function AcceptSessionScreen() {
           >
             {acceptMutation.isPending ?
               <ActivityIndicator color={theme.action.onPrimary} size="small" />
-              : <>
+            : <>
                 <Ionicons
                   name="checkmark-circle"
                   size={20}
