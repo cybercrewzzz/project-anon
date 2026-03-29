@@ -49,7 +49,7 @@ export default function AcceptSessionScreen() {
               'Session Unavailable',
               error.serverError === 'already_in_session' ?
                 'You already have an active session. Please complete it first.'
-              : 'Another volunteer has already accepted this session.',
+                : 'Another volunteer has already accepted this session.',
               [
                 {
                   text: 'OK',
@@ -172,7 +172,7 @@ export default function AcceptSessionScreen() {
           >
             {acceptMutation.isPending ?
               <ActivityIndicator color={theme.action.onPrimary} size="small" />
-            : <>
+              : <>
                 <Ionicons
                   name="checkmark-circle"
                   size={20}
