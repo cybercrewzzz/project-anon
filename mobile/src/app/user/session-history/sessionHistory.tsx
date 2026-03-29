@@ -6,7 +6,8 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import type { AppTheme } from '@/theme/appTheme';
 import { AppText } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -58,13 +59,14 @@ function formatStatusLabel(status: string): string {
   }
 }
 
-function statusColor(status: string): string {
-  if (status === 'completed') return '#4CAF50';
-  if (status.startsWith('cancelled')) return '#FF5252';
-  return '#9E9E9E';
+function statusColor(status: string, theme: AppTheme): string {
+  if (status === 'completed') return theme.state.success;
+  if (status.startsWith('cancelled')) return theme.state.error;
+  return theme.text.muted;
 }
 
 function StarRating({ rating }: { rating: number | null }) {
+  const { theme } = useUnistyles();
   if (rating === null)
     return (
       <AppText variant="caption2" color="accent">
@@ -78,7 +80,7 @@ function StarRating({ rating }: { rating: number | null }) {
           key={i}
           name={i <= rating ? 'star' : 'star-outline'}
           size={12}
-          color={i <= rating ? '#FFC107' : '#BDBDBD'}
+          color={i <= rating ? theme.state.warning : theme.text.subtle2}
         />
       ))}
     </View>
@@ -88,6 +90,7 @@ function StarRating({ rating }: { rating: number | null }) {
 // ── Session History Item Card ─────────────────────────────────────────────────
 
 function HistoryCard({ item }: { item: SessionHistoryItem }) {
+  const { theme } = useUnistyles();
   return (
     <View style={cardStyles.card}>
       <View style={cardStyles.topRow}>
@@ -99,18 +102,18 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
         <View
           style={[
             cardStyles.statusBadge,
-            { backgroundColor: statusColor(item.status) + '20' },
+            { backgroundColor: statusColor(item.status, theme) + '20' },
           ]}
         >
           <View
             style={[
               cardStyles.statusDot,
-              { backgroundColor: statusColor(item.status) },
+              { backgroundColor: statusColor(item.status, theme) },
             ]}
           />
           <AppText
             variant="caption2"
-            style={{ color: statusColor(item.status) }}
+            style={{ color: statusColor(item.status, theme) }}
           >
             {formatStatusLabel(item.status)}
           </AppText>
@@ -119,13 +122,13 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
 
       <View style={cardStyles.midRow}>
         <View style={cardStyles.metaItem}>
-          <Ionicons name="calendar-outline" size={13} color="#9E9E9E" />
+          <Ionicons name="calendar-outline" size={13} color={theme.text.muted} />
           <AppText variant="caption2" color="accent">
             {formatDate(item.startedAt)}
           </AppText>
         </View>
         <View style={cardStyles.metaItem}>
-          <Ionicons name="time-outline" size={13} color="#9E9E9E" />
+          <Ionicons name="time-outline" size={13} color={theme.text.muted} />
           <AppText variant="caption2" color="accent">
             {formatDuration(item.startedAt, item.endedAt)}
           </AppText>
@@ -141,7 +144,7 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
           <Ionicons
             name="bookmark"
             size={13}
-            color="#6A00F4"
+            color={theme.action.primary}
             style={{ marginLeft: 6 }}
           />
         )}
@@ -212,9 +215,10 @@ const cardStyles = StyleSheet.create(theme => ({
 // ── Empty State ───────────────────────────────────────────────────────────────
 
 function EmptyState() {
+  const { theme } = useUnistyles();
   return (
     <View style={emptyStyles.container}>
-      <Ionicons name="chatbubbles-outline" size={64} color="#C5B9F2" />
+      <Ionicons name="chatbubbles-outline" size={64} color={theme.text.subtle2} />
       <AppText variant="title3" textAlign="center" emphasis="emphasized">
         No Sessions Yet
       </AppText>
@@ -240,6 +244,7 @@ const emptyStyles = StyleSheet.create(theme => ({
 
 export default function SessionHistoryScreen() {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const [refreshing, setRefreshing] = useState(false);
 
   const {
@@ -307,7 +312,7 @@ export default function SessionHistoryScreen() {
 
       {isError && !isLoading && (
         <View style={styles.centered}>
-          <Ionicons name="cloud-offline-outline" size={48} color="#FF5252" />
+          <Ionicons name="cloud-offline-outline" size={48} color={theme.state.error} />
           <AppText variant="body" textAlign="center" color="accent">
             Failed to load session history.
           </AppText>
