@@ -28,4 +28,16 @@ export class LookupService {
       orderBy: { name: 'asc' },
     });
   }
+
+  // GET /languages
+  async getLanguages() {
+    return this.prisma.language.findMany({
+      select: {
+        languageId: true,
+        code: true,
+        name: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
 }
