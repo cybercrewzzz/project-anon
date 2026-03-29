@@ -48,6 +48,8 @@ describe('AuthService', () => {
     set: jest.fn(),
     get: jest.fn(),
     del: jest.fn(),
+    incr: jest.fn(),
+    expire: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -214,22 +216,38 @@ describe('AuthService', () => {
   });
 
   describe('verifyOtp', () => {
-    it('should throw UnauthorizedException if OTP is wrong', async () => {
+    it('should throw ForbiddenException if too many attempts', async () => {
+      mockRedisService.get.mockResolvedValueOnce('5'); // 5 attempts
+
+      await expect(
+        service.verifyOtp({ email: 'test@test.com', otp: '123456' }),
+      ).rejects.toThrow('Too many failed attempts.');
+    });
+
+    it('should throw UnauthorizedException and increment counter if OTP is wrong', async () => {
+      mockRedisService.get.mockResolvedValueOnce(null); // No previous attempts
       mockRedisService.get.mockResolvedValueOnce('wrong-otp');
+      mockRedisService.incr.mockResolvedValueOnce(1);
+      mockRedisService.expire.mockResolvedValueOnce(1);
 
       await expect(
         service.verifyOtp({ email: 'test@test.com', otp: '123456' }),
       ).rejects.toThrow('Invalid or expired OTP.');
+
+      expect(mockRedisService.incr).toHaveBeenCalledWith('pwd-reset-attempts:test@test.com');
+      expect(mockRedisService.expire).toHaveBeenCalled();
     });
 
-    it('should return reset token and cleanup OTP if correct', async () => {
-      mockRedisService.get.mockResolvedValueOnce('1234');
-      mockRedisService.del.mockResolvedValueOnce(1);
-      mockRedisService.set.mockResolvedValueOnce('OK');
+    it('should return reset token and cleanup OTP/attempts if correct', async () => {
+      mockRedisService.get.mockResolvedValueOnce(null); // No attempts
+      mockRedisService.get.mockResolvedValueOnce('123456'); // 6-digit
+      mockRedisService.del.mockResolvedValue(1);
+      mockRedisService.set.mockResolvedValue('OK');
 
-      const result = await service.verifyOtp({ email: 'test@test.com', otp: '1234' });
+      const result = await service.verifyOtp({ email: 'test@test.com', otp: '123456' });
 
       expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-otp:test@test.com');
+      expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-attempts:test@test.com');
       expect(mockRedisService.set).toHaveBeenCalledWith(
         'pwd-reset-token:test@test.com',
         expect.any(String),

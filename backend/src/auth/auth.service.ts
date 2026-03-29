@@ -268,8 +268,8 @@ export class AuthService {
       return { message: 'If an account exists, an OTP has been sent.' };
     }
 
-    // 2. Generate a 4-digit OTP
-    const otp = randomInt(1000, 10000).toString();
+    // 2. Generate a 6-digit OTP (100000 - 999999)
+    const otp = randomInt(100000, 1000000).toString();
 
     // 3. Store OTP in Redis and set an expiration (e.g., 5 minutes)
     const redisKey = `pwd-reset-otp:${account.email}`;
@@ -286,15 +286,32 @@ export class AuthService {
   }
 
   async verifyOtp(dto: VerifyOtpDto) {
-    const redisKey = `pwd-reset-otp:${dto.email}`;
-    const storedOtp = await this.redis.get(redisKey);
+    const attemptsKey = `pwd-reset-attempts:${dto.email}`;
+    const otpKey = `pwd-reset-otp:${dto.email}`;
+
+    // 1. Check for lockout
+    const attempts = await this.redis.get(attemptsKey);
+    if (attempts && parseInt(attempts, 10) >= 5) {
+      throw new ForbiddenException(
+        'Too many failed attempts. Please try again after 15 minutes.',
+      );
+    }
+
+    // 2. Retrieve the stored OTP
+    const storedOtp = await this.redis.get(otpKey);
 
     if (!storedOtp || storedOtp !== dto.otp) {
+      // Increment and set/extend attempts counter with 15-minute TTL
+      const currentAttempts =
+        (await this.redis.incr(attemptsKey)) as unknown as number;
+      if (currentAttempts === 1) {
+        await this.redis.expire(attemptsKey, 15 * 60);
+      }
       throw new UnauthorizedException('Invalid or expired OTP.');
     }
 
-    // OTP is valid. Remove it to prevent reuse.
-    await this.redis.del(redisKey);
+    // 3. Success: Cleanup OTP and attempt counter
+    await Promise.all([this.redis.del(otpKey), this.redis.del(attemptsKey)]);
 
     // Generate a temporary reset token valid for 15 minutes.
     const resetToken = randomUUID();
