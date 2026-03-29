@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   ScrollView,
@@ -12,6 +12,14 @@ import {
 import { Image } from 'expo-image';
 import { AppText } from '@/components/AppText';
 import { StyleSheet, withUnistyles } from 'react-native-unistyles';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -39,6 +47,160 @@ const FEELING_EMOJIS = [
   { level: 4, icon: require('@/assets/icons/face-em4.svg') },
   { level: 5, icon: require('@/assets/icons/face-em5.svg') },
 ];
+
+// =============================================================================
+// CONNECTING POPUP COMPONENT
+// Pulsing dot animation → 3s delay → "Connected!" → navigate
+// =============================================================================
+
+interface ConnectingPopupProps {
+  visible: boolean;
+  connectingState: 'searching' | 'connected';
+  onCancel: () => void;
+  onSearchingDone: () => void;
+  onAnimationComplete: () => void;
+}
+
+function ConnectingPopup({
+  visible,
+  connectingState,
+  onCancel,
+  onSearchingDone,
+  onAnimationComplete,
+}: ConnectingPopupProps) {
+  const scale = useSharedValue(1);
+
+  // Pulsing dot animation — active while searching
+  useEffect(() => {
+    if (!visible || connectingState !== 'searching') {
+      scale.value = 1;
+      return;
+    }
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.6, { duration: 700, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 700, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+    );
+  }, [visible, connectingState, scale]);
+
+  // 3s searching timer → transition to "connected"
+  useEffect(() => {
+    if (!visible || connectingState !== 'searching') return;
+    const timer = setTimeout(() => {
+      onSearchingDone();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [visible, connectingState, onSearchingDone]);
+
+  // 1.5s "connected" display → fire onAnimationComplete
+  useEffect(() => {
+    if (!visible || connectingState !== 'connected') return;
+    const timer = setTimeout(() => {
+      onAnimationComplete();
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [visible, connectingState, onAnimationComplete]);
+
+  const dotStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={onCancel}
+    >
+      <View style={connectingStyles.overlay}>
+        <View style={connectingStyles.card}>
+          {connectingState === 'searching' && (
+            <>
+              <Animated.View style={[connectingStyles.dot, dotStyle]} />
+              <AppText
+                variant="title3"
+                emphasis="emphasized"
+                color="primary"
+                textAlign="center"
+              >
+                Connecting You
+              </AppText>
+              <AppText variant="caption2" textAlign="center" color="accent">
+                Looking for an available volunteer…
+              </AppText>
+            </>
+          )}
+
+          {connectingState === 'connected' && (
+            <>
+              <View style={connectingStyles.checkCircle}>
+                <AppText style={connectingStyles.checkMark}>✓</AppText>
+              </View>
+              <AppText
+                variant="title3"
+                emphasis="emphasized"
+                color="primary"
+                textAlign="center"
+              >
+                Connection Established!
+              </AppText>
+            </>
+          )}
+
+          <Pressable onPress={onCancel}>
+            <AppText variant="caption1" color="accent">
+              Cancel
+            </AppText>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const connectingStyles = StyleSheet.create(theme => ({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  card: {
+    backgroundColor: theme.surface.primary,
+    borderRadius: theme.radius.xl,
+    paddingVertical: theme.spacing.s7,
+    paddingHorizontal: theme.spacing.s6,
+    alignItems: 'center',
+    gap: theme.spacing.s6,
+    width: '75%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  dot: {
+    width: 20,
+    height: 20,
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.background.accent,
+  },
+  checkCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.state.success,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkMark: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '700',
+  },
+}));
 
 // =============================================================================
 // UNIFIED CONNECT SCREEN
@@ -800,8 +962,32 @@ export default function ConnectScreen() {
       </Modal>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          POPUP 4: Connecting — added in Step 6
+          POPUP 4: Connecting Animation
          ══════════════════════════════════════════════════════════════════════ */}
+      <ConnectingPopup
+        visible={showConnectingPopup}
+        connectingState={connectingState}
+        onCancel={() => {
+          setShowConnectingPopup(false);
+          setConnectingState('searching');
+        }}
+        onAnimationComplete={() => {
+          // Fire actual connect after animation
+          if (selectedCategoryId && feelingLevel) {
+            connectMutation.mutate({
+              categoryId: selectedCategoryId === 'other'
+                ? (categories?.[0]?.categoryId ?? '')
+                : selectedCategoryId,
+              feelingLevel,
+              customLabel: problemText.trim() || undefined,
+              idempotencyKey: Crypto.randomUUID(),
+            });
+          }
+          setShowConnectingPopup(false);
+          setConnectingState('searching');
+        }}
+        onSearchingDone={() => setConnectingState('connected')}
+      />
     </View>
   );
 }
