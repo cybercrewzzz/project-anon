@@ -1,4 +1,4 @@
-import { View, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import React from 'react';
 import { AppText } from './AppText';
 import { Image, ImageSource } from 'expo-image';
