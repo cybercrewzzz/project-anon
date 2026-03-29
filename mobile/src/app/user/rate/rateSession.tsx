@@ -235,7 +235,9 @@ export default function RateSessionScreen() {
             disabled={rating === 0 || rateMutation.isPending}
             accessibilityRole="button"
             accessibilityLabel="Submit rating"
-            accessibilityState={{ disabled: rating === 0 || rateMutation.isPending }}
+            accessibilityState={{
+              disabled: rating === 0 || rateMutation.isPending,
+            }}
           >
             {rateMutation.isPending ?
               <ActivityIndicator color="#fff" size="small" />
