@@ -38,9 +38,10 @@ export class AuthService {
   // ── Register ──────────────────────────────────────────────────────
 
   async register(dto: RegisterDto) {
+    const email = this.normalizeEmail(dto.email);
     // Check if email is taken (including by admin accounts)
     const existingAccount = await this.prisma.account.findUnique({
-      where: { email: dto.email },
+      where: { email },
     });
 
     if (existingAccount) {
@@ -70,7 +71,7 @@ export class AuthService {
     const account = await this.prisma.$transaction(async (tx) => {
       const newAccount = await tx.account.create({
         data: {
-          email: dto.email,
+          email,
           passwordHash,
           name: null,
           nickname,
@@ -115,9 +116,10 @@ export class AuthService {
   // ── Register Volunteer ─────────────────────────────────────────────
 
   async registerVolunteer(dto: RegisterVolunteerDto) {
+    const email = this.normalizeEmail(dto.email);
     // Check if email is taken
     const existingAccount = await this.prisma.account.findUnique({
-      where: { email: dto.email },
+      where: { email },
     });
 
     if (existingAccount) {
@@ -147,7 +149,7 @@ export class AuthService {
     const account = await this.prisma.$transaction(async (tx) => {
       const newAccount = await tx.account.create({
         data: {
-          email: dto.email,
+          email,
           passwordHash,
           name: dto.name,
           nickname,
@@ -192,9 +194,10 @@ export class AuthService {
   // ── Login ─────────────────────────────────────────────────────────
 
   async login(dto: LoginDto) {
+    const email = this.normalizeEmail(dto.email);
     // Find account by email
     const account = await this.prisma.account.findUnique({
-      where: { email: dto.email },
+      where: { email },
       include: {
         accountRoles: {
           include: { role: true },
@@ -258,9 +261,10 @@ export class AuthService {
   // ── Forgot Password ───────────────────────────────────────────────
 
   async forgotPassword(dto: ForgotPasswordDto) {
+    const email = this.normalizeEmail(dto.email);
     // 1. Check if account exists
     const account = await this.prisma.account.findUnique({
-      where: { email: dto.email },
+      where: { email },
     });
 
     if (!account) {
@@ -272,7 +276,7 @@ export class AuthService {
     const otp = randomInt(100000, 1000000).toString();
 
     // 3. Store OTP in Redis and set an expiration (e.g., 5 minutes)
-    const redisKey = `pwd-reset-otp:${account.email}`;
+    const redisKey = `pwd-reset-otp:${email}`;
     await this.redis.set(redisKey, otp, 'EX', 5 * 60);
 
     // 4. (Simulated) Send the OTP to the user's email
@@ -286,8 +290,9 @@ export class AuthService {
   }
 
   async verifyOtp(dto: VerifyOtpDto) {
-    const attemptsKey = `pwd-reset-attempts:${dto.email}`;
-    const otpKey = `pwd-reset-otp:${dto.email}`;
+    const email = this.normalizeEmail(dto.email);
+    const attemptsKey = `pwd-reset-attempts:${email}`;
+    const otpKey = `pwd-reset-otp:${email}`;
 
     // 1. Check for lockout
     const attempts = await this.redis.get(attemptsKey);
@@ -315,9 +320,10 @@ export class AuthService {
 
     // Generate a temporary reset token valid for 15 minutes.
     const resetToken = randomUUID();
+    const tokenHash = this.hashToken(resetToken);
     await this.redis.set(
-      `pwd-reset-token:${dto.email}`,
-      resetToken,
+      `pwd-reset-token:${email}`,
+      tokenHash,
       'EX',
       15 * 60,
     );
@@ -326,10 +332,11 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const redisKey = `pwd-reset-token:${dto.email}`;
-    const storedToken = await this.redis.get(redisKey);
+    const email = this.normalizeEmail(dto.email);
+    const redisKey = `pwd-reset-token:${email}`;
+    const storedTokenHash = await this.redis.get(redisKey);
 
-    if (!storedToken || storedToken !== dto.resetToken) {
+    if (!storedTokenHash || storedTokenHash !== this.hashToken(dto.resetToken)) {
       throw new UnauthorizedException('Invalid or expired reset token.');
     }
 
@@ -339,7 +346,7 @@ export class AuthService {
     });
 
     await this.prisma.account.update({
-      where: { email: dto.email },
+      where: { email },
       data: { passwordHash },
     });
 
@@ -535,5 +542,9 @@ export class AuthService {
     };
 
     return new Date(Date.now() + value * multipliers[unit]);
+  }
+
+  private normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
   }
 }

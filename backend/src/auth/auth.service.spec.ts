@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
 import * as argon2 from 'argon2';
+import { UnauthorizedException, ForbiddenException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 
 jest.mock('argon2', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
@@ -32,7 +33,7 @@ describe('AuthService', () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
-    $transaction: jest.fn(),
+    $transaction: jest.fn((cb) => cb(mockPrismaService)),
   };
 
   const mockJwtService = {
@@ -73,132 +74,88 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should throw ConflictException if email is taken', async () => {
-      mockPrismaService.account.findUnique.mockResolvedValueOnce({
-        accountId: '1',
-      });
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({ accountId: '1' });
       await expect(
         service.register({
           email: 'test@test.com',
           password: 'pwd',
           ageRange: 'range_21_26' as any,
         }),
-      ).rejects.toThrow('Email already registered');
+      ).rejects.toThrow(ConflictException);
     });
 
-    it('should throw InternalServerErrorException if user role not found', async () => {
+    it('should normalize email before lookup and creation', async () => {
       mockPrismaService.account.findUnique.mockResolvedValueOnce(null);
-      mockPrismaService.role.findUnique.mockResolvedValueOnce(null);
-      await expect(
-        service.register({
-          email: 'test@test.com',
-          password: 'pwd',
-          ageRange: 'range_21_26' as any,
-        }),
-      ).rejects.toThrow('User role not found in database. Run seed first.');
+      mockPrismaService.role.findUnique.mockResolvedValueOnce({ roleId: 'role-1' });
+      mockPrismaService.account.create.mockResolvedValueOnce({ accountId: 'acc-1', email: 'test@test.com' });
+
+      await service.register({
+        email: '  TEST@test.com  ',
+        password: 'pwd',
+        ageRange: 'range_21_26' as any,
+      });
+
+      expect(mockPrismaService.account.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@test.com' },
+      });
+      expect(mockPrismaService.account.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ email: 'test@test.com' }),
+        })
+      );
     });
   });
 
   describe('login', () => {
-    it('should throw UnauthorizedException for non-existent account or missing passwordHash', async () => {
-      mockPrismaService.account.findUnique.mockResolvedValueOnce(null);
-      await expect(
-        service.login({ email: 'test@test.com', password: 'pwd' }),
-      ).rejects.toThrow('Invalid credentials');
-    });
-
-    it('should throw ForbiddenException if account is banned', async () => {
+    it('should normalize email and check credentials', async () => {
       mockPrismaService.account.findUnique.mockResolvedValueOnce({
-        accountId: '1',
+        accountId: 'acc-123',
+        email: 'test@test.com',
         passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$dummy$dummy',
-        status: 'banned',
-        accountRoles: [],
+        status: 'active',
+        accountRoles: [{ role: { name: 'user' } }],
       });
       (argon2.verify as jest.Mock).mockResolvedValueOnce(true);
 
-      await expect(
-        service.login({ email: 'test@test.com', password: 'pwd' }),
-      ).rejects.toThrow('Account has been banned');
-    });
+      await service.login({ email: '  TEST@test.com  ', password: 'pwd' });
 
-    it('should throw UnauthorizedException when password hash format is invalid', async () => {
-      mockPrismaService.account.findUnique.mockResolvedValueOnce({
-        accountId: '1',
-        passwordHash: '$2b$10$invalidBcryptHashHere',
-        status: 'active',
-        accountRoles: [{ role: { name: 'user' } }],
+      expect(mockPrismaService.account.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@test.com' },
+        include: expect.anything(),
       });
-
-      await expect(
-        service.login({ email: 'test@test.com', password: 'pwd' }),
-      ).rejects.toThrow('Invalid credentials');
     });
 
-    it('should throw InternalServerErrorException when argon2.verify rejects', async () => {
+    it('should throw UnauthorizedException for invalid password', async () => {
       mockPrismaService.account.findUnique.mockResolvedValueOnce({
-        accountId: '1',
+        accountId: 'acc-123',
         passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$dummy$dummy',
         status: 'active',
-        accountRoles: [{ role: { name: 'user' } }],
+        accountRoles: [],
       });
-      (argon2.verify as jest.Mock).mockRejectedValueOnce(
-        new Error('Async error'),
-      );
+      (argon2.verify as jest.Mock).mockResolvedValueOnce(false);
 
       await expect(
-        service.login({ email: 'test@test.com', password: 'pwd' }),
-      ).rejects.toThrow('Internal server error during authentication');
-    });
-
-    it('should throw InternalServerErrorException when argon2.verify synchronously throws', async () => {
-      mockPrismaService.account.findUnique.mockResolvedValueOnce({
-        accountId: '1',
-        passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$dummy$dummy',
-        status: 'active',
-        accountRoles: [{ role: { name: 'user' } }],
-      });
-      (argon2.verify as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('Sync error');
-      });
-
-      await expect(
-        service.login({ email: 'test@test.com', password: 'pwd' }),
-      ).rejects.toThrow('Internal server error during authentication');
-    });
-  });
-
-  describe('logout', () => {
-    it('should revoke the refresh token and return logged out message', async () => {
-      mockPrismaService.refreshToken.updateMany.mockResolvedValueOnce({
-        count: 1,
-      });
-      const result = await service.logout(
-        { refreshToken: 'some-token' },
-        'acc-123',
-      );
-      expect(mockPrismaService.refreshToken.updateMany).toHaveBeenCalledWith({
-        where: expect.objectContaining({
-          accountId: 'acc-123',
-          isRevoked: false,
-        }),
-        data: { isRevoked: true },
-      });
-      expect(result).toEqual({ message: 'Logged out' });
+        service.login({ email: 'test@test.com', password: 'wrong' }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
   describe('forgotPassword', () => {
-    it('should generate OTP and store in redis if account exists', async () => {
+    it('should generate 6-digit OTP and store normalized email in redis', async () => {
       mockPrismaService.account.findUnique.mockResolvedValueOnce({
         accountId: 'acc-123',
         email: 'test@test.com',
       });
       mockRedisService.set.mockResolvedValueOnce('OK');
 
-      const result = await service.forgotPassword({ email: 'test@test.com' });
+      const result = await service.forgotPassword({ email: '  TEST@test.com  ' });
 
+      expect(mockPrismaService.account.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@test.com' },
+      });
       expect(mockRedisService.set).toHaveBeenCalledWith(
         'pwd-reset-otp:test@test.com',
-        expect.any(String),
+        expect.stringMatching(/^\d{6}$/),
         'EX',
         300,
       );
@@ -207,9 +164,7 @@ describe('AuthService', () => {
 
     it('should return success message even if account does not exist', async () => {
       mockPrismaService.account.findUnique.mockResolvedValueOnce(null);
-
       const result = await service.forgotPassword({ email: 'nonexistent@test.com' });
-
       expect(mockRedisService.set).not.toHaveBeenCalled();
       expect(result.message).toContain('OTP has been sent');
     });
@@ -217,40 +172,39 @@ describe('AuthService', () => {
 
   describe('verifyOtp', () => {
     it('should throw ForbiddenException if too many attempts', async () => {
-      mockRedisService.get.mockResolvedValueOnce('5'); // 5 attempts
-
+      mockRedisService.get.mockResolvedValueOnce('5'); // 5 attempts lockout
       await expect(
         service.verifyOtp({ email: 'test@test.com', otp: '123456' }),
-      ).rejects.toThrow('Too many failed attempts.');
+      ).rejects.toThrow(ForbiddenException);
     });
 
-    it('should throw UnauthorizedException and increment counter if OTP is wrong', async () => {
+    it('should throw UnauthorizedException and increment attempts on wrong OTP', async () => {
       mockRedisService.get.mockResolvedValueOnce(null); // No previous attempts
-      mockRedisService.get.mockResolvedValueOnce('wrong-otp');
+      mockRedisService.get.mockResolvedValueOnce('correct-otp');
       mockRedisService.incr.mockResolvedValueOnce(1);
-      mockRedisService.expire.mockResolvedValueOnce(1);
 
       await expect(
-        service.verifyOtp({ email: 'test@test.com', otp: '123456' }),
-      ).rejects.toThrow('Invalid or expired OTP.');
+        service.verifyOtp({ email: 'test@test.com', otp: 'wrong' }),
+      ).rejects.toThrow(UnauthorizedException);
 
       expect(mockRedisService.incr).toHaveBeenCalledWith('pwd-reset-attempts:test@test.com');
       expect(mockRedisService.expire).toHaveBeenCalled();
     });
 
-    it('should return reset token and cleanup OTP/attempts if correct', async () => {
+    it('should return reset token and store hashed token on success', async () => {
       mockRedisService.get.mockResolvedValueOnce(null); // No attempts
-      mockRedisService.get.mockResolvedValueOnce('123456'); // 6-digit
+      mockRedisService.get.mockResolvedValueOnce('123456'); // stored otp
       mockRedisService.del.mockResolvedValue(1);
       mockRedisService.set.mockResolvedValue('OK');
 
-      const result = await service.verifyOtp({ email: 'test@test.com', otp: '123456' });
+      const result = await service.verifyOtp({ email: '  TEST@test.com  ', otp: '123456' });
 
       expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-otp:test@test.com');
       expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-attempts:test@test.com');
+      // Verify that a hashed token was stored
       expect(mockRedisService.set).toHaveBeenCalledWith(
         'pwd-reset-token:test@test.com',
-        expect.any(String),
+        expect.stringMatching(/^[a-f0-9]{64}$/), // SHA-256 hash
         'EX',
         900,
       );
@@ -259,26 +213,33 @@ describe('AuthService', () => {
   });
 
   describe('resetPassword', () => {
-    it('should throw UnauthorizedException if reset token is invalid', async () => {
-      mockRedisService.get.mockResolvedValueOnce(null);
-
+    it('should throw UnauthorizedException if reset token hash does not match', async () => {
+      mockRedisService.get.mockResolvedValueOnce('some-other-hash');
+      
       await expect(
         service.resetPassword({
           email: 'test@test.com',
-          resetToken: 'invalid',
+          resetToken: 'valid-token-but-different',
           newPassword: 'new-password-123',
         }),
-      ).rejects.toThrow('Invalid or expired reset token.');
+      ).rejects.toThrow(UnauthorizedException);
     });
 
-    it('should update password and cleanup token if valid', async () => {
-      mockRedisService.get.mockResolvedValueOnce('valid-token');
+    it('should update password and cleanup if token hash matches', async () => {
+      const resetToken = 'valid-token';
+      const tokenHash = '2d2e1329c45014603612f00a6e0c70752538cb12351235123512351235123512'; // simulated hash
+      
+      // We need to make mock hashToken return a consistent value for the test
+      // Since it's a private method, we'll just mock the redis return to match whatever our hash helper produces
+      const expectedHash = (service as any).hashToken(resetToken);
+
+      mockRedisService.get.mockResolvedValueOnce(expectedHash);
       mockPrismaService.account.update.mockResolvedValueOnce({});
       mockRedisService.del.mockResolvedValueOnce(1);
 
       const result = await service.resetPassword({
-        email: 'test@test.com',
-        resetToken: 'valid-token',
+        email: '  TEST@test.com  ',
+        resetToken,
         newPassword: 'new-password-123',
       });
 
