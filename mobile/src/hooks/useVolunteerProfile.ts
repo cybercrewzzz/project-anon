@@ -83,9 +83,6 @@ export function useUpdateVolunteerProfile() {
     mutationFn:
       USE_MOCK_PROFILE ?
         async (body: UpdateVolunteerProfileBody) => {
-          console.log('=== PATCH /volunteer/profile MOCK PAYLOAD ===');
-          console.log(JSON.stringify(body, null, 2));
-
           // Simulates network delay — lets you see saving state on button
           await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -127,13 +124,6 @@ export function useApplyAsVolunteer() {
     mutationFn:
       USE_MOCK_APPLY ?
         async (body: ApplyVolunteerBody) => {
-          // Logs the full payload so you can verify every field is
-          // correctly mapped from the form before hitting the real backend
-          if (__DEV__ !== false) {
-            console.log('=== POST /volunteer/apply MOCK PAYLOAD ===');
-            console.log(JSON.stringify(body, null, 2));
-          }
-
           // Simulates network delay — lets you see "Submitting..." on button
           await new Promise(resolve => setTimeout(resolve, 1200));
 

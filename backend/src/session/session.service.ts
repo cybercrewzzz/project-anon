@@ -263,12 +263,10 @@ export class SessionService {
           SESSION_TIMEOUT_MS / 1000,
         );
 
-        // Set an empty messages list key with TTL so Redis auto-cleans it.
-        // The WebSocket gateway will RPUSH messages to session:{id}:msgs.
-        await this.redis.expire(
-          `session:${session.sessionId}:msgs`,
-          SESSION_TIMEOUT_MS / 1000,
-        );
+        // NOTE: We do NOT call expire on session:{id}:msgs here.
+        // The key doesn't exist yet — EXPIRE on a non-existent key is a no-op.
+        // The WebSocket gateway creates this key on the first RPUSH and should
+        // set its own TTL at that point.
 
         // Schedule BullMQ jobs:
         //
@@ -385,11 +383,13 @@ export class SessionService {
       });
 
       // Store a waiting session hash in Redis.
-      // The `listenerId` field is intentionally empty — the /accept endpoint
-      // will use HSETNX to atomically fill it in (only one volunteer can win).
+      // NOTE: do NOT include a `listenerId` field here.
+      // The /accept endpoint uses HSETNX to atomically write listenerId,
+      // which only succeeds when the field does NOT already exist.
+      // Pre-storing an empty string would make the field exist,
+      // causing HSETNX to return 0 for every volunteer (breaking Path B entirely).
       await this.redis.hset(`session:${session.sessionId}`, {
         seekerId,
-        listenerId: '',
         status: 'waiting',
         startedAt: new Date().toISOString(),
       });
@@ -639,7 +639,7 @@ export class SessionService {
         try {
           await this.redis
             .multi()
-            .hset(`session:${sessionId}`, 'listenerId', '')
+            .hdel(`session:${sessionId}`, 'listenerId')
             .hset(`session:${sessionId}`, 'status', 'waiting')
             .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
             .exec();
@@ -676,7 +676,7 @@ export class SessionService {
         // so the session stays claimable by other volunteers for 3 minutes.
         await this.redis
           .multi()
-          .hset(`session:${sessionId}`, 'listenerId', '')
+          .hdel(`session:${sessionId}`, 'listenerId')
           .hset(`session:${sessionId}`, 'status', 'waiting')
           .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
           .exec();
@@ -712,7 +712,7 @@ export class SessionService {
         // so the session remains claimable and consistent with the database.
         await this.redis
           .multi()
-          .hset(`session:${sessionId}`, 'listenerId', '')
+          .hdel(`session:${sessionId}`, 'listenerId')
           .hset(`session:${sessionId}`, 'status', 'waiting')
           .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
           .exec();

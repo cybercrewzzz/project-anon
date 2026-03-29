@@ -8,6 +8,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Logger } from '@nestjs/common';
 import { Server, Socket, DefaultEventsMap } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -19,9 +20,6 @@ import { ChatServerService } from './chat-server.service.js';
 // The BullMQ queue name — must match BullModule.registerQueue in chat.module.ts
 export const RECONNECT_QUEUE = 'chat-reconnect';
 export const SESSION_TIMEOUT_QUEUE = 'chat-timeout';
-
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Typed socket.data — avoids unsafe `any` access in handlers
 interface SocketData {
@@ -45,6 +43,7 @@ export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
+  private readonly logger = new Logger(ChatGateway.name);
 
   constructor(
     private readonly chatService: ChatService,
@@ -73,20 +72,6 @@ export class ChatGateway
     client: AuthSocket,
   ): Promise<{ accountId: string; roles: string[] } | null> {
     const raw = client.handshake.auth?.token as string | undefined;
-
-    // Development-only fallback: accept a plain accountId from query params so
-    // the mobile team can connect before the JWT auth flow is wired up.
-    if (
-      !raw &&
-      (process.env.NODE_ENV === 'development' ||
-        process.env.NODE_ENV === 'test')
-    ) {
-      const q = client.handshake.query?.userId;
-      const queryUserId = Array.isArray(q) ? q[0] : q;
-      if (queryUserId && UUID_RE.test(queryUserId)) {
-        return { accountId: queryUserId, roles: [] };
-      }
-    }
 
     if (!raw) return null;
     const token = raw.startsWith('Bearer ') ? raw.slice(7) : raw;
@@ -152,7 +137,7 @@ export class ChatGateway
       }
     }
 
-    console.log(`[WS] Connected  accountId=${accountId} socket=${client.id}`);
+    this.logger.log(`Connected  accountId=${accountId} socket=${client.id}`);
   }
 
   async handleDisconnect(client: AuthSocket) {
@@ -192,7 +177,7 @@ export class ChatGateway
       );
     }
 
-    console.log(`[WS] Disconnected accountId=${accountId} socket=${client.id}`);
+    this.logger.log(`Disconnected accountId=${accountId} socket=${client.id}`);
   }
 
   // ── Session Matching ─────────────────────────────────────────────
@@ -267,15 +252,15 @@ export class ChatGateway
       // Notify the volunteer — they will call room:join after receiving this
       volSocket.emit('session:matched', { sessionId });
 
-      console.log(
-        `[WS] Matched  seeker=${accountId} listener=${volunteerId} session=${sessionId}`,
+      this.logger.log(
+        `Matched  seeker=${accountId} listener=${volunteerId} session=${sessionId}`,
       );
 
       // Return sessionId to the seeker via ack — they will also call room:join
       return { status: 'matched', sessionId };
     } catch (err) {
-      console.error(
-        `[WS] Session creation failed seeker=${accountId} listener=${volunteerId}`,
+      this.logger.error(
+        `Session creation failed seeker=${accountId} listener=${volunteerId}`,
         err,
       );
       // Return the volunteer to the available pool if they're still connected
@@ -347,8 +332,8 @@ export class ChatGateway
       // Let the peer know their partner is back
       client.to(payload.sessionId).emit('peer:reconnected', { accountId });
 
-      console.log(
-        `[WS] Reconnected accountId=${accountId} session=${payload.sessionId}`,
+      this.logger.log(
+        `Reconnected accountId=${accountId} session=${payload.sessionId}`,
       );
       return { sessionId: payload.sessionId, status: 'reconnected' };
     }
@@ -379,8 +364,8 @@ export class ChatGateway
       });
     }
 
-    console.log(
-      `[WS] Room join  accountId=${accountId} session=${payload.sessionId}`,
+    this.logger.log(
+      `Room join  accountId=${accountId} session=${payload.sessionId}`,
     );
     return { sessionId: payload.sessionId, status: 'joined' };
   }
