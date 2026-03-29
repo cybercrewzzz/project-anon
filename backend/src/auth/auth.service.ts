@@ -203,7 +203,7 @@ export class AuthService {
     if (account.passwordHash.startsWith('$argon2')) {
       try {
         passwordValid = await argon2.verify(account.passwordHash, dto.password);
-      } catch (error) {
+      } catch {
         throw new InternalServerErrorException(
           'Internal server error during authentication',
         );
