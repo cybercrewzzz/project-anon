@@ -12,6 +12,7 @@ type MobileRole = Extract<AccountRole, 'user' | 'volunteer'>;
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
+  resetToken: string | null;
   account: Account | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
@@ -29,6 +30,9 @@ interface AuthState {
   /** Update in-memory tokens (called by refresh interceptor) */
   setTokens: (accessToken: string, refreshToken: string) => void;
 
+  /** Store the transient reset token securely in memory */
+  setResetToken: (token: string | null) => void;
+
   /** Clear storage + reset in-memory state */
   signOut: () => Promise<void>;
 
@@ -40,7 +44,8 @@ interface AuthState {
 }
 
 /** Derive the primary role from the account's roles array */
-function deriveRole(roles: AccountRole[]): MobileRole {
+function deriveRole(roles: AccountRole[] | null | undefined): MobileRole {
+  if (!roles || !Array.isArray(roles)) return 'user';
   if (roles.includes('volunteer')) return 'volunteer';
   return 'user';
 }
@@ -48,6 +53,7 @@ function deriveRole(roles: AccountRole[]): MobileRole {
 const initialState = {
   accessToken: null,
   refreshToken: null,
+  resetToken: null,
   account: null,
   isAuthenticated: false,
   isHydrated: false,
@@ -70,6 +76,10 @@ export const useAuth = create<AuthState>()(set => ({
 
   setTokens: (accessToken, refreshToken) => {
     set({ accessToken, refreshToken });
+  },
+
+  setResetToken: token => {
+    set({ resetToken: token });
   },
 
   signOut: async () => {
