@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Pressable, Modal, ScrollView, TextInput } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AppText } from './AppText';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type ReportCategory =
   | 'harassment'
-  | 'inappropriate'
+  | 'inappropriate_content'
+  | 'impersonation'
   | 'spam'
   | 'other';
 
@@ -26,7 +27,8 @@ interface ReportBottomSheetProps {
 
 const CATEGORY_OPTIONS: { value: ReportCategory; label: string }[] = [
   { value: 'harassment', label: 'Harassment' },
-  { value: 'inappropriate', label: 'Inappropriate Content' },
+  { value: 'inappropriate_content', label: 'Inappropriate Content' },
+  { value: 'impersonation', label: 'Impersonation' },
   { value: 'spam', label: 'Spam' },
   { value: 'other', label: 'Other' },
 ];
@@ -53,9 +55,18 @@ export default function ReportBottomSheet({
   onSubmit,
   isPending = false,
 }: ReportBottomSheetProps) {
+  const { theme } = useUnistyles();
   const [selectedCategory, setSelectedCategory] =
     useState<ReportCategory | null>(null);
   const [description, setDescription] = useState('');
+
+  // Reset state when the modal becomes hidden
+  useEffect(() => {
+    if (!visible) {
+      setSelectedCategory(null);
+      setDescription('');
+    }
+  }, [visible]);
 
   const canSubmit =
     selectedCategory !== null && description.trim().length > 0 && !isPending;
@@ -90,6 +101,7 @@ export default function ReportBottomSheet({
           bounces={false}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="always"
         >
           {/* Title */}
           <AppText
@@ -164,8 +176,9 @@ export default function ReportBottomSheet({
               multiline
               numberOfLines={4}
               placeholder="Describe what happened..."
-              placeholderTextColor="#B8B8B8"
+              placeholderTextColor={theme.text.muted}
               textAlignVertical="top"
+              maxLength={500}
             />
           </View>
 
@@ -207,8 +220,8 @@ const styles = StyleSheet.create(theme => ({
     paddingTop: theme.spacing.s3,
     paddingBottom: theme.spacing.s7,
     paddingHorizontal: theme.spacing.s5,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    borderTopLeftRadius: theme.radius.lg,
+    borderTopRightRadius: theme.radius.lg,
   },
   handle: {
     width: 50,
