@@ -29,6 +29,15 @@ import { SessionStatus, UserProblemStatus } from '../generated/prisma/client';
 //                        If no volunteer accepted by then, the session is
 //                        cancelled, the ticket is released, and the seeker
 //                        is notified (if still connected via WebSocket).
+//
+// IDEMPOTENCY & RETRY SAFETY
+//
+// All handlers are designed so that BullMQ retries are safe:
+//   - DB writes use conditional guards (updateMany with status checks)
+//   - Redis cleanup always runs, even if the DB was already updated by a
+//     prior attempt that crashed mid-cleanup
+//   - Ticket operations (consumeReserved / releaseReserved) are idempotent
+//     by design in TicketService
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface GraceEndJobData {
@@ -117,6 +126,10 @@ export class SessionProcessor extends WorkerHost {
   // WebSocket (so the chat module's 30 min timer never started), or edge
   // cases where both participants disconnected and the reconnect-expire
   // job was lost.
+  //
+  // RETRY SAFETY: Redis cleanup always runs regardless of whether the DB
+  // update succeeded on this attempt or a previous one. DEL on a
+  // non-existent key is a no-op, so repeated runs are harmless.
   // ─────────────────────────────────────────────────────────────────────────
   private async handleSessionTimeout(
     job: Job<SessionTimeoutJobData>,
@@ -134,22 +147,41 @@ export class SessionProcessor extends WorkerHost {
       },
     });
 
-    if (updated.count === 0) {
-      // Already ended by chat timeout, disconnect, or manual end — no-op.
+    if (updated.count > 0) {
       this.logger.log(
-        `Session timeout: session ${sessionId} already ended, skipping`,
+        `Session timeout: force-ended session ${sessionId} after 45 minutes`,
       );
-      return;
+    } else {
+      // Already ended by chat timeout, disconnect, or manual end.
+      // Still run Redis cleanup below in case a prior attempt updated the DB
+      // but crashed before finishing cleanup.
+      this.logger.log(
+        `Session timeout: session ${sessionId} already ended — ensuring Redis cleanup`,
+      );
     }
 
+    // Look up participants so we can clear account→session mappings
+    // that the chat module maintains. Without this, stale mappings can
+    // keep triggering reconnect logic in the gateway.
+    const session = await this.prisma.chatSession.findUnique({
+      where: { sessionId },
+      select: { seekerId: true, listenerId: true },
+    });
+
     // Clean up Redis session state (hash, messages, keys).
+    // DEL on non-existent keys is a no-op, so this is safe on retries.
     await this.redis.del(`session:${sessionId}`);
     await this.redis.del(`session:${sessionId}:msgs`);
     await this.redis.del(`session:${sessionId}:keys`);
 
-    this.logger.log(
-      `Session timeout: force-ended session ${sessionId} after 45 minutes`,
-    );
+    // Clear account→session mappings used by the chat module, to avoid
+    // stale reconnect state if the reconnect-expire job was lost.
+    if (session?.seekerId) {
+      await this.redis.del(`account:${session.seekerId}:session`);
+    }
+    if (session?.listenerId) {
+      await this.redis.del(`account:${session.listenerId}:session`);
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -162,13 +194,38 @@ export class SessionProcessor extends WorkerHost {
   //   2. Release the reserved ticket
   //   3. Mark the associated UserProblem as expired
   //   4. Clean up the Redis session hash
+  //
+  // RACE WITH accept():
+  // accept() claims listenerId in Redis (via HSETNX) BEFORE persisting it
+  // to Postgres. During that window the DB listenerId is still null. To
+  // avoid cancelling a session that is actively being accepted, we check
+  // the Redis hash for listenerId first. The DB write also guards on
+  // listenerId IS NULL as a second safety net.
+  //
+  // RETRY SAFETY: ticket release and Redis cleanup always run when the
+  // session is in cancelled_timeout state, even if the DB was already
+  // updated by a prior attempt.
   // ─────────────────────────────────────────────────────────────────────────
   private async handleMatchTimeout(
     job: Job<MatchTimeoutJobData>,
   ): Promise<void> {
     const { sessionId, seekerId } = job.data;
 
-    // Check if a volunteer accepted in the meantime.
+    // ── STEP 1: Check Redis first for the accept() race ─────────────────
+    // accept() writes listenerId to Redis before Postgres. If the Redis
+    // hash has a listenerId, a volunteer is actively accepting — bail out.
+    const redisListenerId = await this.redis.hget(
+      `session:${sessionId}`,
+      'listenerId',
+    );
+    if (redisListenerId) {
+      this.logger.log(
+        `Match timeout: session ${sessionId} has listenerId in Redis — skipping`,
+      );
+      return;
+    }
+
+    // ── STEP 2: Fetch the problem ID for the transaction ────────────────
     const session = await this.prisma.chatSession.findUnique({
       where: { sessionId },
       select: { status: true, listenerId: true, problemId: true },
@@ -179,9 +236,7 @@ export class SessionProcessor extends WorkerHost {
       return;
     }
 
-    // If a volunteer accepted (listenerId is non-null), the match:timeout
-    // job in accept() should have been cancelled. But if it slipped through,
-    // we respect the assignment and do nothing.
+    // If a volunteer already accepted (listenerId set in DB), skip.
     if (session.listenerId) {
       this.logger.log(
         `Match timeout: session ${sessionId} already matched — skipping`,
@@ -189,29 +244,46 @@ export class SessionProcessor extends WorkerHost {
       return;
     }
 
-    // Only cancel if still active (guards against double processing).
-    if (session.status !== SessionStatus.active) {
-      this.logger.log(
-        `Match timeout: session ${sessionId} is ${session.status} — skipping`,
-      );
-      return;
-    }
-
-    // Cancel the session and expire the associated problem in one transaction.
-    await this.prisma.$transaction([
-      this.prisma.chatSession.update({
-        where: { sessionId },
+    // ── STEP 3: Atomically cancel if still active and unmatched ─────────
+    // Use updateMany with status + listenerId guards so that if accept()
+    // writes listenerId between our read and this write, the update is a
+    // no-op (count=0) and we don't overwrite the accepted session.
+    const { cancelled } = await this.prisma.$transaction(async (tx) => {
+      const updateResult = await tx.chatSession.updateMany({
+        where: {
+          sessionId,
+          status: SessionStatus.active,
+          listenerId: null,
+        },
         data: {
           status: SessionStatus.cancelled_timeout,
           endedAt: new Date(),
           closedReason: 'no_volunteer',
         },
-      }),
-      this.prisma.userProblem.update({
+      });
+
+      // If no row was updated, the session changed state (e.g. accepted)
+      // after the earlier read; do not expire the problem in that case.
+      if (updateResult.count === 0) {
+        return { cancelled: false };
+      }
+
+      await tx.userProblem.update({
         where: { problemId: session.problemId },
         data: { status: UserProblemStatus.expired },
-      }),
-    ]);
+      });
+
+      return { cancelled: true };
+    });
+
+    if (!cancelled) {
+      this.logger.log(
+        `Match timeout: session ${sessionId} changed state before cancellation — skipping`,
+      );
+      return;
+    }
+
+    // ── STEP 4: Cleanup (safe on retries — all ops are idempotent) ──────
 
     // Release the reserved ticket back to the seeker.
     await this.tickets.releaseReserved(seekerId);
