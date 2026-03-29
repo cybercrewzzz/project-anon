@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ForbiddenException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -25,6 +26,8 @@ import type { StringValue } from 'ms';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -274,9 +277,10 @@ export class AuthService {
 
     // 4. (Simulated) Send the OTP to the user's email
     // In a real application, inject an EmailService and send here.
-    console.log(
+    this.logger.debug(
       `[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`,
     );
+    this.logger.log(`Password reset OTP sent to ${account.email}`);
 
     return { message: 'If an account exists, an OTP has been sent.' };
   }

@@ -18,6 +18,7 @@ describe('AuthService', () => {
     account: {
       findUnique: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
     role: {
       findUnique: jest.fn(),
@@ -180,6 +181,95 @@ describe('AuthService', () => {
         data: { isRevoked: true },
       });
       expect(result).toEqual({ message: 'Logged out' });
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('should generate OTP and store in redis if account exists', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce({
+        accountId: 'acc-123',
+        email: 'test@test.com',
+      });
+      mockRedisService.set.mockResolvedValueOnce('OK');
+
+      const result = await service.forgotPassword({ email: 'test@test.com' });
+
+      expect(mockRedisService.set).toHaveBeenCalledWith(
+        'pwd-reset-otp:test@test.com',
+        expect.any(String),
+        'EX',
+        300,
+      );
+      expect(result.message).toContain('OTP has been sent');
+    });
+
+    it('should return success message even if account does not exist', async () => {
+      mockPrismaService.account.findUnique.mockResolvedValueOnce(null);
+
+      const result = await service.forgotPassword({ email: 'nonexistent@test.com' });
+
+      expect(mockRedisService.set).not.toHaveBeenCalled();
+      expect(result.message).toContain('OTP has been sent');
+    });
+  });
+
+  describe('verifyOtp', () => {
+    it('should throw UnauthorizedException if OTP is wrong', async () => {
+      mockRedisService.get.mockResolvedValueOnce('wrong-otp');
+
+      await expect(
+        service.verifyOtp({ email: 'test@test.com', otp: '123456' }),
+      ).rejects.toThrow('Invalid or expired OTP.');
+    });
+
+    it('should return reset token and cleanup OTP if correct', async () => {
+      mockRedisService.get.mockResolvedValueOnce('1234');
+      mockRedisService.del.mockResolvedValueOnce(1);
+      mockRedisService.set.mockResolvedValueOnce('OK');
+
+      const result = await service.verifyOtp({ email: 'test@test.com', otp: '1234' });
+
+      expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-otp:test@test.com');
+      expect(mockRedisService.set).toHaveBeenCalledWith(
+        'pwd-reset-token:test@test.com',
+        expect.any(String),
+        'EX',
+        900,
+      );
+      expect(result).toHaveProperty('resetToken');
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should throw UnauthorizedException if reset token is invalid', async () => {
+      mockRedisService.get.mockResolvedValueOnce(null);
+
+      await expect(
+        service.resetPassword({
+          email: 'test@test.com',
+          resetToken: 'invalid',
+          newPassword: 'new-password-123',
+        }),
+      ).rejects.toThrow('Invalid or expired reset token.');
+    });
+
+    it('should update password and cleanup token if valid', async () => {
+      mockRedisService.get.mockResolvedValueOnce('valid-token');
+      mockPrismaService.account.update.mockResolvedValueOnce({});
+      mockRedisService.del.mockResolvedValueOnce(1);
+
+      const result = await service.resetPassword({
+        email: 'test@test.com',
+        resetToken: 'valid-token',
+        newPassword: 'new-password-123',
+      });
+
+      expect(mockPrismaService.account.update).toHaveBeenCalledWith({
+        where: { email: 'test@test.com' },
+        data: { passwordHash: 'hashed_password' },
+      });
+      expect(mockRedisService.del).toHaveBeenCalledWith('pwd-reset-token:test@test.com');
+      expect(result.message).toContain('successfully reset');
     });
   });
 });
