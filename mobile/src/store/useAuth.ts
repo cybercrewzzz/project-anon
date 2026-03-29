@@ -26,6 +26,9 @@ interface AuthState {
     account: Account,
   ) => Promise<void>;
 
+  /** Update the user account and derived user role */
+  setAccount: (account: Account) => void;
+
   /** Update in-memory tokens (called by refresh interceptor) */
   setTokens: (accessToken: string, refreshToken: string) => void;
 
@@ -71,6 +74,10 @@ export const useAuth = create<AuthState>()(set => ({
 
   setTokens: (accessToken, refreshToken) => {
     set({ accessToken, refreshToken });
+  },
+
+  setAccount: account => {
+    set({ account, userRole: deriveRole(account.roles) });
   },
 
   signOut: async () => {
