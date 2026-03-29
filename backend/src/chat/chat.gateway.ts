@@ -572,50 +572,9 @@ export class ChatGateway
     return { status: 'ok' };
   }
 
-  // ── WebRTC Signaling — pure relay ────────────────────────────────
-
-  @SubscribeMessage('call:offer')
-  handleCallOffer(
-    @MessageBody() payload: { sessionId: string; [key: string]: unknown },
-    @ConnectedSocket() client: AuthSocket,
-  ) {
-    if (!client.rooms.has(payload.sessionId)) return;
-    client.to(payload.sessionId).emit('call:offer', payload);
-  }
-
-  @SubscribeMessage('call:answer')
-  handleCallAnswer(
-    @MessageBody() payload: { sessionId: string; [key: string]: unknown },
-    @ConnectedSocket() client: AuthSocket,
-  ) {
-    if (!client.rooms.has(payload.sessionId)) return;
-    client.to(payload.sessionId).emit('call:answer', payload);
-  }
-
-  @SubscribeMessage('call:rejected')
-  handleCallRejected(
-    @MessageBody() payload: { sessionId: string; [key: string]: unknown },
-    @ConnectedSocket() client: AuthSocket,
-  ) {
-    if (!client.rooms.has(payload.sessionId)) return;
-    client.to(payload.sessionId).emit('call:rejected', payload);
-  }
-
-  @SubscribeMessage('call:ended')
-  handleCallEnded(
-    @MessageBody() payload: { sessionId: string; [key: string]: unknown },
-    @ConnectedSocket() client: AuthSocket,
-  ) {
-    if (!client.rooms.has(payload.sessionId)) return;
-    client.to(payload.sessionId).emit('call:ended', payload);
-  }
-
-  @SubscribeMessage('ice:candidate')
-  handleIceCandidate(
-    @MessageBody() payload: { sessionId: string; [key: string]: unknown },
-    @ConnectedSocket() client: AuthSocket,
-  ) {
-    if (!client.rooms.has(payload.sessionId)) return;
-    client.to(payload.sessionId).emit('ice:candidate', payload);
-  }
+  // ── WebRTC Signaling ─────────────────────────────────────────────
+  // Calling is post-MVP. When re-enabling, add handlers for:
+  //   call:offer, call:answer, call:rejected, call:ended, ice:candidate
+  // Each handler should verify the client is in the session room before
+  // relaying the payload to the peer.
 }

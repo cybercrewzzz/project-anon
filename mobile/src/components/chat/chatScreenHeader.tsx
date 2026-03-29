@@ -69,10 +69,6 @@ export default function ChatScreenHeader({
             />
           </Pressable>
         )}
-        <Image
-          source={require('@/assets/icons/call.svg')}
-          style={styles.call}
-        />
       </View>
     </View>
   );
@@ -147,9 +143,5 @@ const styles = StyleSheet.create(theme => ({
   ratingImage: {
     width: 12,
     height: 12,
-  },
-  call: {
-    width: 50,
-    height: 50,
   },
 }));

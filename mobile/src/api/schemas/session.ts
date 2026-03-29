@@ -6,11 +6,6 @@ export const SessionConnectMatchSchema = z.object({
   sessionId: z.uuid(),
   volunteerId: z.uuid(),
   wsRoom: z.string(),
-  turnCredentials: z.object({
-    urls: z.array(z.string()),
-    username: z.string(),
-    credential: z.string(),
-  }),
 });
 export type SessionConnectMatch = z.infer<typeof SessionConnectMatchSchema>;
 
@@ -29,11 +24,6 @@ export const SessionAcceptSchema = z.object({
   seekerId: z.uuid(),
   category: z.string().nullable(),
   wsRoom: z.string(),
-  turnCredentials: z.object({
-    urls: z.array(z.string()),
-    username: z.string(),
-    credential: z.string(),
-  }),
 });
 export type SessionAccept = z.infer<typeof SessionAcceptSchema>;
 

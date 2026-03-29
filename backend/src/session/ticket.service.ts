@@ -6,6 +6,8 @@ export interface TicketState {
   consumed: number;
   reserved: number;
   remaining: number;
+  total: number;
+  resetAt: string;
 }
 
 @Injectable()
@@ -125,11 +127,18 @@ export class TicketService {
 
     await this.redis.expire(key, TicketService.TTL_SECONDS);
 
+    // Calculate when tickets reset (midnight UTC of the next day)
+    const tomorrow = new Date();
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    tomorrow.setUTCHours(0, 0, 0, 0);
+
     return {
       daily,
       consumed,
       reserved,
       remaining: Math.max(0, daily - consumed - reserved),
+      total: daily,
+      resetAt: tomorrow.toISOString(),
     };
   }
 
