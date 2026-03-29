@@ -261,7 +261,7 @@ export class ChatGateway
     } catch (err) {
       this.logger.error(
         `Session creation failed seeker=${accountId} listener=${volunteerId}`,
-        err,
+        err instanceof Error ? err.stack : String(err),
       );
       // Return the volunteer to the available pool if they're still connected
       await this.chatService.reAddVolunteerToPoolIfEligible(volunteerId);

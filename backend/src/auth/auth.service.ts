@@ -277,7 +277,7 @@ export class AuthService {
     // TODO: Inject an EmailService and send the OTP via email here.
     // This MUST be implemented before production — OTPs must never be logged.
     this.logger.warn(
-      `[PROD TODO] Email integration not implemented. OTP generated for ${account.email} but not sent.`,
+      '[PROD TODO] Email integration not implemented. OTP generated for an account but not sent.',
     );
 
     return { message: 'If an account exists, an OTP has been sent.' };

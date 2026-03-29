@@ -65,9 +65,8 @@ export function useVolunteerProfile() {
 //   STEP A — Successful update:
 //     → Set SIMULATE_PROFILE_ERROR = false (default)
 //     → Fill in about text and select specialisations on the edit screen
-//     → Tap save — check terminal for logged payload:
-//          === PATCH /volunteer/profile MOCK PAYLOAD ===
-//          { "about": "...", "specialisationIds": ["spec-1", ...] }
+//     → Tap save — verify the edit screen navigates back and the profile
+//          data refreshes (the query cache is invalidated on success)
 //
 //   STEP B — Error state:
 //     → Set SIMULATE_PROFILE_ERROR = true
