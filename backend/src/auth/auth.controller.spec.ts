@@ -86,7 +86,6 @@ describe('AuthController', () => {
   describe('logout', () => {
     it('should call authService.logout with the DTO and user ID', async () => {
       const dto = { refreshToken: 'rt' };
-      const user = { sub: 'acc-123' };
       mockAuthService.logout.mockResolvedValue({ message: 'Logged out' });
 
       await controller.logout(dto, 'acc-123');
@@ -100,9 +99,7 @@ describe('AuthController', () => {
       const expectedResult = {
         message: 'If an account exists, an OTP has been sent.',
       };
-      (mockAuthService.forgotPassword as jest.Mock).mockResolvedValue(
-        expectedResult as never,
-      );
+      mockAuthService.forgotPassword.mockResolvedValue(expectedResult as never);
 
       const result = await controller.forgotPassword(dto);
       expect(mockAuthService.forgotPassword).toHaveBeenCalledWith(dto);
@@ -114,9 +111,7 @@ describe('AuthController', () => {
     it('should call authService.verifyOtp with the DTO and return the result', async () => {
       const dto = { email: 'verify@test.com', otp: '123456' };
       const expectedResult = { resetToken: 'uuid-token' };
-      (mockAuthService.verifyOtp as jest.Mock).mockResolvedValue(
-        expectedResult as never,
-      );
+      mockAuthService.verifyOtp.mockResolvedValue(expectedResult as never);
 
       const result = await controller.verifyOtp(dto);
       expect(mockAuthService.verifyOtp).toHaveBeenCalledWith(dto);

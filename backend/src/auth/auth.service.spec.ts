@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
 import * as argon2 from 'argon2';
+import { createHash } from 'crypto';
 
 jest.mock('argon2', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
@@ -32,7 +33,7 @@ describe('AuthService', () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
-    $transaction: (cb: any) => cb(mockPrismaService),
+    $transaction: (cb: (prisma: any) => unknown) => cb(mockPrismaService),
   };
 
   const mockJwtService = {
@@ -78,7 +79,7 @@ describe('AuthService', () => {
         service.register({
           email: 'test@test.com',
           password: 'pwd',
-          ageRange: 'range_21_26' as any,
+          ageRange: 'range_21_26' as never,
         }),
       ).rejects.toThrow('Email already registered');
     });
@@ -90,7 +91,7 @@ describe('AuthService', () => {
         service.register({
           email: 'test@test.com',
           password: 'pwd',
-          ageRange: 'range_21_26' as any,
+          ageRange: 'range_21_26' as never,
         }),
       ).rejects.toThrow('User role not found in database. Run seed first.');
     });
@@ -238,8 +239,3 @@ describe('AuthService', () => {
     });
   });
 });
-
-function createHash(arg0: string) {
-  const crypto = require('crypto');
-  return crypto.createHash(arg0);
-}
