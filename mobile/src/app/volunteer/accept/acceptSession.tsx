@@ -22,13 +22,17 @@ import { ApiError } from '@/api/errors';
 export default function AcceptSessionScreen() {
   const router = useRouter();
   const { theme } = useUnistyles();
-  const { sessionId, category } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     sessionId: string;
     category?: string;
   }>();
 
+  // Normalize parameters to unwrap potential arrays from useLocalSearchParams
+  const sessionId = Array.isArray(params.sessionId) ? params.sessionId[0] : params.sessionId;
+  const category = Array.isArray(params.category) ? params.category[0] : params.category;
+
   const acceptMutation = useMutation({
-    mutationFn: () => acceptSession(sessionId!),
+    mutationFn: (id: string) => acceptSession(id),
     onSuccess: result => {
       // Navigate into the volunteer chat with this session
       router.replace({
@@ -91,7 +95,7 @@ export default function AcceptSessionScreen() {
       Alert.alert('Invalid Link', 'Session information is missing.');
       return;
     }
-    acceptMutation.mutate();
+    acceptMutation.mutate(sessionId);
   };
 
   const handleDecline = () => {
