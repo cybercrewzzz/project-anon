@@ -12,7 +12,6 @@ type MockPrismaService = {
     findUnique: jest.Mock;
   };
   report: {
-    findFirst: jest.Mock;
     create: jest.Mock;
   };
 };
@@ -27,7 +26,6 @@ describe('ReportsService', () => {
         findUnique: jest.fn(),
       },
       report: {
-        findFirst: jest.fn(),
         create: jest.fn(),
       },
     };
@@ -108,9 +106,7 @@ describe('ReportsService', () => {
         seekerId: 'reporter-id',
         listenerId: 'reported-user-id',
       });
-      prisma.report.findFirst.mockResolvedValue({
-        reportId: 'existing-report-id',
-      });
+      prisma.report.create.mockRejectedValue({ code: 'P2002' });
 
       await expect(
         service.createReport('reporter-id', validDto),
@@ -122,7 +118,6 @@ describe('ReportsService', () => {
         seekerId: 'reporter-id',
         listenerId: 'reported-user-id',
       });
-      prisma.report.findFirst.mockResolvedValue(null);
       prisma.report.create.mockResolvedValue({
         reportId: 'new-report-id',
       });

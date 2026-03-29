@@ -43,7 +43,7 @@ export class BlocksService {
       throw new BadRequestException({
         statusCode: 400,
         error: 'cannot_block_self',
-        message: "You cannot block yourself.",
+        message: 'You cannot block yourself.',
       });
     }
 
@@ -71,8 +71,12 @@ export class BlocksService {
           blockedId,
         },
       });
-    } catch (error) {
-      if ((error as any)?.code === 'P2002') {
+    } catch (error: unknown) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        (error as Record<string, unknown>).code === 'P2002'
+      ) {
         throw new ConflictException({
           statusCode: 409,
           error: 'already_blocked',

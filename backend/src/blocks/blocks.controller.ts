@@ -10,10 +10,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { BlocksService } from './blocks.service';
-import {
-  CreateBlockSchema,
-  BlockParamsSchema,
-} from './dto/create-block.dto';
+import { CreateBlockSchema, BlockParamsSchema } from './dto/create-block.dto';
 import type { CreateBlockDto, BlockParamsDto } from './dto/create-block.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';

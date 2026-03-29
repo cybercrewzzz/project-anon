@@ -101,8 +101,12 @@ export class ReportsService {
           status: ReportStatus.pending,
         },
       });
-    } catch (error) {
-      if ((error as any)?.code === 'P2002') {
+    } catch (error: unknown) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        (error as Record<string, unknown>).code === 'P2002'
+      ) {
         throw new ConflictException({
           statusCode: 409,
           error: 'already_reported',

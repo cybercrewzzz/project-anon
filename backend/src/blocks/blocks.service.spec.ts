@@ -76,10 +76,7 @@ describe('BlocksService', () => {
       prisma.account.findUnique.mockResolvedValue({
         accountId: 'user-2',
       });
-      prisma.blocklist.findUnique.mockResolvedValue({
-        blockerId: 'user-1',
-        blockedId: 'user-2',
-      });
+      prisma.blocklist.create.mockRejectedValue({ code: 'P2002' });
 
       await expect(
         service.blockUser('user-1', { blockedId: 'user-2' }),
