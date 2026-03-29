@@ -183,7 +183,7 @@ const styles = StyleSheet.create(theme => ({
     backgroundColor: theme.text.primary,
     paddingHorizontal: theme.spacing.s3,
     paddingVertical: theme.spacing.s2,
-    borderRadius: theme.radius.m,
+    borderRadius: theme.radius.md,
     boxShadow: theme.elevation.level3,
   },
   tooltipArrow: {
