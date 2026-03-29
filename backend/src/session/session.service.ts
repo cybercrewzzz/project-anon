@@ -276,7 +276,12 @@ export class SessionService {
         await this.sessionQueue.add(
           'session:grace-end',
           { sessionId: session.sessionId, seekerId },
-          { delay: GRACE_END_MS, jobId: `grace-end:${session.sessionId}` },
+          {
+            delay: GRACE_END_MS,
+            jobId: `grace-end-${session.sessionId}`,
+            removeOnComplete: true,
+            removeOnFail: { age: 24 * 60 * 60 },
+          },
         );
 
         // 2. session:timeout (45 min delay)
@@ -284,7 +289,12 @@ export class SessionService {
         await this.sessionQueue.add(
           'session:timeout',
           { sessionId: session.sessionId },
-          { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${session.sessionId}` },
+          {
+            delay: SESSION_TIMEOUT_MS,
+            jobId: `timeout-${session.sessionId}`,
+            removeOnComplete: true,
+            removeOnFail: { age: 24 * 60 * 60 },
+          },
         );
 
         // The response for "match found" (HTTP 200).
@@ -428,7 +438,9 @@ export class SessionService {
         { sessionId: session.sessionId, seekerId },
         {
           delay: MATCH_TIMEOUT_MS,
-          jobId: `match-timeout:${session.sessionId}`,
+          jobId: `match-timeout-${session.sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
         },
       );
 
@@ -730,7 +742,7 @@ export class SessionService {
       // BullMQ jobs can be cancelled by their jobId if they haven't fired yet.
       try {
         const timeoutJob = await this.sessionQueue.getJob(
-          `match-timeout:${sessionId}`,
+          `match-timeout-${sessionId}`,
         );
         if (timeoutJob) {
           await timeoutJob.remove();
@@ -751,12 +763,22 @@ export class SessionService {
       await this.sessionQueue.add(
         'session:grace-end',
         { sessionId, seekerId },
-        { delay: GRACE_END_MS, jobId: `grace-end:${sessionId}` },
+        {
+          delay: GRACE_END_MS,
+          jobId: `grace-end-${sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
+        },
       );
       await this.sessionQueue.add(
         'session:timeout',
         { sessionId },
-        { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${sessionId}` },
+        {
+          delay: SESSION_TIMEOUT_MS,
+          jobId: `timeout-${sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
+        },
       );
 
       // ── STEP 8: Emit WebSocket event to the seeker ────────────────────────
