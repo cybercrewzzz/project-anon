@@ -1,8 +1,11 @@
 import { AppText } from '@/components/AppText';
 import { SmallButton } from '@/components/SmallButton';
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+import { useQuery } from '@tanstack/react-query';
+import { getLanguages } from '@/api/account';
+import { parseApiError } from '@/api/errors';
 
 interface LanguageSelectionProps {
   onLanguageChange?: (language: string, talkLanguages: string[]) => void;
@@ -12,8 +15,8 @@ interface LanguageSelectionProps {
  * A comprehensive language selection component with app interface and talk language options.
  *
  * Includes two sections:
- * - App Interface Language: Single selection (English or Sinhala)
- * - Talk Languages: Multi-selection (Tamil, English, Sinhala)
+ * - App Interface Language: Single selection
+ * - Talk Languages: Multi-selection
  *
  * @component
  * @example
@@ -32,7 +35,17 @@ export const LanguageSelection = ({
   onLanguageChange,
 }: LanguageSelectionProps) => {
   const [language, setLanguage] = useState('english');
-  const [talkLanguages, setTalkLanguages] = useState(['english']);
+  const [talkLanguages, setTalkLanguages] = useState<string[]>(['english']);
+
+  const {
+    data: languages,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['languages'],
+    queryFn: getLanguages,
+  });
 
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage);
@@ -43,6 +56,17 @@ export const LanguageSelection = ({
     setTalkLanguages(newTalkLanguages);
     onLanguageChange?.(language, newTalkLanguages);
   };
+
+  if (isError) {
+    const apiError = parseApiError(error);
+    return (
+      <View style={styles.container}>
+        <AppText variant="subhead" color="primary">
+          Failed to load languages: {apiError.message}
+        </AppText>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -58,45 +82,48 @@ export const LanguageSelection = ({
         <AppText variant="subhead" emphasis="emphasized" color="primary">
           App Interface Language
         </AppText>
-        <View style={styles.selectionButtons}>
-          <SmallButton
-            selected={language === 'english'}
-            onPress={() => handleLanguageChange('english')}
-          >
-            English
-          </SmallButton>
-          <SmallButton
-            selected={language === 'sinhala'}
-            onPress={() => handleLanguageChange('sinhala')}
-          >
-            Sinhala
-          </SmallButton>
-        </View>
+        {isLoading ?
+          <ActivityIndicator size="small" />
+        : <View style={styles.selectionButtons}>
+            {languages?.map((lang: { code: string; name: string }) => (
+              <SmallButton
+                key={`interface-${lang.code}`}
+                selected={language === lang.code}
+                onPress={() => handleLanguageChange(lang.code)}
+              >
+                {lang.name}
+              </SmallButton>
+            ))}
+          </View>
+        }
       </View>
       <View style={styles.talkCard}>
         <AppText variant="subhead" emphasis="emphasized" color="primary">
           How would you like to talk with others?
         </AppText>
-        <View style={styles.selectionButtons}>
-          {['Tamil', 'English', 'Sinhala'].map(lang => {
-            const isSelected = talkLanguages.includes(lang.toLowerCase());
-            return (
-              <SmallButton
-                key={lang}
-                selected={isSelected}
-                onPress={() => {
-                  const newTalkLanguages =
-                    talkLanguages.includes(lang.toLowerCase()) ?
-                      talkLanguages.filter(l => l !== lang.toLowerCase())
-                    : [...talkLanguages, lang.toLowerCase()];
-                  handleTalkLanguagesChange(newTalkLanguages);
-                }}
-              >
-                {lang}
-              </SmallButton>
-            );
-          })}
-        </View>
+        {isLoading ?
+          <ActivityIndicator size="small" />
+        : <View style={styles.selectionButtons}>
+            {languages?.map((lang: { code: string; name: string }) => {
+              const isSelected = talkLanguages.includes(lang.code);
+              return (
+                <SmallButton
+                  key={`talk-${lang.code}`}
+                  selected={isSelected}
+                  onPress={() => {
+                    const newTalkLanguages: string[] =
+                      talkLanguages.includes(lang.code) ?
+                        talkLanguages.filter((l: string) => l !== lang.code)
+                      : [...talkLanguages, lang.code];
+                    handleTalkLanguagesChange(newTalkLanguages);
+                  }}
+                >
+                  {lang.name}
+                </SmallButton>
+              );
+            })}
+          </View>
+        }
       </View>
     </View>
   );
@@ -122,6 +149,8 @@ const styles = StyleSheet.create(theme => ({
   },
   selectionButtons: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: theme.spacing.s3 + theme.spacing.s1,
   },
 }));
