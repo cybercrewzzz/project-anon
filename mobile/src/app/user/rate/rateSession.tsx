@@ -208,12 +208,19 @@ export default function RateSessionScreen() {
               onValueChange={setStarred}
               thumbColor={starred ? '#6A00F4' : '#E0E0E0'}
               trackColor={{ false: '#E0E0E0', true: '#C5B9F2' }}
+              accessibilityRole="switch"
+              accessibilityLabel="Save this session"
             />
           </View>
         )}
 
         <View style={styles.buttonRow}>
-          <Pressable style={styles.skipButton} onPress={handleSkip}>
+          <Pressable
+            style={styles.skipButton}
+            onPress={handleSkip}
+            accessibilityRole="button"
+            accessibilityLabel="Skip rating"
+          >
             <AppText variant="body" color="accent">
               Skip
             </AppText>
@@ -226,6 +233,9 @@ export default function RateSessionScreen() {
             ]}
             onPress={handleSubmit}
             disabled={rating === 0 || rateMutation.isPending}
+            accessibilityRole="button"
+            accessibilityLabel="Submit rating"
+            accessibilityState={{ disabled: rating === 0 || rateMutation.isPending }}
           >
             {rateMutation.isPending ?
               <ActivityIndicator color="#fff" size="small" />
