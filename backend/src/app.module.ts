@@ -10,6 +10,9 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { VolunteerModule } from './volunteer/volunteer.module';
 import { LookupModule } from './lookup/lookup.module';
+import { SessionModule } from './session/session.module';
+import { AccountModule } from './account/account.module';
+import { DeviceModule } from './device/device.module';
 
 @Module({
   imports: [
@@ -31,6 +34,9 @@ import { LookupModule } from './lookup/lookup.module';
     ChatModule,
     VolunteerModule,
     LookupModule,
+    SessionModule,
+    AccountModule,
+    DeviceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
