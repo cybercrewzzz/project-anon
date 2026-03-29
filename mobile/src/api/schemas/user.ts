@@ -27,3 +27,12 @@ export const UserSessionSchema = z.object({
   starredByUser: z.boolean(),
 });
 export type UserSession = z.infer<typeof UserSessionSchema>;
+
+// ── GET /account/me/points ──
+
+export const UserPointsSchema = z.object({
+  points: z.number(),
+  level: z.number(),
+  lastUpdated: z.string(),
+});
+export type UserPoints = z.infer<typeof UserPointsSchema>;

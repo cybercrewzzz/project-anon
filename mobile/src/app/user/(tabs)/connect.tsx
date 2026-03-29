@@ -25,6 +25,7 @@ import { useRouter } from 'expo-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryKeys } from '@/api/keys';
 import { fetchSessionTickets, connectSession } from '@/api/session-api';
+import { fetchUserPoints } from '@/api/account';
 import { ApiError } from '@/api/errors';
 import { useCategories } from '@/hooks/useLookup';
 import type { Category } from '@/api/schemas/common';
@@ -245,6 +246,12 @@ export default function ConnectScreen() {
     refetch: refetchCategories,
   } = useCategories();
 
+  const { data: userPoints, isLoading: pointsLoading } = useQuery({
+    queryKey: queryKeys.points,
+    queryFn: fetchUserPoints,
+    staleTime: 60_000,
+  });
+
   // ── Derived values ────────────────────────────────────────────────────────
   const selectedCategory = categories?.find(
     c => c.categoryId === selectedCategoryId,
@@ -252,6 +259,8 @@ export default function ConnectScreen() {
   const hasCategory = selectedCategoryId !== null;
   const ticketCount =
     ticketsLoading ? '...' : (tickets?.remaining ?? 0).toString();
+  const pointsCount =
+    pointsLoading ? '...' : (userPoints?.points ?? 0).toString();
 
   // Selected tag category objects for display
   const selectedTags = (categories ?? []).filter(c =>
@@ -369,7 +378,7 @@ export default function ConnectScreen() {
               emphasis="emphasized"
               style={styles.pointBadgeText}
             >
-              185
+              {pointsCount}
             </AppText>
           </View>
 

@@ -45,4 +45,11 @@ export class AccountController {
   ) {
     return this.accountService.changePassword(accountId, dto);
   }
+
+  // GET /account/me/points
+  @Get('me/points')
+  @HttpCode(HttpStatus.OK)
+  getMyPoints(@CurrentUser('accountId') accountId: string) {
+    return this.accountService.getMyPoints(accountId);
+  }
 }

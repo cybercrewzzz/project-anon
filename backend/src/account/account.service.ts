@@ -196,4 +196,20 @@ export class AccountService {
 
     return { message: 'Password changed successfully' };
   }
+
+  // GET /account/me/points
+  async getMyPoints(accountId: string) {
+    const userPoints = await this.prisma.userPoints.upsert({
+      where: { accountId },
+      update: {},
+      create: { accountId },
+      select: {
+        points: true,
+        level: true,
+        lastUpdated: true,
+      },
+    });
+
+    return userPoints;
+  }
 }
