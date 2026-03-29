@@ -119,8 +119,8 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
         <AppText variant="caption2" color="accent">
           Your rating:{'  '}
         </AppText>
-        <StarRating rating={item.userRating ?? item.volunteerRating} />
-        {item.starredByUser && (
+        <StarRating rating={item.yourRating} />
+        {item.starred && (
           <Ionicons
             name="bookmark"
             size={13}
@@ -129,12 +129,6 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
           />
         )}
       </View>
-
-      {item.closedReason && (
-        <AppText variant="caption2" style={cardStyles.closedReason}>
-          Reason: {item.closedReason}
-        </AppText>
-      )}
     </View>
   );
 }
@@ -250,7 +244,7 @@ export default function SessionHistoryScreen() {
     initialPageParam: 1,
   });
 
-  const allSessions = data?.pages.flatMap(p => p.data) ?? [];
+  const allSessions = data?.pages.flatMap(p => p.sessions) ?? [];
   const total = data?.pages[0]?.total ?? 0;
 
   const handleRefresh = useCallback(async () => {
