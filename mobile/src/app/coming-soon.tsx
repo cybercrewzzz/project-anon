@@ -31,11 +31,22 @@ export default function ComingSoon() {
           style={styles.logo}
           contentFit="contain"
         />
-        <AppText variant="title1" emphasis="emphasized" textAlign="center" style={styles.title}>
+        <AppText
+          variant="title1"
+          emphasis="emphasized"
+          textAlign="center"
+          style={styles.title}
+        >
           Coming Soon
         </AppText>
-        <AppText variant="body" color="muted" textAlign="center" style={styles.subtitle}>
-          We are working hard to bring this feature to you. Stay tuned for exciting updates!
+        <AppText
+          variant="body"
+          color="muted"
+          textAlign="center"
+          style={styles.subtitle}
+        >
+          We are working hard to bring this feature to you. Stay tuned for
+          exciting updates!
         </AppText>
 
         <Pressable style={styles.returnButton} onPress={() => router.back()}>
