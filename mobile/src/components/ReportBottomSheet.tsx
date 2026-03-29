@@ -104,11 +104,7 @@ export default function ReportBottomSheet({
           keyboardShouldPersistTaps="always"
         >
           {/* Title */}
-          <AppText
-            variant="title3"
-            emphasis="emphasized"
-            textAlign="center"
-          >
+          <AppText variant="title3" emphasis="emphasized" textAlign="center">
             Report User
           </AppText>
 
