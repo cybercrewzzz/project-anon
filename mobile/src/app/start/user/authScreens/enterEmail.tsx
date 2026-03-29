@@ -14,11 +14,11 @@ const EnterEmail = () => {
   const [email, setEmail] = useState('');
 
   const { mutate, isPending } = useMutation({
-    mutationFn: () => forgotPassword(email),
-    onSuccess: () => {
+    mutationFn: (emailToSend: string) => forgotPassword(emailToSend),
+    onSuccess: (_, emailToSend) => {
       router.push({
         pathname: '/start/user/authScreens/OTPVerification',
-        params: { email },
+        params: { email: emailToSend },
       } as any);
     },
     onError: error => {
@@ -27,11 +27,12 @@ const EnterEmail = () => {
   });
 
   const handleContinue = () => {
-    if (!email.trim()) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
       Alert.alert('Validation Error', 'Please enter your email address.');
       return;
     }
-    mutate();
+    mutate(trimmedEmail);
   };
 
   return (
@@ -65,6 +66,7 @@ const EnterEmail = () => {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            editable={!isPending}
           />
         </View>
       </View>
