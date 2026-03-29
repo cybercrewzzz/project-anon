@@ -86,6 +86,9 @@ const Icon = ({
       <Pressable
         onPress={handlePress}
         style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+        accessibilityRole="button"
+        accessibilityLabel="OAuth sign-in option"
+        accessibilityHint="Shows a message that OAuth sign-in is coming soon"
       >
         <Animated.View style={animatedIconStyle}>
           <Image
