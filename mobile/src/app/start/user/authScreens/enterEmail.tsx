@@ -5,10 +5,34 @@ import { StyleSheet } from 'react-native-unistyles';
 import { FullWidthButton } from '@/components/FullWidthButton';
 import InputForm from '@/components/inputForm';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { forgotPassword } from '@/api/auth';
+import { parseApiError } from '@/api/errors';
 
 const EnterEmail = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => forgotPassword(email),
+    onSuccess: () => {
+      router.push({
+        pathname: '/start/user/authScreens/OTPVerification',
+        params: { email },
+      } as any);
+    },
+    onError: error => {
+      Alert.alert('Error', parseApiError(error).message);
+    },
+  });
+
+  const handleContinue = () => {
+    if (!email.trim()) {
+      Alert.alert('Validation Error', 'Please enter your email address.');
+      return;
+    }
+    mutate();
+  };
 
   return (
     <View style={styles.container}>
@@ -46,24 +70,9 @@ const EnterEmail = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <FullWidthButton
-          onPress={() => {
-            const trimmedEmail = email.trim();
-            if (!trimmedEmail) {
-              Alert.alert(
-                'Validation Error',
-                'Please enter your email address.',
-              );
-              return;
-            }
-            router.push({
-              pathname: '/start/user/authScreens/OTPVerification',
-              params: { email: trimmedEmail },
-            } as any);
-          }}
-        >
+        <FullWidthButton onPress={handleContinue} disabled={isPending}>
           <AppText variant="headline" color="secondary">
-            Continue
+            {isPending ? 'Sending...' : 'Continue'}
           </AppText>
         </FullWidthButton>
       </View>
