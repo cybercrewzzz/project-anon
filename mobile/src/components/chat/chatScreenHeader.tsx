@@ -1,5 +1,5 @@
 import { Image, ImageSource } from 'expo-image';
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '../AppText';
 
@@ -8,6 +8,8 @@ interface ChatScreenHeaderProps {
   name: string;
   roleTag: string;
   rating: string;
+  /** Optional callback — when provided, shows a flag icon to report the user */
+  onReportPress?: () => void;
 }
 
 export default function ChatScreenHeader({
@@ -15,6 +17,7 @@ export default function ChatScreenHeader({
   profilePicture,
   roleTag,
   rating,
+  onReportPress,
 }: ChatScreenHeaderProps) {
   return (
     <View style={styles.header}>
@@ -49,6 +52,25 @@ export default function ChatScreenHeader({
           </View>
         </View>
       </View>
+
+      {/* Report icon — only rendered when callback is provided */}
+      {onReportPress && (
+        <Pressable
+          onPress={onReportPress}
+          hitSlop={8}
+          style={styles.reportButton}
+          accessibilityRole="button"
+          accessibilityLabel="Report chat participant"
+          accessibilityHint="Opens a dialog to report this user"
+        >
+          <Image
+            source={require('@/assets/icons/flagReport.svg')}
+            style={styles.reportIcon}
+            contentFit="contain"
+          />
+        </Pressable>
+      )}
+
       <View>
         <Image
           source={require('@/assets/icons/call.svg')}
@@ -115,6 +137,14 @@ const styles = StyleSheet.create(theme => ({
   ratingImage: {
     width: 12,
     height: 12,
+  },
+  reportButton: {
+    padding: theme.spacing.s2,
+  },
+  reportIcon: {
+    width: 22,
+    height: 22,
+    tintColor: theme.state.error,
   },
   call: {
     width: 50,
