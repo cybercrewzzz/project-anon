@@ -40,9 +40,14 @@ const Icon = ({
     };
   });
 
-  const handlePress = () => {
+  const handlePress = async () => {
     // Subtle Haptic Feedback
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    try {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch (error) {
+      // Haptic feedback is a non-critical enhancement; log and continue.
+      console.warn('Failed to trigger haptic feedback', error);
+    }
 
     // Shake animation (subtle "no" - left, right, left, right, center)
     const SHAKE_AMOUNT = 5;
