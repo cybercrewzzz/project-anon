@@ -63,11 +63,7 @@ export default function BlockConfirmationDialog({
         </View>
 
         {/* Title */}
-        <AppText
-          variant="title3"
-          emphasis="emphasized"
-          textAlign="center"
-        >
+        <AppText variant="title3" emphasis="emphasized" textAlign="center">
           Block this user?
         </AppText>
 
@@ -98,10 +94,7 @@ export default function BlockConfirmationDialog({
           </Pressable>
 
           <Pressable
-            style={[
-              styles.blockButton,
-              isPending && styles.buttonDisabled,
-            ]}
+            style={[styles.blockButton, isPending && styles.buttonDisabled]}
             onPress={onConfirm}
             disabled={isPending}
           >
