@@ -4,6 +4,8 @@ import {
   UnauthorizedException,
   ForbiddenException,
   InternalServerErrorException,
+  Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -14,16 +16,19 @@ import { RedisService } from '../redis/redis.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { VerifyOtpDto } from './dto/verify-otp.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { RegisterVolunteerDto } from './dto/register-volunteer.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
 import { LogoutDto } from './dto/logout.dto.js';
 import { generateUniqueNickname } from '../common/utils/nickname-generator.js';
-import { AgeRange } from '../generated/prisma/client.js';
+import { AgeRange, Prisma } from '../generated/prisma/client.js';
 import type { StringValue } from 'ms';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -34,9 +39,10 @@ export class AuthService {
   // ── Register ──────────────────────────────────────────────────────
 
   async register(dto: RegisterDto) {
+    const email = this.normalizeEmail(dto.email);
     // Check if email is taken (including by admin accounts)
     const existingAccount = await this.prisma.account.findUnique({
-      where: { email: dto.email },
+      where: { email },
     });
 
     if (existingAccount) {
@@ -66,7 +72,7 @@ export class AuthService {
     const account = await this.prisma.$transaction(async (tx) => {
       const newAccount = await tx.account.create({
         data: {
-          email: dto.email,
+          email,
           passwordHash,
           name: null,
           nickname,
@@ -111,9 +117,10 @@ export class AuthService {
   // ── Register Volunteer ─────────────────────────────────────────────
 
   async registerVolunteer(dto: RegisterVolunteerDto) {
+    const email = this.normalizeEmail(dto.email);
     // Check if email is taken
     const existingAccount = await this.prisma.account.findUnique({
-      where: { email: dto.email },
+      where: { email },
     });
 
     if (existingAccount) {
@@ -143,7 +150,7 @@ export class AuthService {
     const account = await this.prisma.$transaction(async (tx) => {
       const newAccount = await tx.account.create({
         data: {
-          email: dto.email,
+          email,
           passwordHash,
           name: dto.name,
           nickname,
@@ -188,9 +195,10 @@ export class AuthService {
   // ── Login ─────────────────────────────────────────────────────────
 
   async login(dto: LoginDto) {
+    const email = this.normalizeEmail(dto.email);
     // Find account by email
     const account = await this.prisma.account.findUnique({
-      where: { email: dto.email },
+      where: { email },
       include: {
         accountRoles: {
           include: { role: true },
@@ -254,9 +262,10 @@ export class AuthService {
   // ── Forgot Password ───────────────────────────────────────────────
 
   async forgotPassword(dto: ForgotPasswordDto) {
+    const email = this.normalizeEmail(dto.email);
     // 1. Check if account exists
     const account = await this.prisma.account.findUnique({
-      where: { email: dto.email },
+      where: { email },
     });
 
     if (!account) {
@@ -264,43 +273,100 @@ export class AuthService {
       return { message: 'If an account exists, an OTP has been sent.' };
     }
 
-    // 2. Generate a 4-digit OTP
-    const otp = randomInt(1000, 10000).toString();
+    // 2. Generate a 6-digit OTP (100000 - 999999)
+    const otp = randomInt(100000, 1000000).toString();
 
     // 3. Store OTP in Redis and set an expiration (e.g., 5 minutes)
-    const redisKey = `pwd-reset-otp:${account.email}`;
+    const redisKey = `pwd-reset-otp:${email}`;
     await this.redis.set(redisKey, otp, 'EX', 5 * 60);
 
     // 4. (Simulated) Send the OTP to the user's email
     // In a real application, inject an EmailService and send here.
-    console.log(
+    this.logger.debug(
       `[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`,
     );
+    this.logger.log(`Password reset OTP sent to ${account.email}`);
 
     return { message: 'If an account exists, an OTP has been sent.' };
   }
 
   async verifyOtp(dto: VerifyOtpDto) {
-    const redisKey = `pwd-reset-otp:${dto.email}`;
-    const storedOtp = await this.redis.get(redisKey);
+    const email = this.normalizeEmail(dto.email);
+    const attemptsKey = `pwd-reset-attempts:${email}`;
+    const otpKey = `pwd-reset-otp:${email}`;
+
+    // 1. Check for lockout
+    const attempts = await this.redis.get(attemptsKey);
+    if (attempts && parseInt(attempts, 10) >= 5) {
+      throw new ForbiddenException(
+        'Too many failed attempts. Please try again after 15 minutes.',
+      );
+    }
+
+    // 2. Retrieve the stored OTP
+    const storedOtp = await this.redis.get(otpKey);
 
     if (!storedOtp || storedOtp !== dto.otp) {
+      // Increment and set/extend attempts counter with 15-minute TTL
+      const currentAttempts = (await this.redis.incr(
+        attemptsKey,
+      )) as unknown as number;
+      if (currentAttempts === 1) {
+        await this.redis.expire(attemptsKey, 15 * 60);
+      }
       throw new UnauthorizedException('Invalid or expired OTP.');
     }
 
-    // OTP is valid. Remove it to prevent reuse.
-    await this.redis.del(redisKey);
+    // 3. Success: Cleanup OTP and attempt counter
+    await Promise.all([this.redis.del(otpKey), this.redis.del(attemptsKey)]);
 
     // Generate a temporary reset token valid for 15 minutes.
     const resetToken = randomUUID();
-    await this.redis.set(
-      `pwd-reset-token:${dto.email}`,
-      resetToken,
-      'EX',
-      15 * 60,
-    );
+    const tokenHash = this.hashToken(resetToken);
+    await this.redis.set(`pwd-reset-token:${email}`, tokenHash, 'EX', 15 * 60);
 
     return { resetToken };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const email = this.normalizeEmail(dto.email);
+    const redisKey = `pwd-reset-token:${email}`;
+    const storedTokenHash = await this.redis.get(redisKey);
+
+    if (
+      !storedTokenHash ||
+      storedTokenHash !== this.hashToken(dto.resetToken)
+    ) {
+      throw new UnauthorizedException('Invalid or expired reset token.');
+    }
+
+    // Token is valid. Hash the new password and update the DB.
+    const passwordHash = await argon2.hash(dto.newPassword, {
+      type: argon2.argon2id,
+    });
+
+    try {
+      await this.prisma.account.update({
+        where: { email },
+        data: { passwordHash },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('Account not found.');
+      }
+      throw error;
+    } finally {
+      // Always remove the reset token once used (or if the account is gone).
+      await this.redis.del(redisKey);
+    }
+
+    // Optionally revoke all existing sessions to force re-login.
+    // (Skipping for now to keep it simple, but recommended in prod).
+
+    return { message: 'Password has been successfully reset.' };
   }
 
   // ── Refresh ───────────────────────────────────────────────────────
@@ -485,5 +551,9 @@ export class AuthService {
     };
 
     return new Date(Date.now() + value * multipliers[unit]);
+  }
+
+  private normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
   }
 }
