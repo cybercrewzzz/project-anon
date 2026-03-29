@@ -36,15 +36,32 @@ function formatDuration(startedAt: string, endedAt: string | null): string {
   return `${minutes}m ${seconds}s`;
 }
 
-function statusColor(status: string): string {
+function formatStatusLabel(status: string): string {
   switch (status) {
+    case 'cancelled_timeout':
+      return 'Cancelled (Timeout)';
+    case 'cancelled_disconnect':
+      return 'Cancelled (Disconnect)';
     case 'completed':
-      return '#4CAF50';
+      return 'Completed';
+    case 'waiting':
+      return 'Waiting';
+    case 'started':
+      return 'In Progress';
     case 'cancelled':
-      return '#FF5252';
+      return 'Cancelled';
     default:
-      return '#9E9E9E';
+      return status
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
   }
+}
+
+function statusColor(status: string): string {
+  if (status === 'completed') return '#4CAF50';
+  if (status.startsWith('cancelled')) return '#FF5252';
+  return '#9E9E9E';
 }
 
 function StarRating({ rating }: { rating: number | null }) {
@@ -95,7 +112,7 @@ function HistoryCard({ item }: { item: SessionHistoryItem }) {
             variant="caption2"
             style={{ color: statusColor(item.status) }}
           >
-            {item.status}
+            {formatStatusLabel(item.status)}
           </AppText>
         </View>
       </View>
