@@ -8,9 +8,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { createHash, randomUUID } from 'crypto';
+import { createHash, randomUUID, randomInt } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { RedisService } from '../redis/redis.service.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 import { RegisterVolunteerDto } from './dto/register-volunteer.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
@@ -25,6 +28,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly redis: RedisService,
   ) {}
 
   // ── Register ──────────────────────────────────────────────────────
@@ -199,10 +203,17 @@ export class AuthService {
     }
 
     // Verify password
-    const passwordValid = await argon2.verify(
-      account.passwordHash,
-      dto.password,
-    );
+    let passwordValid = false;
+    if (account.passwordHash.startsWith('$argon2')) {
+      try {
+        passwordValid = await argon2.verify(account.passwordHash, dto.password);
+      } catch {
+        throw new InternalServerErrorException(
+          'Internal server error during authentication',
+        );
+      }
+    }
+
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -238,6 +249,58 @@ export class AuthService {
         roles,
       },
     };
+  }
+
+  // ── Forgot Password ───────────────────────────────────────────────
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    // 1. Check if account exists
+    const account = await this.prisma.account.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!account) {
+      // Don't reveal if account exists or not
+      return { message: 'If an account exists, an OTP has been sent.' };
+    }
+
+    // 2. Generate a 4-digit OTP
+    const otp = randomInt(1000, 10000).toString();
+
+    // 3. Store OTP in Redis and set an expiration (e.g., 5 minutes)
+    const redisKey = `pwd-reset-otp:${account.email}`;
+    await this.redis.set(redisKey, otp, 'EX', 5 * 60);
+
+    // 4. (Simulated) Send the OTP to the user's email
+    // In a real application, inject an EmailService and send here.
+    console.log(
+      `[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`,
+    );
+
+    return { message: 'If an account exists, an OTP has been sent.' };
+  }
+
+  async verifyOtp(dto: VerifyOtpDto) {
+    const redisKey = `pwd-reset-otp:${dto.email}`;
+    const storedOtp = await this.redis.get(redisKey);
+
+    if (!storedOtp || storedOtp !== dto.otp) {
+      throw new UnauthorizedException('Invalid or expired OTP.');
+    }
+
+    // OTP is valid. Remove it to prevent reuse.
+    await this.redis.del(redisKey);
+
+    // Generate a temporary reset token valid for 15 minutes.
+    const resetToken = randomUUID();
+    await this.redis.set(
+      `pwd-reset-token:${dto.email}`,
+      resetToken,
+      'EX',
+      15 * 60,
+    );
+
+    return { resetToken };
   }
 
   // ── Refresh ───────────────────────────────────────────────────────
