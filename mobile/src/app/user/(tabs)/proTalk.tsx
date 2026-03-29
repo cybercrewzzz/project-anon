@@ -53,6 +53,10 @@ const ProTalk = () => {
           title="End Call"
           onPress={() => router.push('/user/EndCall/endCall' as any)}
         />
+        <Button
+          title="To p2p-voice"
+          onPress={() => router.navigate('/user/p2p-voice/P2P-voice')}
+        />
       </View>
     </SafeAreaView>
   );
