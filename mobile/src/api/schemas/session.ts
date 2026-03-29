@@ -48,7 +48,7 @@ export const SessionDetailSchema = z.object({
   closedReason: z.string().nullable(),
   userRating: z.number().nullable(),
   volunteerRating: z.number().nullable(),
-  starredByUser: z.boolean(),
+  starredByUser: z.boolean().nullable(),
 });
 export type SessionDetail = z.infer<typeof SessionDetailSchema>;
 
@@ -66,6 +66,7 @@ export const SessionHistoryItemSchema = z.object({
 export type SessionHistoryItem = z.infer<typeof SessionHistoryItemSchema>;
 
 export const SessionHistorySchema = z.object({
+  data: z.array(SessionDetailSchema),
   sessions: z.array(SessionHistoryItemSchema),
   total: z.number(),
   page: z.number(),
@@ -76,6 +77,9 @@ export type SessionHistory = z.infer<typeof SessionHistorySchema>;
 // ── GET /session/tickets ──
 
 export const SessionTicketsSchema = z.object({
+  daily: z.number(),
+  consumed: z.number(),
+  reserved: z.number(),
   remaining: z.number(),
   total: z.number(),
   resetAt: z.string().optional(),

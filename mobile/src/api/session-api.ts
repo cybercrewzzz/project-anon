@@ -43,6 +43,15 @@ export async function connectSession(
     if (matchResult.success) return matchResult.data;
     return SessionConnectWaitingSchema.parse(data);
   } catch (error) {
+    // The backend returns HTTP 202 with the waiting payload.
+    // Our apiClient (Axios instance) is configured to reject 202 responses,
+    // so they arrive here as errors even though 202 is a success status.
+    const axiosError = error as {
+      response?: { status?: number; data?: unknown };
+    };
+    if (axiosError?.response?.status === 202) {
+      return SessionConnectWaitingSchema.parse(axiosError.response.data);
+    }
     throw parseApiError(error);
   }
 }
