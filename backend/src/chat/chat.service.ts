@@ -96,19 +96,16 @@ export class ChatService {
 
   // ── Volunteer Online Pool ─────────────────────────────────────────
 
-  /**
-   * No-op: online presence is encoded by the account:<id>:socket mapping
-   * that `mapSocket` maintains with a TTL.  Keeping this method so the
-   * gateway call sites don't need to change.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async addToOnlinePool(_accountId: string): Promise<void> {}
+  /** Track that a volunteer is currently connected via WebSocket. */
+  private static readonly VOLUNTEERS_ONLINE_KEY = 'volunteers:online';
 
-  /**
-   * No-op: socket mapping is cleared by `unmapSocket` in handleDisconnect.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async removeFromOnlinePool(_accountId: string): Promise<void> {}
+  async addToOnlinePool(accountId: string): Promise<void> {
+    await this.redis.sadd(ChatService.VOLUNTEERS_ONLINE_KEY, accountId);
+  }
+
+  async removeFromOnlinePool(accountId: string): Promise<void> {
+    await this.redis.srem(ChatService.VOLUNTEERS_ONLINE_KEY, accountId);
+  }
 
   /**
    * A volunteer is "online" if a socket mapping exists for their account.
@@ -118,6 +115,27 @@ export class ChatService {
   async isInOnlinePool(accountId: string): Promise<boolean> {
     const socketId = await this.redis.get(`account:${accountId}:socket`);
     return socketId !== null;
+  }
+
+  /**
+   * Get the socket IDs of all currently online volunteers.
+   * Used to broadcast session:waiting events in real time.
+   */
+  async getOnlineVolunteerSocketIds(): Promise<string[]> {
+    const volunteerIds = await this.redis.smembers(
+      ChatService.VOLUNTEERS_ONLINE_KEY,
+    );
+    const socketIds: string[] = [];
+    for (const volunteerId of volunteerIds) {
+      const socketId = await this.redis.get(`account:${volunteerId}:socket`);
+      if (socketId) {
+        socketIds.push(socketId);
+      } else {
+        // Stale entry — volunteer disconnected without cleanup
+        await this.redis.srem(ChatService.VOLUNTEERS_ONLINE_KEY, volunteerId);
+      }
+    }
+    return socketIds;
   }
 
   /**

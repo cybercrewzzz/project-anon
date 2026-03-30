@@ -290,8 +290,9 @@ export class SessionProcessor extends WorkerHost {
     // Release the reserved ticket back to the seeker.
     await this.tickets.releaseReserved(seekerId);
 
-    // Clean up the Redis session hash.
+    // Clean up the Redis session hash and remove from the waiting set.
     await this.redis.del(`session:${sessionId}`);
+    await this.redis.srem('sessions:waiting', sessionId);
 
     // ── STEP 5: Notify the seeker via WebSocket ─────────────────────────
     // The seeker is on the WaitingScreen, NOT in a room — they never called

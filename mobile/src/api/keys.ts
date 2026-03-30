@@ -27,6 +27,7 @@ export const queryKeys = {
     all: ['session'] as const,
     detail: (sessionId: string) =>
       [...queryKeys.session.all, sessionId] as const,
+    waiting: ['session', 'waiting'] as const,
   },
 
   // ── Reference data ──
