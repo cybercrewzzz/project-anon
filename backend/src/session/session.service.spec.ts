@@ -32,6 +32,9 @@ type MockPrismaService = {
   volunteerProfile: {
     findMany: jest.Mock;
   };
+  account: {
+    findUnique: jest.Mock;
+  };
   $transaction: jest.Mock;
 };
 
@@ -44,6 +47,8 @@ type MockRedisService = {
   hgetall: jest.Mock;
   hsetnx: jest.Mock;
   smembers: jest.Mock;
+  sadd: jest.Mock;
+  srem: jest.Mock;
   expire: jest.Mock;
   multi: jest.Mock;
 };
@@ -86,6 +91,9 @@ describe('SessionService', () => {
       volunteerProfile: {
         findMany: jest.fn(),
       },
+      account: {
+        findUnique: jest.fn().mockResolvedValue(null),
+      },
       $transaction: jest.fn(),
     };
 
@@ -98,13 +106,17 @@ describe('SessionService', () => {
       hgetall: jest.fn(),
       hsetnx: jest.fn(),
       smembers: jest.fn(),
+      sadd: jest.fn().mockResolvedValue(1),
+      srem: jest.fn().mockResolvedValue(1),
       expire: jest.fn(),
       multi: jest.fn().mockReturnValue({
         hdel: jest.fn().mockReturnThis(),
         hset: jest.fn().mockReturnThis(),
         expire: jest.fn().mockReturnThis(),
+        srem: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([
           [null, 'OK'],
+          [null, 1],
           [null, 1],
         ]),
       }),
