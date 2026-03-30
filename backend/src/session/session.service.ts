@@ -458,6 +458,38 @@ export class SessionService {
         300,
       );
 
+      // ── Emit session:waiting to all online volunteers ─────────────────
+      // So their Connect tab updates in real-time without polling.
+      try {
+        const category = await this.prisma.category.findUnique({
+          where: { categoryId },
+          select: { name: true },
+        });
+        const seeker = await this.prisma.account.findUnique({
+          where: { accountId: seekerId },
+          select: { name: true },
+        });
+        const volunteerSocketIds = await this.getOnlineVolunteerSocketIds();
+        for (const socketId of volunteerSocketIds) {
+          this.chatServer.server.to(socketId).emit('session:waiting', {
+            sessionId: session.sessionId,
+            category: category?.name ?? null,
+            seekerNickname: seeker?.name ?? 'Anonymous',
+            startedAt: new Date().toISOString(),
+          });
+        }
+        this.logger.log(
+          `Emitted session:waiting to ${volunteerSocketIds.length} online volunteers`,
+        );
+      } catch (emitErr) {
+        // Non-fatal — log but don't fail the request
+        this.logger.warn(
+          `Failed to emit session:waiting: ${
+            emitErr instanceof Error ? emitErr.message : String(emitErr)
+          }`,
+        );
+      }
+
       // Throw an HttpException with 202 status.
       // NestJS doesn't have a built-in 202 exception, so we throw a generic one.
       throw new HttpException(result, HttpStatus.ACCEPTED);
@@ -810,7 +842,24 @@ export class SessionService {
         );
       }
 
-      // ── STEP 9: Return the response to the volunteer ──────────────────────
+      // ── STEP 9: Notify online volunteers that this session is no longer available ─
+      try {
+        const volunteerSocketIds = await this.getOnlineVolunteerSocketIds();
+        for (const volSocketId of volunteerSocketIds) {
+          this.chatServer.server.to(volSocketId).emit('session:accepted', {
+            sessionId,
+          });
+        }
+      } catch (emitErr) {
+        // Non-fatal
+        this.logger.warn(
+          `Failed to emit session:accepted: ${
+            emitErr instanceof Error ? emitErr.message : String(emitErr)
+          }`,
+        );
+      }
+
+      // ── STEP 10: Return the response to the volunteer ─────────────────────
       return {
         sessionId,
         seekerId,
@@ -1153,6 +1202,21 @@ export class SessionService {
       }));
 
     return { sessions: result };
+  }
+
+  // ─── Helper: get online volunteer socket IDs for WebSocket broadcasts ───
+  private async getOnlineVolunteerSocketIds(): Promise<string[]> {
+    const volunteerIds = await this.redis.smembers('volunteers:online');
+    const socketIds: string[] = [];
+    for (const volunteerId of volunteerIds) {
+      const socketId = await this.redis.get(
+        `account:${volunteerId}:socket`,
+      );
+      if (socketId) {
+        socketIds.push(socketId);
+      }
+    }
+    return socketIds;
   }
 
   // ─── Helper: find offline volunteers for Path B push notifications ────
