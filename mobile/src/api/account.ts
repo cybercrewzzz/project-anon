@@ -70,6 +70,21 @@ export async function changePassword(
   return data;
 }
 
+/**
+ * GET /account/me/points — Fetch the user's points and level.
+ */
+export interface UserPointsResponse {
+  points: number;
+  level: number;
+  lastUpdated: string;
+}
+
+export async function fetchUserPoints(): Promise<UserPointsResponse> {
+  const { data } =
+    await apiClient.get<UserPointsResponse>('/account/me/points');
+  return data;
+}
+
 // ─── Device Token ────────────────────────────────────────────────────────────
 
 /**

@@ -40,6 +40,8 @@ export const queryKeys = {
   // ── Block list ──
   blocks: ['blocks'] as const,
 
+  // ── User Points ──
+  points: ['user', 'points'] as const,
   // ── Reports ──
   reports: ['reports'] as const,
 } as const;
