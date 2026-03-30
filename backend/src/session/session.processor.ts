@@ -4,6 +4,7 @@ import { Job } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { TicketService } from './ticket.service';
+import { ChatServerService } from '../chat/chat-server.service';
 import { SessionStatus, UserProblemStatus } from '../generated/prisma/client';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,6 +63,7 @@ export class SessionProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     private readonly tickets: TicketService,
+    private readonly chatServer: ChatServerService,
   ) {
     super();
   }
@@ -290,6 +292,26 @@ export class SessionProcessor extends WorkerHost {
 
     // Clean up the Redis session hash.
     await this.redis.del(`session:${sessionId}`);
+
+    // ── STEP 5: Notify the seeker via WebSocket ─────────────────────────
+    // The seeker is on the WaitingScreen, NOT in a room — they never called
+    // room:join. We must emit directly to their socket, not to a room.
+    const seekerSocketId = await this.redis.get(`account:${seekerId}:socket`);
+    if (seekerSocketId) {
+      try {
+        this.chatServer.server.to(seekerSocketId).emit('session:ended', {
+          sessionId,
+          reason: 'no_volunteer',
+        });
+      } catch (emitErr) {
+        // Non-fatal — log but don't fail the job
+        this.logger.warn(
+          `Failed to emit session:ended to seeker ${seekerId}: ${
+            emitErr instanceof Error ? emitErr.message : String(emitErr)
+          }`,
+        );
+      }
+    }
 
     this.logger.log(
       `Match timeout: no volunteer accepted for session ${sessionId} — ` +
