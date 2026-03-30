@@ -119,6 +119,23 @@ export class SessionController {
     );
   }
 
+  // ─── GET /session/waiting ─────────────────────────────────────────────
+  //
+  // WHAT THIS ROUTE DOES:
+  // Returns all sessions that are currently in a 'waiting' state — i.e.
+  // seekers who have connected but haven't been matched to a volunteer yet.
+  // Online volunteers poll this endpoint (and also receive real-time WebSocket
+  // events) to see incoming session requests they can accept.
+  //
+  // Route ordering note: 'waiting' is a fixed string route, so it must
+  // stay above any ':sessionId' dynamic routes.
+
+  @Get('waiting')
+  @Roles('volunteer')
+  async waiting(@CurrentUser() user: ValidatedUser) {
+    return this.sessionService.getWaitingSessions(user.accountId);
+  }
+
   // ─── GET /session/history ──────────────────────────────────────────────
   //
   // WHAT THIS ROUTE DOES:

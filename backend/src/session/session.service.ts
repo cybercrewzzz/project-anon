@@ -398,6 +398,10 @@ export class SessionService {
         startedAt: new Date().toISOString(),
       });
 
+      // Track the waiting session in a Redis Set for fast lookup.
+      // GET /session/waiting reads this set instead of scanning all keys.
+      await this.redis.sadd('sessions:waiting', session.sessionId);
+
       // Set a TTL on the session hash to match the match timeout.
       // For waiting sessions, TTL should be 3 minutes (MATCH_TIMEOUT_MS),
       // not 45 minutes, to avoid volunteers accepting expired sessions.
@@ -633,6 +637,7 @@ export class SessionService {
         .multi()
         .hset(`session:${sessionId}`, 'status', 'active')
         .expire(`session:${sessionId}`, SESSION_TIMEOUT_MS / 1000)
+        .srem('sessions:waiting', sessionId)
         .exec();
 
       // ioredis exec() returns [[err1, result1], [err2, result2], ...]
@@ -1062,6 +1067,92 @@ export class SessionService {
     // TicketService.getRemaining() reads from Redis and returns:
     // { daily: 5, consumed: 2, reserved: 1, remaining: 2 }
     return this.tickets.getRemaining(seekerId);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // getWaitingSessions() — the full logic for GET /session/waiting
+  //
+  // Returns all sessions currently waiting for a volunteer to accept.
+  // Reads the `sessions:waiting` Redis Set, then enriches each session
+  // with category name and seeker nickname from the database.
+  //
+  // Volunteers see ALL waiting sessions — no specialisation filtering.
+  // Block filtering is applied to exclude sessions from blocked seekers.
+  // ─────────────────────────────────────────────────────────────────────────
+  async getWaitingSessions(volunteerId: string) {
+    // ── STEP 1: Get all waiting session IDs from the Redis Set ─────────
+    const waitingSessionIds = await this.redis.smembers('sessions:waiting');
+
+    if (waitingSessionIds.length === 0) {
+      return { sessions: [] };
+    }
+
+    // ── STEP 2: Verify each session is still actually waiting in Redis ──
+    // A session may have been accepted between the SMEMBERS read and now.
+    // Check each session hash and filter out stale entries.
+    const validSessionIds: string[] = [];
+    const sessionHashes: Record<string, Record<string, string>> = {};
+
+    for (const sessionId of waitingSessionIds) {
+      const hash = await this.redis.hgetall(`session:${sessionId}`);
+      if (hash && hash.status === 'waiting') {
+        validSessionIds.push(sessionId);
+        sessionHashes[sessionId] = hash;
+      } else {
+        // Stale entry in the set — clean it up
+        await this.redis.srem('sessions:waiting', sessionId);
+      }
+    }
+
+    if (validSessionIds.length === 0) {
+      return { sessions: [] };
+    }
+
+    // ── STEP 3: Fetch session details from DB (category + seeker info) ──
+    const sessions = await this.prisma.chatSession.findMany({
+      where: {
+        sessionId: { in: validSessionIds },
+        status: SessionStatus.active,
+        listenerId: null,
+      },
+      include: {
+        problem: {
+          include: {
+            category: { select: { name: true } },
+          },
+        },
+        seeker: {
+          select: { name: true },
+        },
+      },
+    });
+
+    // ── STEP 4: Filter out sessions from blocked seekers ────────────────
+    const blocks = await this.prisma.blocklist.findMany({
+      where: {
+        OR: [
+          { blockerId: volunteerId, blockedId: { in: sessions.map((s) => s.seekerId) } },
+          { blockedId: volunteerId, blockerId: { in: sessions.map((s) => s.seekerId) } },
+        ],
+      },
+      select: { blockerId: true, blockedId: true },
+    });
+
+    const blockedSeekerIds = new Set(
+      blocks.map((b) => (b.blockerId === volunteerId ? b.blockedId : b.blockerId)),
+    );
+
+    // ── STEP 5: Map to response shape ──────────────────────────────────
+    const result = sessions
+      .filter((s) => !blockedSeekerIds.has(s.seekerId))
+      .map((s) => ({
+        sessionId: s.sessionId,
+        category: s.problem?.category?.name ?? null,
+        seekerNickname: s.seeker?.name ?? 'Anonymous',
+        startedAt: (sessionHashes[s.sessionId]?.startedAt ?? s.startedAt?.toISOString() ?? new Date().toISOString()),
+      }));
+
+    return { sessions: result };
   }
 
   // ─── Helper: find offline volunteers for Path B push notifications ────
