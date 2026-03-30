@@ -13,44 +13,27 @@ const ProTalk = () => {
           onPress={() => router.push('/user/TnS agree/TnS')}
         />
         <Button
-          title="Peer to Peer"
-          onPress={() => router.push('/user/PeertoPeer/peertopeer')}
+          title="Peer to Peer (Connect Tab)"
+          onPress={() => router.navigate('/user/(tabs)/connect' as any)}
         />
         <Button
           title="To User Profile"
           onPress={() => router.push('/user/userProfile/UserProfile')}
         />
-        <Button
-          title="To P2P-P2V-withCategory"
-          onPress={() =>
-            router.navigate('/user/p2p-p2v-withCategory/P2P-P2V-withCategory')
-          }
-        />
-        <Button
-          title="To Category Dropdown Filter"
-          onPress={() =>
-            router.push(
-              '/user/categorydropdownfilter/categorydropdownfilter' as any,
-            )
-          }
-        />
-        <Button
-          title="Category Dropdown 1"
-          onPress={() =>
-            router.navigate('/user/categorydropdown1/categorydrop1' as any)
-          }
-        />
-        <Button
-          title="Category Dropdown Other"
-          onPress={() =>
-            router.navigate(
-              '/user/categorydropdownother/categorydropother' as any,
-            )
-          }
-        />
+        {/* Legacy screen navigation — now consolidated into connect tab */}
+        {/* <Button title="To P2P-P2V-withCategory" onPress={() => router.navigate('/user/p2p-p2v-withCategory/P2P-P2V-withCategory')} /> */}
+        {/* <Button title="To Category Dropdown Filter" onPress={() => router.push('/user/categorydropdownfilter/categorydropdownfilter')} /> */}
+        {/* <Button title="Category Dropdown 1" onPress={() => router.navigate('/user/categorydropdown1/categorydrop1')} /> */}
+        {/* <Button title="Category Dropdown Other" onPress={() => router.navigate('/user/categorydropdownother/categorydropother')} /> */}
         <Button
           title="End Call"
           onPress={() => router.push('/user/EndCall/endCall' as any)}
+        />
+        <Button
+          title="Session History"
+          onPress={() =>
+            router.push('/user/session-history/sessionHistory' as any)
+          }
         />
         {__DEV__ && (
           <Button

@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { SessionController } from './session.controller';
 import { SessionService } from './session.service';
+import { SessionProcessor } from './session.processor';
 import { MatchingService } from './matching.service';
 import { TicketService } from './ticket.service';
+import { ChatModule } from '../chat/chat.module';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WHAT IS A MODULE?
@@ -46,6 +48,9 @@ import { TicketService } from './ticket.service';
       { name: 'sessions' }, // for session:grace-end, session:timeout, match:timeout
       { name: 'notifications' }, // for notify:volunteers (processed by Thusirui's worker)
     ),
+    // Import ChatModule so ChatServerService is available for SessionService
+    // to emit session:matched to seekers when a volunteer accepts (Path B).
+    ChatModule,
     // PrismaModule and RedisModule are global modules registered in AppModule.
     // You do NOT need to import them here — they are automatically available
     // everywhere once registered globally in app.module.ts.
@@ -61,6 +66,7 @@ import { TicketService } from './ticket.service';
     // All services used within this module must be listed here.
     // NestJS will instantiate them and inject them wherever needed.
     SessionService,
+    SessionProcessor,
     MatchingService,
     TicketService,
     // Note: SessionController also lives here implicitly through `controllers`,

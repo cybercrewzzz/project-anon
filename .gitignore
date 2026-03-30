@@ -178,3 +178,6 @@ dist
 # .pnp.*
 
 # End of https://www.toptal.com/developers/gitignore/api/yarn,node,visualstudiocode
+
+# PR documentation
+*.pr.md

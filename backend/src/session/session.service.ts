@@ -21,6 +21,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { MatchingService } from './matching.service';
 import { TicketService } from './ticket.service';
+import { ChatServerService } from '../chat/chat-server.service';
 import type { ConnectSessionDto } from './dto/session-connect.dto';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,11 +51,6 @@ type ConnectResult =
       sessionId: string;
       volunteerId: string;
       wsRoom: string;
-      turnCredentials: {
-        urls: string[];
-        username: string;
-        credential: string;
-      };
     }
   | {
       status: 'waiting';
@@ -70,6 +66,7 @@ export class SessionService {
     private readonly redis: RedisService,
     private readonly matching: MatchingService,
     private readonly tickets: TicketService,
+    private readonly chatServer: ChatServerService,
     // @InjectQueue() gives us a BullMQ Queue instance for the 'sessions' queue.
     // A Queue is how you ADD jobs. The actual processing of jobs (workers)
     // is defined separately — in this task that worker code also lives here,
@@ -263,12 +260,10 @@ export class SessionService {
           SESSION_TIMEOUT_MS / 1000,
         );
 
-        // Set an empty messages list key with TTL so Redis auto-cleans it.
-        // The WebSocket gateway will RPUSH messages to session:{id}:msgs.
-        await this.redis.expire(
-          `session:${session.sessionId}:msgs`,
-          SESSION_TIMEOUT_MS / 1000,
-        );
+        // NOTE: We do NOT call expire on session:{id}:msgs here.
+        // The key doesn't exist yet — EXPIRE on a non-existent key is a no-op.
+        // The WebSocket gateway creates this key on the first RPUSH and should
+        // set its own TTL at that point.
 
         // Schedule BullMQ jobs:
         //
@@ -278,7 +273,12 @@ export class SessionService {
         await this.sessionQueue.add(
           'session:grace-end',
           { sessionId: session.sessionId, seekerId },
-          { delay: GRACE_END_MS, jobId: `grace-end:${session.sessionId}` },
+          {
+            delay: GRACE_END_MS,
+            jobId: `grace-end-${session.sessionId}`,
+            removeOnComplete: true,
+            removeOnFail: { age: 24 * 60 * 60 },
+          },
         );
 
         // 2. session:timeout (45 min delay)
@@ -286,17 +286,19 @@ export class SessionService {
         await this.sessionQueue.add(
           'session:timeout',
           { sessionId: session.sessionId },
-          { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${session.sessionId}` },
+          {
+            delay: SESSION_TIMEOUT_MS,
+            jobId: `timeout-${session.sessionId}`,
+            removeOnComplete: true,
+            removeOnFail: { age: 24 * 60 * 60 },
+          },
         );
 
         // The response for "match found" (HTTP 200).
-        // turnCredentials are TURN server creds for WebRTC — generate them here
-        // or call a TURN credential service. Placeholder shown below.
         const result = {
           sessionId: session.sessionId,
           volunteerId: matchedVolunteerId,
           wsRoom: `session:${session.sessionId}`,
-          turnCredentials: this.generateTurnCredentials(session.sessionId),
         };
 
         // Store the result in Redis for idempotency (5-minute TTL).
@@ -385,11 +387,13 @@ export class SessionService {
       });
 
       // Store a waiting session hash in Redis.
-      // The `listenerId` field is intentionally empty — the /accept endpoint
-      // will use HSETNX to atomically fill it in (only one volunteer can win).
+      // NOTE: do NOT include a `listenerId` field here.
+      // The /accept endpoint uses HSETNX to atomically write listenerId,
+      // which only succeeds when the field does NOT already exist.
+      // Pre-storing an empty string would make the field exist,
+      // causing HSETNX to return 0 for every volunteer (breaking Path B entirely).
       await this.redis.hset(`session:${session.sessionId}`, {
         seekerId,
-        listenerId: '',
         status: 'waiting',
         startedAt: new Date().toISOString(),
       });
@@ -428,7 +432,9 @@ export class SessionService {
         { sessionId: session.sessionId, seekerId },
         {
           delay: MATCH_TIMEOUT_MS,
-          jobId: `match-timeout:${session.sessionId}`,
+          jobId: `match-timeout-${session.sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
         },
       );
 
@@ -639,7 +645,7 @@ export class SessionService {
         try {
           await this.redis
             .multi()
-            .hset(`session:${sessionId}`, 'listenerId', '')
+            .hdel(`session:${sessionId}`, 'listenerId')
             .hset(`session:${sessionId}`, 'status', 'waiting')
             .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
             .exec();
@@ -676,7 +682,7 @@ export class SessionService {
         // so the session stays claimable by other volunteers for 3 minutes.
         await this.redis
           .multi()
-          .hset(`session:${sessionId}`, 'listenerId', '')
+          .hdel(`session:${sessionId}`, 'listenerId')
           .hset(`session:${sessionId}`, 'status', 'waiting')
           .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
           .exec();
@@ -712,7 +718,7 @@ export class SessionService {
         // so the session remains claimable and consistent with the database.
         await this.redis
           .multi()
-          .hset(`session:${sessionId}`, 'listenerId', '')
+          .hdel(`session:${sessionId}`, 'listenerId')
           .hset(`session:${sessionId}`, 'status', 'waiting')
           .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
           .exec();
@@ -730,7 +736,7 @@ export class SessionService {
       // BullMQ jobs can be cancelled by their jobId if they haven't fired yet.
       try {
         const timeoutJob = await this.sessionQueue.getJob(
-          `match-timeout:${sessionId}`,
+          `match-timeout-${sessionId}`,
         );
         if (timeoutJob) {
           await timeoutJob.remove();
@@ -751,12 +757,22 @@ export class SessionService {
       await this.sessionQueue.add(
         'session:grace-end',
         { sessionId, seekerId },
-        { delay: GRACE_END_MS, jobId: `grace-end:${sessionId}` },
+        {
+          delay: GRACE_END_MS,
+          jobId: `grace-end-${sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
+        },
       );
       await this.sessionQueue.add(
         'session:timeout',
         { sessionId },
-        { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${sessionId}` },
+        {
+          delay: SESSION_TIMEOUT_MS,
+          jobId: `timeout-${sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
+        },
       );
 
       // ── STEP 8: Emit WebSocket event to the seeker ────────────────────────
@@ -767,16 +783,18 @@ export class SessionService {
       // HOW: Look up the seeker's socket ID from Redis, then emit
       // `session:matched` to that socket via the WebSocket gateway.
       //
-      // The WebSocket gateway is Thusirui's code (Task 6). We call it via
-      // a shared service or event emitter so we don't import the whole ChatModule.
-      // For now we log it — wire up the actual emit when Task 6 is merged.
+      // Look up the seeker's socket ID from Redis, then emit
+      // `session:matched` to that socket via ChatServerService.
       const seekerSocketId = await this.redis.get(`account:${seekerId}:socket`);
 
       if (seekerSocketId) {
-        // TODO: call ChatGateway.emitToSocket(seekerSocketId, 'session:matched', payload)
-        // This will be wired up once Thusirui's ChatModule is merged.
+        // Emit directly to the seeker's socket so they know a volunteer accepted
+        this.chatServer.server.to(seekerSocketId).emit('session:matched', {
+          sessionId,
+          volunteerId,
+        });
         this.logger.log(
-          `Should emit session:matched to seeker socket ${seekerSocketId} — wire up ChatGateway here`,
+          `Emitted session:matched to seeker socket ${seekerSocketId}`,
         );
       } else {
         // Seeker disconnected between connecting and now. The reconnect logic
@@ -793,7 +811,6 @@ export class SessionService {
         seekerId,
         category: session.problem?.category?.name ?? null,
         wsRoom: `session:${sessionId}`,
-        turnCredentials: this.generateTurnCredentials(sessionId),
       };
     } finally {
       // Release the volunteer lock safely using atomic compare-and-delete.
@@ -1092,26 +1109,5 @@ export class SessionService {
     });
 
     return candidates.map((v) => v.accountId);
-  }
-
-  // ─── Helper: generate TURN credentials ───────────────────────────────
-  // TURN servers relay WebRTC traffic when direct peer-to-peer fails.
-  // In production, use a proper TURN credential service (e.g. Twilio, Metered).
-  // This is a placeholder — replace with your actual TURN server logic.
-  private generateTurnCredentials(sessionId: string) {
-    const turnServerUrl = process.env.TURN_SERVER_URL;
-    const turnServerSecret = process.env.TURN_SERVER_SECRET;
-
-    if (!turnServerUrl || !turnServerSecret) {
-      throw new Error(
-        'TURN server is not properly configured: TURN_SERVER_URL and TURN_SERVER_SECRET must be set.',
-      );
-    }
-
-    return {
-      urls: [turnServerUrl],
-      username: `session-${sessionId}`,
-      credential: turnServerSecret,
-    };
   }
 }

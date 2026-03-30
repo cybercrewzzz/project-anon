@@ -1,6 +1,7 @@
 import {
   Injectable,
   ConflictException,
+  Logger,
   UnauthorizedException,
   ForbiddenException,
   InternalServerErrorException,
@@ -24,6 +25,8 @@ import type { StringValue } from 'ms';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -271,10 +274,10 @@ export class AuthService {
     const redisKey = `pwd-reset-otp:${account.email}`;
     await this.redis.set(redisKey, otp, 'EX', 5 * 60);
 
-    // 4. (Simulated) Send the OTP to the user's email
-    // In a real application, inject an EmailService and send here.
-    console.log(
-      `[SIMULATED EMAIL] Password reset OTP for ${account.email}: ${otp}`,
+    // TODO: Inject an EmailService and send the OTP via email here.
+    // This MUST be implemented before production — OTPs must never be logged.
+    this.logger.warn(
+      '[PROD TODO] Email integration not implemented. OTP generated for an account but not sent.',
     );
 
     return { message: 'If an account exists, an OTP has been sent.' };

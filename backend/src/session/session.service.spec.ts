@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { MatchingService } from './matching.service';
 import { TicketService } from './ticket.service';
+import { ChatServerService } from '../chat/chat-server.service';
 
 type MockPrismaService = {
   chatSession: {
@@ -99,6 +100,7 @@ describe('SessionService', () => {
       smembers: jest.fn(),
       expire: jest.fn(),
       multi: jest.fn().mockReturnValue({
+        hdel: jest.fn().mockReturnThis(),
         hset: jest.fn().mockReturnThis(),
         expire: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([
@@ -138,6 +140,14 @@ describe('SessionService', () => {
           useValue: ticketMock,
         },
         {
+          provide: ChatServerService,
+          useValue: {
+            server: {
+              to: jest.fn().mockReturnValue({ emit: jest.fn() }),
+            },
+          },
+        },
+        {
           provide: 'BullQueue_sessions',
           useValue: {
             add: jest.fn(),
@@ -170,11 +180,6 @@ describe('SessionService', () => {
         sessionId: 'session-1',
         volunteerId: 'vol-1',
         wsRoom: 'session:session-1',
-        turnCredentials: {
-          urls: ['turn:example.com:3478'],
-          username: 'u',
-          credential: 'c',
-        },
       };
       redis.get.mockResolvedValue(JSON.stringify(cached));
 

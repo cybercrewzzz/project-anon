@@ -108,6 +108,7 @@ model Account {
   deviceTokens             DeviceToken[]
   volunteerProfile         VolunteerProfile?
   volunteerExperience      VolunteerExperience?
+  userPoints               UserPoints?
   userProblems             UserProblem[]
   seekerSessions           ChatSession[]             @relation("SeekerSessions")
   listenerSessions         ChatSession[]             @relation("ListenerSessions")
@@ -283,6 +284,17 @@ model UserProblem {
   @@index([categoryId])
   @@index([status])
   @@map("user_problem")
+}
+
+model UserPoints {
+  accountId   String   @id @map("account_id") @db.Uuid
+  points      Int      @default(0)
+  level       Int      @default(1) @db.SmallInt
+  lastUpdated DateTime @default(now()) @map("last_updated")
+
+  account Account @relation(fields: [accountId], references: [accountId])
+
+  @@map("user_points")
 }
 
 // ─── Volunteer ──────────────────────────────────────────────────────────────

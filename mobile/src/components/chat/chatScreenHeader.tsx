@@ -1,5 +1,5 @@
 import { Image, ImageSource } from 'expo-image';
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { AppText } from '../AppText';
 
@@ -8,6 +8,8 @@ interface ChatScreenHeaderProps {
   name: string;
   roleTag: string;
   rating: string;
+  /** Optional callback — when provided, shows a red flag icon to report the user */
+  onReportPress?: () => void;
 }
 
 export default function ChatScreenHeader({
@@ -15,6 +17,7 @@ export default function ChatScreenHeader({
   profilePicture,
   roleTag,
   rating,
+  onReportPress,
 }: ChatScreenHeaderProps) {
   return (
     <View style={styles.header}>
@@ -49,11 +52,23 @@ export default function ChatScreenHeader({
           </View>
         </View>
       </View>
-      <View>
-        <Image
-          source={require('@/assets/icons/call.svg')}
-          style={styles.call}
-        />
+      <View style={styles.actionsContainer}>
+        {/* Report icon — only rendered when callback is provided */}
+        {onReportPress && (
+          <Pressable
+            onPress={onReportPress}
+            hitSlop={8}
+            style={styles.reportButton}
+            accessibilityRole="button"
+            accessibilityLabel="Report user"
+          >
+            <Image
+              source={require('@/assets/icons/reportFlag.svg')}
+              style={styles.reportIcon}
+              contentFit="contain"
+            />
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -92,6 +107,19 @@ const styles = StyleSheet.create(theme => ({
     width: 18,
     height: 18,
   },
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s3,
+  },
+  reportButton: {
+    padding: theme.spacing.s1,
+  },
+  reportIcon: {
+    width: 18,
+    height: 18,
+    tintColor: theme.state.error,
+  },
   tagContainer: {
     flexDirection: 'row',
     gap: theme.spacing.s3,
@@ -115,9 +143,5 @@ const styles = StyleSheet.create(theme => ({
   ratingImage: {
     width: 12,
     height: 12,
-  },
-  call: {
-    width: 50,
-    height: 50,
   },
 }));

@@ -1,9 +1,42 @@
-import React from 'react';
-import { Redirect } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Redirect, useRouter } from 'expo-router';
 import { useAuth } from '@/store/useAuth';
 import { useRole } from '@/store/useRole';
+import { fetchVolunteerProfile } from '@/api/volunteer-api';
 
 const AUTH_BYPASS = process.env.EXPO_PUBLIC_AUTH_BYPASS === 'true';
+
+// ── VolunteerGate ─────────────────────────────────────────────────────────────
+// Fetches volunteer profile to check verificationStatus before routing.
+// On network error → falls back to volunteer home (never blocks the user).
+function VolunteerGate() {
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchVolunteerProfile()
+      .then(profile => {
+        if (profile.verificationStatus === 'approved') {
+          router.replace('/volunteer/home' as any);
+        } else {
+          // pending or rejected → hold on the pending screen
+          router.replace({
+            pathname:
+              '/volunteer/VerificationPending/verificationPending' as any,
+            params: { verificationStatus: profile.verificationStatus },
+          });
+        }
+      })
+      .catch(() => {
+        // Network error → route to pending screen (don't bypass the gate)
+        // VerificationPending will handle the error and let user retry
+        router.replace({
+          pathname: '/volunteer/VerificationPending/verificationPending' as any,
+        });
+      });
+  }, [router]);
+
+  return null; // blank while the fetch resolves
+}
 
 const Index = () => {
   const isAuthenticated = useAuth(state => state.isAuthenticated);
@@ -19,8 +52,7 @@ const Index = () => {
 
   // ── Production: auth-aware routing ──
   if (isAuthenticated && resolvedRole) {
-    if (resolvedRole === 'volunteer')
-      return <Redirect href="/volunteer/home" />;
+    if (resolvedRole === 'volunteer') return <VolunteerGate />;
     return <Redirect href="/user/home" />;
   }
 
