@@ -4,10 +4,19 @@ import { AppText } from '@/components/AppText';
 import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import SideImageCard from '@/components/sideImageCard';
 import HomeTile from '@/components/homeTile';
 
 const Home = () => {
+  const router = useRouter();
+
+  const handleComingSoonPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/coming-soon' as any);
+  };
+
   return (
     <View style={styles.screen}>
       <LinearGradient
@@ -44,11 +53,13 @@ const Home = () => {
             title="Manage Rooms"
             description="Host and moderate topic-based community support rooms"
             icon={require('@/assets/icons/groupRooms.svg')}
+            onPress={handleComingSoonPress}
           />
           <HomeTile
             title="Community Space"
             description="You're creating safe spaces with every conversation"
             icon={require('@/assets/icons/communitySpace.svg')}
+            onPress={handleComingSoonPress}
           />
         </View>
         <View>
@@ -56,6 +67,7 @@ const Home = () => {
             title="Rapid Response"
             description="Lend your ear, share strength, empower others with your compassion"
             image={require('@/assets/images/rapidResponseVector.webp')}
+            onPress={handleComingSoonPress}
           />
         </View>
       </ScrollView>

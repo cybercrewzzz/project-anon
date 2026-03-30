@@ -4,10 +4,19 @@ import { AppText } from '@/components/AppText';
 import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native-unistyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import SideImageCard from '@/components/sideImageCard';
 import HomeTile from '@/components/homeTile';
 
 const Home = () => {
+  const router = useRouter();
+
+  const handleComingSoonPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/coming-soon' as any);
+  };
+
   return (
     <View style={styles.screen}>
       <LinearGradient
@@ -53,11 +62,13 @@ const Home = () => {
             title="Group Rooms"
             description="Join topic-based community rooms"
             icon={require('@/assets/icons/groupRooms.svg')}
+            onPress={handleComingSoonPress}
           />
           <HomeTile
             title="Community Space"
             description="Share stories, Read advices"
             icon={require('@/assets/icons/communitySpace.svg')}
+            onPress={handleComingSoonPress}
           />
         </View>
         <View>
@@ -66,6 +77,7 @@ const Home = () => {
             description="Talk to licensed professionals"
             ctaText="Premium"
             image={require('@/assets/images/professionalConnectVector.webp')}
+            onPress={handleComingSoonPress}
           />
         </View>
       </ScrollView>

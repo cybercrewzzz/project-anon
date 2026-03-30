@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { Pressable } from 'react-native';
 import React from 'react';
 import { AppText } from './AppText';
 import { Image, ImageSource } from 'expo-image';
@@ -13,7 +13,14 @@ interface HomeTileProps {
 
 const HomeTile = ({ title, description, icon, onPress }: HomeTileProps) => {
   return (
-    <View style={styles.tile}>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      style={({ pressed }) => [
+        styles.tile,
+        pressed && !!onPress && { opacity: 0.9 },
+      ]}
+    >
       <AppText variant="subhead" emphasis="emphasized" textAlign="center">
         {title}
       </AppText>
@@ -21,7 +28,7 @@ const HomeTile = ({ title, description, icon, onPress }: HomeTileProps) => {
         {description}
       </AppText>
       <Image source={icon} style={styles.icon} contentFit="contain" />
-    </View>
+    </Pressable>
   );
 };
 
