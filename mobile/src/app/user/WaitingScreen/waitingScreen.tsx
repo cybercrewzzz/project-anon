@@ -11,17 +11,19 @@ import Animated, {
 } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { getSocket, requestSession, subscribeToConnect } from '@/api/socket';
+import { getSocket, subscribeToConnect } from '@/api/socket';
 
-type MatchStatus = 'searching' | 'no_volunteer' | 'error';
+type MatchStatus = 'searching' | 'matched' | 'timeout' | 'error';
 
 export default function WaitingScreen() {
   const router = useRouter();
-  const { problemId } = useLocalSearchParams<{ problemId?: string }>();
+  // sessionId is passed by the P2P connect screen after POST /session/connect
+  // returned status='waiting'. The session already exists on the server.
+  const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
 
-  const [matchStatus, setMatchStatus] = useState<MatchStatus>('searching');
-  // Bumped on each socket connect event so the request effect re-runs.
-  const [trigger, setTrigger] = useState(0);
+  const [matchStatus, setMatchStatus] = useState<MatchStatus>(
+    sessionId ? 'searching' : 'error',
+  );
 
   const scale = useSharedValue(1);
 
@@ -40,50 +42,54 @@ export default function WaitingScreen() {
     );
   }, [matchStatus, scale]);
 
-  // Subscribe to socket connect events. The callback fires immediately if the
-  // socket is already connected, so trigger reaches 1 on the first render cycle.
+  // Listen for session:matched — the server emits this when a volunteer
+  // accepts the waiting session. We do NOT re-request here; the HTTP POST
+  // already created the session. We only listen.
   useEffect(() => {
-    return subscribeToConnect(() => setTrigger(t => t + 1));
-  }, []);
+    if (!sessionId) return;
 
-  // Attempt to match on each trigger bump (initial connect + retries).
-  useEffect(() => {
-    // trigger === 0 means we haven't received a connect event yet — wait.
-    if (trigger === 0) return;
+    const onMatched = (payload: { sessionId: string }) => {
+      // Only navigate if it's for our session
+      if (payload.sessionId === sessionId) {
+        setMatchStatus('matched');
+        router.replace(`/user/session/${sessionId}`);
+      }
+    };
 
-    if (!problemId) {
-      setMatchStatus('error');
-      return;
-    }
+    const onSessionEnded = (payload: {
+      sessionId: string;
+      reason?: string;
+    }) => {
+      if (payload.sessionId !== sessionId) return;
+      // The match:timeout processor cancelled the session
+      if (payload.reason === 'no_volunteer' || payload.reason === 'timeout') {
+        setMatchStatus('timeout');
+      }
+    };
 
-    if (!getSocket()?.connected) return;
+    // Attach handlers immediately if the socket exists
+    const attachListeners = () => {
+      const socket = getSocket();
+      if (!socket) return;
 
-    let cancelled = false;
+      socket.on('session:matched', onMatched);
+      socket.on('session:ended', onSessionEnded);
+    };
 
-    requestSession(problemId)
-      .then(ack => {
-        if (cancelled) return;
-        if (ack.status === 'matched') {
-          router.replace(`/user/session/${ack.sessionId}`);
-        } else if (ack.status === 'no_volunteer') {
-          setMatchStatus('no_volunteer');
-        } else {
-          setMatchStatus('error');
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setMatchStatus('error');
-      });
+    attachListeners();
+
+    // Re-attach when socket reconnects
+    const unsub = subscribeToConnect(attachListeners);
 
     return () => {
-      cancelled = true;
+      unsub();
+      const socket = getSocket();
+      if (socket) {
+        socket.off('session:matched', onMatched);
+        socket.off('session:ended', onSessionEnded);
+      }
     };
-  }, [trigger, problemId, router]);
-
-  const retry = () => {
-    setMatchStatus('searching');
-    setTrigger(t => t + 1);
-  };
+  }, [sessionId, router]);
 
   const dotStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -109,7 +115,7 @@ export default function WaitingScreen() {
           </>
         )}
 
-        {matchStatus === 'no_volunteer' && (
+        {matchStatus === 'timeout' && (
           <>
             <AppText
               variant="title3"
@@ -122,9 +128,12 @@ export default function WaitingScreen() {
             <AppText variant="body" textAlign="center" color="accent">
               All volunteers are currently busy. Please try again in a moment.
             </AppText>
-            <Pressable onPress={retry} style={styles.actionButton}>
+            <Pressable
+              onPress={() => router.back()}
+              style={styles.actionButton}
+            >
               <AppText variant="body" style={styles.actionButtonText}>
-                Try Again
+                Go Back
               </AppText>
             </Pressable>
           </>
@@ -141,17 +150,8 @@ export default function WaitingScreen() {
               Something Went Wrong
             </AppText>
             <AppText variant="body" textAlign="center" color="accent">
-              {problemId ?
-                'Unable to connect. Please try again.'
-              : 'Session information is missing.'}
+              Session information is missing.
             </AppText>
-            {problemId && (
-              <Pressable onPress={retry} style={styles.actionButton}>
-                <AppText variant="body" style={styles.actionButtonText}>
-                  Try Again
-                </AppText>
-              </Pressable>
-            )}
           </>
         )}
 

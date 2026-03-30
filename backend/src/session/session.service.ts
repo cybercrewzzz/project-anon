@@ -21,6 +21,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { MatchingService } from './matching.service';
 import { TicketService } from './ticket.service';
+import { ChatServerService } from '../chat/chat-server.service';
 import type { ConnectSessionDto } from './dto/session-connect.dto';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,11 +51,6 @@ type ConnectResult =
       sessionId: string;
       volunteerId: string;
       wsRoom: string;
-      turnCredentials: {
-        urls: string[];
-        username: string;
-        credential: string;
-      };
     }
   | {
       status: 'waiting';
@@ -70,6 +66,7 @@ export class SessionService {
     private readonly redis: RedisService,
     private readonly matching: MatchingService,
     private readonly tickets: TicketService,
+    private readonly chatServer: ChatServerService,
     // @InjectQueue() gives us a BullMQ Queue instance for the 'sessions' queue.
     // A Queue is how you ADD jobs. The actual processing of jobs (workers)
     // is defined separately — in this task that worker code also lives here,
@@ -298,13 +295,10 @@ export class SessionService {
         );
 
         // The response for "match found" (HTTP 200).
-        // turnCredentials are TURN server creds for WebRTC — generate them here
-        // or call a TURN credential service. Placeholder shown below.
         const result = {
           sessionId: session.sessionId,
           volunteerId: matchedVolunteerId,
           wsRoom: `session:${session.sessionId}`,
-          turnCredentials: this.generateTurnCredentials(session.sessionId),
         };
 
         // Store the result in Redis for idempotency (5-minute TTL).
@@ -789,16 +783,18 @@ export class SessionService {
       // HOW: Look up the seeker's socket ID from Redis, then emit
       // `session:matched` to that socket via the WebSocket gateway.
       //
-      // The WebSocket gateway is Thusirui's code (Task 6). We call it via
-      // a shared service or event emitter so we don't import the whole ChatModule.
-      // For now we log it — wire up the actual emit when Task 6 is merged.
+      // Look up the seeker's socket ID from Redis, then emit
+      // `session:matched` to that socket via ChatServerService.
       const seekerSocketId = await this.redis.get(`account:${seekerId}:socket`);
 
       if (seekerSocketId) {
-        // TODO: call ChatGateway.emitToSocket(seekerSocketId, 'session:matched', payload)
-        // This will be wired up once Thusirui's ChatModule is merged.
+        // Emit directly to the seeker's socket so they know a volunteer accepted
+        this.chatServer.server.to(seekerSocketId).emit('session:matched', {
+          sessionId,
+          volunteerId,
+        });
         this.logger.log(
-          `Should emit session:matched to seeker socket ${seekerSocketId} — wire up ChatGateway here`,
+          `Emitted session:matched to seeker socket ${seekerSocketId}`,
         );
       } else {
         // Seeker disconnected between connecting and now. The reconnect logic
@@ -815,7 +811,6 @@ export class SessionService {
         seekerId,
         category: session.problem?.category?.name ?? null,
         wsRoom: `session:${sessionId}`,
-        turnCredentials: this.generateTurnCredentials(sessionId),
       };
     } finally {
       // Release the volunteer lock safely using atomic compare-and-delete.
@@ -1114,26 +1109,5 @@ export class SessionService {
     });
 
     return candidates.map((v) => v.accountId);
-  }
-
-  // ─── Helper: generate TURN credentials ───────────────────────────────
-  // TURN servers relay WebRTC traffic when direct peer-to-peer fails.
-  // In production, use a proper TURN credential service (e.g. Twilio, Metered).
-  // This is a placeholder — replace with your actual TURN server logic.
-  private generateTurnCredentials(sessionId: string) {
-    const turnServerUrl = process.env.TURN_SERVER_URL;
-    const turnServerSecret = process.env.TURN_SERVER_SECRET;
-
-    if (!turnServerUrl || !turnServerSecret) {
-      throw new Error(
-        'TURN server is not properly configured: TURN_SERVER_URL and TURN_SERVER_SECRET must be set.',
-      );
-    }
-
-    return {
-      urls: [turnServerUrl],
-      username: `session-${sessionId}`,
-      credential: turnServerSecret,
-    };
   }
 }

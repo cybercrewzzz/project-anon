@@ -27,5 +27,10 @@ import { ChatProcessor, ChatTimeoutProcessor } from './chat.processor.js';
     ChatProcessor,
     ChatTimeoutProcessor,
   ],
+  exports: [
+    // Exported so SessionModule can emit session:matched to seekers
+    // after a volunteer accepts a Path B session.
+    ChatServerService,
+  ],
 })
 export class ChatModule {}
