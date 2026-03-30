@@ -127,9 +127,7 @@ export class ChatService {
     );
     const socketIds: string[] = [];
     for (const volunteerId of volunteerIds) {
-      const socketId = await this.redis.get(
-        `account:${volunteerId}:socket`,
-      );
+      const socketId = await this.redis.get(`account:${volunteerId}:socket`);
       if (socketId) {
         socketIds.push(socketId);
       } else {

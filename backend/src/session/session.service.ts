@@ -1180,15 +1180,23 @@ export class SessionService {
     const blocks = await this.prisma.blocklist.findMany({
       where: {
         OR: [
-          { blockerId: volunteerId, blockedId: { in: sessions.map((s) => s.seekerId) } },
-          { blockedId: volunteerId, blockerId: { in: sessions.map((s) => s.seekerId) } },
+          {
+            blockerId: volunteerId,
+            blockedId: { in: sessions.map((s) => s.seekerId) },
+          },
+          {
+            blockedId: volunteerId,
+            blockerId: { in: sessions.map((s) => s.seekerId) },
+          },
         ],
       },
       select: { blockerId: true, blockedId: true },
     });
 
     const blockedSeekerIds = new Set(
-      blocks.map((b) => (b.blockerId === volunteerId ? b.blockedId : b.blockerId)),
+      blocks.map((b) =>
+        b.blockerId === volunteerId ? b.blockedId : b.blockerId,
+      ),
     );
 
     // ── STEP 5: Map to response shape ──────────────────────────────────
@@ -1198,7 +1206,10 @@ export class SessionService {
         sessionId: s.sessionId,
         category: s.problem?.category?.name ?? null,
         seekerNickname: s.seeker?.name ?? 'Anonymous',
-        startedAt: (sessionHashes[s.sessionId]?.startedAt ?? s.startedAt?.toISOString() ?? new Date().toISOString()),
+        startedAt:
+          sessionHashes[s.sessionId]?.startedAt ??
+          s.startedAt?.toISOString() ??
+          new Date().toISOString(),
       }));
 
     return { sessions: result };
@@ -1209,9 +1220,7 @@ export class SessionService {
     const volunteerIds = await this.redis.smembers('volunteers:online');
     const socketIds: string[] = [];
     for (const volunteerId of volunteerIds) {
-      const socketId = await this.redis.get(
-        `account:${volunteerId}:socket`,
-      );
+      const socketId = await this.redis.get(`account:${volunteerId}:socket`);
       if (socketId) {
         socketIds.push(socketId);
       }
