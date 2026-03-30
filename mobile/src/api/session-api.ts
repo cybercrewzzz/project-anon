@@ -7,12 +7,14 @@ import {
   SessionHistorySchema,
   SessionTicketsSchema,
   SessionRateResponseSchema,
+  WaitingSessionsListSchema,
   type SessionConnectMatch,
   type SessionConnectWaiting,
   type SessionAccept,
   type SessionHistory,
   type SessionTickets,
   type SessionRateResponse,
+  type WaitingSessionsList,
 } from './schemas';
 
 // =============================================================================
@@ -130,6 +132,21 @@ export async function fetchSessionTickets(): Promise<SessionTickets> {
   try {
     const { data } = await apiClient.get('/session/tickets');
     return SessionTicketsSchema.parse(data);
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+// =============================================================================
+// GET /session/waiting
+// Get all sessions currently waiting for a volunteer to accept.
+// Only volunteers call this.
+// =============================================================================
+
+export async function fetchWaitingSessions(): Promise<WaitingSessionsList> {
+  try {
+    const { data } = await apiClient.get('/session/waiting');
+    return WaitingSessionsListSchema.parse(data);
   } catch (error) {
     throw parseApiError(error);
   }

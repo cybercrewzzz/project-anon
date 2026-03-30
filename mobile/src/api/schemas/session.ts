@@ -81,3 +81,18 @@ export const SessionRateResponseSchema = z.object({
   message: z.string(),
 });
 export type SessionRateResponse = z.infer<typeof SessionRateResponseSchema>;
+
+// ── GET /session/waiting ──
+
+export const WaitingSessionItemSchema = z.object({
+  sessionId: z.string(),
+  category: z.string().nullable(),
+  seekerNickname: z.string(),
+  startedAt: z.string(),
+});
+export type WaitingSessionItem = z.infer<typeof WaitingSessionItemSchema>;
+
+export const WaitingSessionsListSchema = z.object({
+  sessions: z.array(WaitingSessionItemSchema),
+});
+export type WaitingSessionsList = z.infer<typeof WaitingSessionsListSchema>;
