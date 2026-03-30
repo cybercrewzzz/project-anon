@@ -313,7 +313,10 @@ export default function ConnectScreen() {
                 No specialisations set
               </AppText>
             : specialisations.map(spec => (
-                <View key={spec.specialisationId} style={styles.specialisationButton}>
+                <View
+                  key={spec.specialisationId}
+                  style={styles.specialisationButton}
+                >
                   <AppText style={styles.specialisationButtonText}>
                     {spec.name}
                   </AppText>
@@ -339,7 +342,10 @@ export default function ConnectScreen() {
             {isWaitingLoading && (
               <View style={styles.emptyState}>
                 <ActivityIndicator size="large" color="#349EDB" />
-                <AppText variant="caption1" style={{ color: '#666', marginTop: 8 }}>
+                <AppText
+                  variant="caption1"
+                  style={{ color: '#666', marginTop: 8 }}
+                >
                   Loading waiting sessions...
                 </AppText>
               </View>
@@ -355,7 +361,11 @@ export default function ConnectScreen() {
                   style={styles.retryButton}
                   onPress={() => refetchWaiting()}
                 >
-                  <AppText variant="caption1" emphasis="emphasized" style={{ color: '#349EDB' }}>
+                  <AppText
+                    variant="caption1"
+                    emphasis="emphasized"
+                    style={{ color: '#349EDB' }}
+                  >
                     Retry
                   </AppText>
                 </Pressable>
@@ -363,89 +373,97 @@ export default function ConnectScreen() {
             )}
 
             {/* Empty state */}
-            {!isWaitingLoading && !isWaitingError && waitingSessions.length === 0 && (
-              <View style={styles.emptyState}>
-                <AppText variant="body" style={{ fontSize: 32 }}>
-                  💬
-                </AppText>
-                <AppText variant="caption1" style={{ color: '#666', textAlign: 'center' }}>
-                  {selectedOption === 'Offline'
-                    ? 'Go active to see waiting sessions.'
-                    : 'No one is waiting right now.\nNew sessions appear automatically.'}
-                </AppText>
-              </View>
-            )}
+            {!isWaitingLoading &&
+              !isWaitingError &&
+              waitingSessions.length === 0 && (
+                <View style={styles.emptyState}>
+                  <AppText variant="body" style={{ fontSize: 32 }}>
+                    💬
+                  </AppText>
+                  <AppText
+                    variant="caption1"
+                    style={{ color: '#666', textAlign: 'center' }}
+                  >
+                    {selectedOption === 'Offline' ?
+                      'Go active to see waiting sessions.'
+                    : 'No one is waiting right now.\nNew sessions appear automatically.'
+                    }
+                  </AppText>
+                </View>
+              )}
 
             {/* Session cards */}
-            {!isWaitingLoading && !isWaitingError && waitingSessions.length > 0 && (
-              <View style={styles.connectProfilesContainer}>
-                {waitingSessions.map((session, index) => {
-                  const gradient = getAvatarGradient(index);
-                  const initials = getInitials(session.seekerNickname);
-                  const waitTime = getWaitingTime(session.startedAt);
+            {!isWaitingLoading &&
+              !isWaitingError &&
+              waitingSessions.length > 0 && (
+                <View style={styles.connectProfilesContainer}>
+                  {waitingSessions.map((session, index) => {
+                    const gradient = getAvatarGradient(index);
+                    const initials = getInitials(session.seekerNickname);
+                    const waitTime = getWaitingTime(session.startedAt);
 
-                  return (
-                    <View key={session.sessionId} style={styles.profileCard}>
-                      <View style={styles.profileInfo}>
-                        <LinearGradient
-                          colors={[gradient[0], gradient[1]]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          style={styles.profileImage}
-                        >
-                          <AppText style={styles.profileImageText}>
-                            {initials}
-                          </AppText>
-                        </LinearGradient>
-                        <View style={styles.profileTextContainer}>
-                          <AppText
-                            variant="callout"
-                            style={{
-                              fontSize: isSmallScreen ? 14 : 16,
-                              fontWeight: '600',
-                            }}
+                    return (
+                      <View key={session.sessionId} style={styles.profileCard}>
+                        <View style={styles.profileInfo}>
+                          <LinearGradient
+                            colors={[gradient[0], gradient[1]]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.profileImage}
                           >
-                            {session.seekerNickname}
-                          </AppText>
-                          <AppText
-                            variant="caption1"
-                            style={{
-                              fontSize: isSmallScreen ? 10 : 12,
-                              color: '#666666',
-                            }}
-                          >
-                            {session.category
-                              ? `Issue - ${session.category}`
+                            <AppText style={styles.profileImageText}>
+                              {initials}
+                            </AppText>
+                          </LinearGradient>
+                          <View style={styles.profileTextContainer}>
+                            <AppText
+                              variant="callout"
+                              style={{
+                                fontSize: isSmallScreen ? 14 : 16,
+                                fontWeight: '600',
+                              }}
+                            >
+                              {session.seekerNickname}
+                            </AppText>
+                            <AppText
+                              variant="caption1"
+                              style={{
+                                fontSize: isSmallScreen ? 10 : 12,
+                                color: '#666666',
+                              }}
+                            >
+                              {session.category ?
+                                `Issue - ${session.category}`
                               : 'General Support'}
-                          </AppText>
-                          <AppText
-                            variant="caption1"
-                            style={{
-                              fontSize: isSmallScreen ? 10 : 12,
-                              color: '#666666',
-                            }}
-                          >
-                            Waiting - {waitTime}
-                          </AppText>
+                            </AppText>
+                            <AppText
+                              variant="caption1"
+                              style={{
+                                fontSize: isSmallScreen ? 10 : 12,
+                                color: '#666666',
+                              }}
+                            >
+                              Waiting - {waitTime}
+                            </AppText>
+                          </View>
                         </View>
+                        <Pressable onPress={() => handleConnect(session)}>
+                          <LinearGradient
+                            colors={['#1D47DC', '#0E7FBC']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.connectButton}
+                          >
+                            <AppText style={styles.connectButtonText}>
+                              Connect
+                            </AppText>
+                          </LinearGradient>
+                        </Pressable>
                       </View>
-                      <Pressable onPress={() => handleConnect(session)}>
-                        <LinearGradient
-                          colors={['#1D47DC', '#0E7FBC']}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 0 }}
-                          style={styles.connectButton}
-                        >
-                          <AppText style={styles.connectButtonText}>
-                            Connect
-                          </AppText>
-                        </LinearGradient>
-                      </Pressable>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
+                    );
+                  })}
+                </View>
+              )}
           </View>
         </View>
 
