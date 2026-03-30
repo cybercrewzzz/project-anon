@@ -1,4 +1,5 @@
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import { Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
 import { ChatService } from './chat.service.js';
 import { ChatServerService } from './chat-server.service.js';
@@ -19,6 +20,8 @@ interface ReconnectExpireJob {
  */
 @Processor(RECONNECT_QUEUE)
 export class ChatProcessor extends WorkerHost {
+  private readonly logger = new Logger(ChatProcessor.name);
+
   constructor(
     private readonly chatService: ChatService,
     private readonly chatServer: ChatServerService,
@@ -64,8 +67,8 @@ export class ChatProcessor extends WorkerHost {
       }
     }
 
-    console.log(
-      `[BullMQ] Reconnect expired — accountId=${accountId} session=${sessionId}`,
+    this.logger.log(
+      `Reconnect expired — accountId=${accountId} session=${sessionId}`,
     );
   }
 }
@@ -84,6 +87,8 @@ interface SessionTimeoutJob {
  */
 @Processor(SESSION_TIMEOUT_QUEUE)
 export class ChatTimeoutProcessor extends WorkerHost {
+  private readonly logger = new Logger(ChatTimeoutProcessor.name);
+
   constructor(
     private readonly chatService: ChatService,
     private readonly chatServer: ChatServerService,
@@ -138,6 +143,6 @@ export class ChatTimeoutProcessor extends WorkerHost {
       );
     }
 
-    console.log(`[BullMQ] Session timed out — session=${sessionId}`);
+    this.logger.log(`Session timed out — session=${sessionId}`);
   }
 }

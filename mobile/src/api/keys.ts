@@ -42,4 +42,6 @@ export const queryKeys = {
 
   // ── User Points ──
   points: ['user', 'points'] as const,
+  // ── Reports ──
+  reports: ['reports'] as const,
 } as const;

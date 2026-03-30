@@ -263,12 +263,10 @@ export class SessionService {
           SESSION_TIMEOUT_MS / 1000,
         );
 
-        // Set an empty messages list key with TTL so Redis auto-cleans it.
-        // The WebSocket gateway will RPUSH messages to session:{id}:msgs.
-        await this.redis.expire(
-          `session:${session.sessionId}:msgs`,
-          SESSION_TIMEOUT_MS / 1000,
-        );
+        // NOTE: We do NOT call expire on session:{id}:msgs here.
+        // The key doesn't exist yet — EXPIRE on a non-existent key is a no-op.
+        // The WebSocket gateway creates this key on the first RPUSH and should
+        // set its own TTL at that point.
 
         // Schedule BullMQ jobs:
         //
@@ -278,7 +276,12 @@ export class SessionService {
         await this.sessionQueue.add(
           'session:grace-end',
           { sessionId: session.sessionId, seekerId },
-          { delay: GRACE_END_MS, jobId: `grace-end:${session.sessionId}` },
+          {
+            delay: GRACE_END_MS,
+            jobId: `grace-end-${session.sessionId}`,
+            removeOnComplete: true,
+            removeOnFail: { age: 24 * 60 * 60 },
+          },
         );
 
         // 2. session:timeout (45 min delay)
@@ -286,7 +289,12 @@ export class SessionService {
         await this.sessionQueue.add(
           'session:timeout',
           { sessionId: session.sessionId },
-          { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${session.sessionId}` },
+          {
+            delay: SESSION_TIMEOUT_MS,
+            jobId: `timeout-${session.sessionId}`,
+            removeOnComplete: true,
+            removeOnFail: { age: 24 * 60 * 60 },
+          },
         );
 
         // The response for "match found" (HTTP 200).
@@ -385,11 +393,13 @@ export class SessionService {
       });
 
       // Store a waiting session hash in Redis.
-      // The `listenerId` field is intentionally empty — the /accept endpoint
-      // will use HSETNX to atomically fill it in (only one volunteer can win).
+      // NOTE: do NOT include a `listenerId` field here.
+      // The /accept endpoint uses HSETNX to atomically write listenerId,
+      // which only succeeds when the field does NOT already exist.
+      // Pre-storing an empty string would make the field exist,
+      // causing HSETNX to return 0 for every volunteer (breaking Path B entirely).
       await this.redis.hset(`session:${session.sessionId}`, {
         seekerId,
-        listenerId: '',
         status: 'waiting',
         startedAt: new Date().toISOString(),
       });
@@ -428,7 +438,9 @@ export class SessionService {
         { sessionId: session.sessionId, seekerId },
         {
           delay: MATCH_TIMEOUT_MS,
-          jobId: `match-timeout:${session.sessionId}`,
+          jobId: `match-timeout-${session.sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
         },
       );
 
@@ -639,7 +651,7 @@ export class SessionService {
         try {
           await this.redis
             .multi()
-            .hset(`session:${sessionId}`, 'listenerId', '')
+            .hdel(`session:${sessionId}`, 'listenerId')
             .hset(`session:${sessionId}`, 'status', 'waiting')
             .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
             .exec();
@@ -676,7 +688,7 @@ export class SessionService {
         // so the session stays claimable by other volunteers for 3 minutes.
         await this.redis
           .multi()
-          .hset(`session:${sessionId}`, 'listenerId', '')
+          .hdel(`session:${sessionId}`, 'listenerId')
           .hset(`session:${sessionId}`, 'status', 'waiting')
           .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
           .exec();
@@ -712,7 +724,7 @@ export class SessionService {
         // so the session remains claimable and consistent with the database.
         await this.redis
           .multi()
-          .hset(`session:${sessionId}`, 'listenerId', '')
+          .hdel(`session:${sessionId}`, 'listenerId')
           .hset(`session:${sessionId}`, 'status', 'waiting')
           .expire(`session:${sessionId}`, MATCH_TIMEOUT_MS / 1000)
           .exec();
@@ -730,7 +742,7 @@ export class SessionService {
       // BullMQ jobs can be cancelled by their jobId if they haven't fired yet.
       try {
         const timeoutJob = await this.sessionQueue.getJob(
-          `match-timeout:${sessionId}`,
+          `match-timeout-${sessionId}`,
         );
         if (timeoutJob) {
           await timeoutJob.remove();
@@ -751,12 +763,22 @@ export class SessionService {
       await this.sessionQueue.add(
         'session:grace-end',
         { sessionId, seekerId },
-        { delay: GRACE_END_MS, jobId: `grace-end:${sessionId}` },
+        {
+          delay: GRACE_END_MS,
+          jobId: `grace-end-${sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
+        },
       );
       await this.sessionQueue.add(
         'session:timeout',
         { sessionId },
-        { delay: SESSION_TIMEOUT_MS, jobId: `timeout:${sessionId}` },
+        {
+          delay: SESSION_TIMEOUT_MS,
+          jobId: `timeout-${sessionId}`,
+          removeOnComplete: true,
+          removeOnFail: { age: 24 * 60 * 60 },
+        },
       );
 
       // ── STEP 8: Emit WebSocket event to the seeker ────────────────────────

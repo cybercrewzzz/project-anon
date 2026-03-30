@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { SessionController } from './session.controller';
 import { SessionService } from './session.service';
+import { SessionProcessor } from './session.processor';
 import { MatchingService } from './matching.service';
 import { TicketService } from './ticket.service';
 
@@ -61,6 +62,7 @@ import { TicketService } from './ticket.service';
     // All services used within this module must be listed here.
     // NestJS will instantiate them and inject them wherever needed.
     SessionService,
+    SessionProcessor,
     MatchingService,
     TicketService,
     // Note: SessionController also lives here implicitly through `controllers`,
