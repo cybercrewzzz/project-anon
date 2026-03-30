@@ -22,6 +22,10 @@ const Groups = () => {
           })
         }
       />
+      <Button
+        text="View Coming Soon"
+        onPress={() => router.push('/coming-soon' as any)}
+      />
     </View>
   );
 };

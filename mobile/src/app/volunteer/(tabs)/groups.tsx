@@ -22,6 +22,11 @@ const Groups = () => {
           onPress={() => router.navigate('/start/volunteer/welcome' as any)}
           style={{ backgroundColor: '#FFD700', marginTop: 20 }}
         />
+        <Button
+          text="View Coming Soon"
+          onPress={() => router.push('/coming-soon' as any)}
+          style={{ marginTop: 20 }}
+        />
       </View>
     </SafeAreaView>
   );
