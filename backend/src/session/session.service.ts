@@ -309,6 +309,39 @@ export class SessionService {
           300,
         );
 
+        // ── Notify the matched volunteer via WebSocket ─────────────────
+        // In Path A the volunteer was silently claimed from the Redis pool
+        // by the matching algorithm. They need a `session:matched` event
+        // so the mobile app can navigate them to the chat screen.
+        try {
+          const volunteerSocketId = await this.redis.get(
+            `account:${matchedVolunteerId}:socket`,
+          );
+          if (volunteerSocketId) {
+            this.chatServer.server
+              .to(volunteerSocketId)
+              .emit('session:matched', {
+                sessionId: session.sessionId,
+                seekerId,
+              });
+            this.logger.log(
+              `Path A: Emitted session:matched to volunteer ${matchedVolunteerId} (socket ${volunteerSocketId})`,
+            );
+          } else {
+            this.logger.warn(
+              `Path A: Volunteer ${matchedVolunteerId} has no active socket — they may have disconnected`,
+            );
+          }
+        } catch (emitErr) {
+          // Non-fatal — the session is already created. The volunteer can
+          // discover it via reconnect logic or polling.
+          this.logger.warn(
+            `Failed to emit session:matched to volunteer: ${
+              emitErr instanceof Error ? emitErr.message : String(emitErr)
+            }`,
+          );
+        }
+
         return result;
       } catch (error) {
         // Best-effort rollback of BOTH the session and problem status if
